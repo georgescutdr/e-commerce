@@ -1,0 +1,152 @@
+html {
+  width: 100%;
+}
+
+body {
+  width: 100%;
+}
+
+div#root {
+  width: 100%; /* remove this line to see div.app is no more 100% height */
+  padding: 0 30px;
+  vertical-align: top;
+}
+
+div.app {
+  width: 100%;
+  background-color: cornsilk;
+}
+.App {
+  width: 100%!important;
+}
+.list {
+  width: 100%!important;
+}
+.page-title {
+  margin-top: 20px;
+  margin-bottom: 130px;
+  text-align: center;
+  font-size: 40px;
+  vertical-align: top;
+}
+.products {
+  width: 100%;
+  height: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  place-items: center;
+}
+
+.product {
+  border-radius: 15px;
+  width: 300px;
+  height: 350px;
+  margin: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.product2 img {
+  width: 400px;
+}
+
+.product2 .description {
+  text-align: center;
+}
+
+.product:hover {
+  transition: 0.3s ease-in;
+  cursor: pointer;
+}
+
+.addToCartBttn {
+  background-color: transparent;
+  border: 2px solid rgb(19, 19, 19);
+  min-width: 100px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 15px;
+}
+
+.addToCartBttn:hover {
+  background-color: rgb(19, 19, 19);
+  color: white;
+  cursor: pointer;
+}
+
+.image-card {
+  padding: 0px!important; 
+}
+
+.image-card .btn-danger {
+  width: 100%;
+}
+
+.image-card .form-check-label {
+  font-size: 12px;
+}
+
+.image-card .p-card-body {
+  padding: 0px;
+}
+
+.review-card {
+  padding: 2px !important;
+}
+
+.review-card .p-card-body {
+  padding: 12px;
+  text-align: justify;
+}
+
+.list-group-item {
+  border: 0px!important;
+}
+
+.product-card .p-card-title {
+  font-size: 16px;
+}
+
+.product-card {
+  margin: 0px;
+}
+
+.product-card .p-card-body {
+  padding: 0px;
+}
+
+.product-card .p-card-footer {
+  padding: 0px;
+}
+
+.old-price {
+  font-size: 18px;
+}
+
+.new-price {
+  color: red;
+  font-weight: bold;
+  font-size: 21px;
+  margin-top: -20px;
+}
+
+.card-promotion {
+  display: block;
+  position: relative;
+  font-size:14px;
+  background: red;
+  color: #fff!important;
+  top: -8em;
+  width: 46px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.add-btn {
+  background: #3a6fa7;
+  color: #fff;
+}
