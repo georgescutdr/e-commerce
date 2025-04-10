@@ -2,90 +2,114 @@ import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import { useParams } from "react-router"
 import { AdminNavbar, ShopNavbar } from './components/navbar/navbar'
-import { InsertCategory } from './admin/pages/insert-category'
-import { ProductsPage } from './admin/pages/products'
-import { InsertProduct } from './admin/pages/insert-product'
-import { ProductOptions } from './admin/pages/product-options'
-import { InsertProductOption } from './admin/pages/insert-product-option'
-import { Categories } from './admin/pages/categories'
-import { Brands } from './admin/pages/brands'
-import { InsertBrand } from './admin/pages/insert-brand'
-import { InsertVoucher } from './admin/pages/insert-voucher'
-import { Vouchers } from './admin/pages/vouchers'
-import { Promotions } from './admin/pages/promotions'
-import { InsertPromotion } from './admin/pages/insert-promotion'
-import { AdminHome } from './admin/pages/admin-home'
-import { Orders } from './admin/pages/orders'
-import { ViewOrder } from './admin/pages/view-order'
-import { Home } from './shop/pages/home'
-import { Category } from './shop/pages/category'
-import { Products } from './shop/pages/products'
-import { Product } from './shop/pages/product'
-import { CreateReview } from './shop/pages/create-review'
-import { ProductReviews } from './shop/pages/product-reviews'
-import { ShoppingCart } from './shop/pages/shopping-cart'
+
+import { CreateReview } from './shop/create-review'
+import { Dashboard } from './admin/dashboard'
+import { ViewItems } from './shop/view-items'
+import { ViewItem } from './shop/view-item'
+import { ShoppingCart } from './shop/shopping-cart'
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import { LoginForm } from './shop/login-form'
+import { RegisterForm } from './shop/register-form'
+
 import './admin/admin.css'
+import './shop/shop.css'
+
 import { PrimeReactProvider, PrimeReactContext } from 'primereact/api'
 import "primereact/resources/themes/lara-light-cyan/theme.css"
-import { ShopContextProvider } from "./context/shop-context"
+import { ShopContextProvider } from "./shop/context/shop-context"
+
+import { randomKey } from './utils'
+
+import { shopConfig, config } from './admin/config.js'
+import config2 from './shop/config.json' 
+
+import { Item } from './admin/item'
+import { Items } from './admin/items'
+import { Footer } from './components/footer'
+
+/*
+For admin dashboard
+Sales Overview: A visual summary of total sales, revenue, and number of orders.
+Orders Summary: A quick view of the number of pending, processed, and completed orders.
+Product Analytics: Information on best-selling products and top categories.
+Customer Insights: A summary of new, returning, and active customers.
+Inventory Status: A quick glance at low stock products, out-of-stock products, and the most popular products.
+Promotions & Vouchers: Quick stats on active promotions and voucher usage.
+
+Sales Reports: View detailed reports on sales performance, revenue, and trends over different periods (daily, weekly, monthly).
+Order Reports: Detailed insights into order fulfillment, including processing times, shipping statuses, and refunds.
+Customer Reports: Insights into customer demographics, behavior, and activity.
+Product Performance: Track how products are performing (sales volume, inventory levels, etc.).
+
+Shipping Methods: Configure and manage shipping methods and pricing.
+Manage Shipping Addresses: Admins can edit customer shipping addresses or change shipping statuses.
+Track Shipments: Option to input or track the status of shipments in real-time.
+
+Manage Product Variants: If applicable, admins should be able to manage variants like size, color, and material.
+Stock Management: Set stock levels and track product availability.
+
+Order History: A log of all order activities, such as status changes, refunds, or cancellations.
+*/
 
 function App() {
-  const [isAdmin, setIsAdmin] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   let params = useParams()
 
   return (
       <>
+      <ShopContextProvider>
       <PrimeReactProvider>
-        <ShopContextProvider>
+      
         <Router>
-          {isAdmin && <AdminNavbar />}
-          {!isAdmin && <ShopNavbar />}
-             <Routes>
-               <Route path="/" element={ <Home /> } />
-               <Route path="/admin" element={ <AdminHome /> } />
+            {isAdmin && <AdminNavbar />}
+              {!isAdmin && <ShopNavbar />}
+              <Routes>
+                <Route key="1" path="/" element={ <ViewItems /> } />
 
-               <Route path="/shopping-cart" element={ <ShoppingCart /> } />
+                <Route key="2" path="/product-reviews/:productId" element={ <ViewItems /> } />
+                <Route key="3" path="/review/create-review/:productId" element={ <CreateReview /> } />
 
-               <Route path="/admin/product-options/" element={ <ProductOptions /> } />
-               <Route path="/admin/insert-product-option" element={ <InsertProductOption /> } />
-               <Route path="/admin/edit-option/:optionId" element={ <InsertProductOption /> } />
+                <Route key="login" path="/login" element={ <LoginForm /> } />
+                <Route key="register" path="/register" element={ <RegisterForm /> } />
 
-               <Route path="/product-reviews/:productId" element={ <ProductReviews /> } />
-               <Route path="/review/create-review/:productId" element={ <CreateReview /> } />
+                {shopConfig.items?.map((item) => {
+                    return (
+                        <>
+                            <Route 
+                                key={ item.path } 
+                                path={ item.path } 
+                                element={ item.listType == 'single' ? <ViewItem props={ item } /> : <ViewItems props={ item } />}
+                            />
+                        </>   
+                    )
+                })}
 
-               <Route path="/admin/insert-category" element={ <InsertCategory /> } />
-               <Route path="/admin/edit-category/:categoryId" element={ <InsertCategory /> } />
-               <Route path="/admin/categories" element={ <Categories /> } />
-               <Route path="/browse/:category" element={ <Category /> } />
-
-               <Route path="/admin/products" element={ <ProductsPage /> } />
-               <Route path="/admin/insert-product" element={ <InsertProduct /> } />
-               <Route path="/admin/edit-product/:productId" element={ <InsertProduct /> } />
-
-               <Route path="/browse/:category/:subcategory/" element={ <Products /> } />
-               <Route path="/browse/:category/:subcategory/:product" element={ <Product /> } />
-
-               <Route path="/admin/brands" element={ <Brands /> } />
-               <Route path="/admin/insert-brand" element={ <InsertBrand /> } />
-               <Route path="/admin/edit-brand/:brandId" element={ <InsertBrand /> } />
-
-               <Route path="/admin/insert-promotion/" element={ <InsertPromotion /> } />
-               <Route path="/admin/edit-promotion/:promotionId" element={ <InsertPromotion /> } />
-               <Route path="/admin/promotions" element={ <Promotions /> } />
-
-               <Route path="/admin/insert-voucher/" element={ <InsertVoucher /> } />
-               <Route path="/admin/edit-voucher/:voucherId" element={ <InsertVoucher /> } />
-               <Route path="/admin/vouchers" element={ <Vouchers /> } />
-
-               <Route path="/admin/orders" element={ <Orders /> } />
-               <Route path="/admin/view-order/:orderId" element={ <ViewOrder /> } />
+                <Route key="6" path="/shopping-cart" element={ <ShoppingCart /> } />
+                {config.dashboard.active && (
+                    <Route key='7' path={'/admin/dashboard'} element={ <Dashboard /> } /> 
+                )}
+                {config.items?.map((item) => {
+                    // console.log('/admin/' + item.type)
+                    return (
+                        <>
+                            <Route key={ item.type + '1' } path={'/admin/insert-' + item.type} element={ <Item props={ item } /> } />
+                            <Route key={ item.type  + '2' } path={'/admin/edit-' + item.type + '/:itemId'} element={ <Item props={ item } /> } />
+                            <Route key={ item.type + '3' } path={'/admin/' + item.type} element={ <Items props={ item } /> } /> 
+                            {item.import && (
+                                <Route key={ item.type + '4' } path={ item.import.route } element={ <Item props={ item } /> } /> 
+                            )}
+                        </>   
+                    )
+                })}
              </Routes>
          </Router>
-         </ShopContextProvider>
        </PrimeReactProvider>
+       <Footer />
+       </ShopContextProvider>
     </>
   )
 }

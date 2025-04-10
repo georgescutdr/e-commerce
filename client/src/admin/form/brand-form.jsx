@@ -11,7 +11,7 @@ import { ImageCard } from '../components/image-card'
 import { Toast } from 'primereact/toast'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 
-export const BrandForm = ({id}) => {
+const BrandForm = ({id}) => {
     const serverUrl = 'http://localhost:3001'
     const insertBrandUrl = serverUrl + '/api/insert-brand'
     const updateBrandUrl = serverUrl + '/api/update-brand'
@@ -102,3 +102,5 @@ export const BrandForm = ({id}) => {
         </>
     )
 }
+
+export default BrandForm

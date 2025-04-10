@@ -13,7 +13,7 @@ import { Toast } from 'primereact/toast'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Calendar } from 'primereact/calendar'
 
-export const PromotionForm = ({id, setPromotion}) => {
+const PromotionForm = ({id, setPromotion}) => {
     const serverUrl = 'http://localhost:3001'
     const insertPromotionUrl = serverUrl + '/api/insert-promotion'
     const updatePromotionUrl = serverUrl + '/api/update-promotion'
@@ -138,3 +138,5 @@ export const PromotionForm = ({id, setPromotion}) => {
         </>
     )
 }
+
+export default PromotionForm

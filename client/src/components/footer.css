@@ -1,0 +1,49 @@
+/* Footer */
+footer {
+  background: linear-gradient(135deg, #243c54, #0066cc); /* Footer background gradient */
+  color: white; /* White text color for contrast */
+  padding: 20px 30px; /* Padding around the content */
+  text-align: center; /* Center align the content */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+/* Footer links */
+footer a {
+  color: #f0faff; /* Light color for links to maintain readability */
+  text-decoration: none; /* Remove underline from links */
+  font-weight: 500; /* Make links bold for visibility */
+  margin: 0 15px; /* Add some spacing between links */
+  transition: color 0.3s ease; /* Smooth color transition on hover */
+}
+
+/* Footer links hover effect */
+footer a:hover {
+  color: #a0d9ff; /* Change link color on hover */
+}
+
+/* Footer text */
+footer p {
+  font-size: 1rem; /* Standard font size */
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.7); /* Slightly faded text for a softer look */
+  font-weight: 400;
+}
+
+/* Footer social icons (if any) */
+footer .social-icons {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+footer .social-icons a {
+  font-size: 1.5rem; /* Increase icon size */
+  margin: 0 10px; /* Space between icons */
+  color: #f0faff; /* Icon color */
+  transition: color 0.3s ease; /* Smooth color transition */
+}
+
+/* Social icons hover effect */
+footer .social-icons a:hover {
+  color: #a0d9ff; /* Change icon color on hover */
+}

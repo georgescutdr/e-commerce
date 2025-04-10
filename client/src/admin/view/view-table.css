@@ -1,0 +1,93 @@
+/* General Table Styling */
+.p-datatable {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Table Header */
+.p-datatable .p-datatable-header {
+    background: #f8f9fa;
+    padding: 12px 16px;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 2px solid #ddd;
+}
+
+/* Table Rows */
+.p-datatable .p-datatable-tbody tr {
+    transition: background 0.2s ease-in-out;
+}
+
+.p-datatable .p-datatable-tbody tr:hover {
+    background: #f1f5f9;
+}
+
+/* Context Menu */
+.p-contextmenu {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.p-contextmenu .p-menuitem {
+    transition: background 0.2s ease-in-out;
+}
+
+.p-contextmenu .p-menuitem:hover {
+    background: #f1f5f9;
+}
+
+/* Buttons */
+button {
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s ease-in-out;
+}
+
+/* Export Button */
+.export-buttons button {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.export-buttons button:hover {
+    background: #218838;
+}
+
+/* Delete Button */
+button.delete-btn {
+    background: transparent;
+    color: red;
+    border: 2px solid red;
+    padding: 6px 10px;
+    transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+button.delete-btn:hover {
+    background: red;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .p-datatable {
+        font-size: 14px;
+    }
+
+    .p-datatable .p-datatable-header {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}

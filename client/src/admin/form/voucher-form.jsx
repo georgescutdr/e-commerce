@@ -11,7 +11,7 @@ import { Toast } from 'primereact/toast'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Calendar } from 'primereact/calendar'
 
-export const VoucherForm = ({id}) => {
+const VoucherForm = ({id}) => {
     const serverUrl = 'http://localhost:3001'
     const insertVoucherUrl = serverUrl + '/api/insert-voucher'
     const updateVoucherUrl = serverUrl + '/api/update-voucher'
@@ -131,3 +131,5 @@ export const VoucherForm = ({id}) => {
         </>
     )
 }
+
+export default VoucherForm

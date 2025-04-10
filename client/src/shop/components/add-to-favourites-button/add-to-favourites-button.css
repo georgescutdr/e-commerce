@@ -1,0 +1,48 @@
+.add-to-favourites-btn {
+  width: 100%!important;
+  background: #fff!important;
+  background-color: #ffffff!important;
+  justify-content: center !important; /* Center label and icon as one unit */
+  position: relative;
+}
+
+/* Shift icon to the far left while keeping label centered */
+.add-to-favourites-btn .pi-heart {
+  position: absolute;
+  left: 1rem;
+}
+
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-bottom: 20px;
+}
+
+.add-to-favourites-btn {
+  width: 200px;
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 1rem;
+  background-color: #0066cc; /* Use your desired color */
+  color: #002d6b;
+  border-color: #002d6b;
+}
+
+.add-to-favourites-btn:hover {
+  background-color: #ccc; /* Darker shade on hover */
+  color: #003f88;
+  border-color: #003f88;
+}
+
+.add-to-favourites-btn:disabled {
+  background-color: #b0c4de;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.add-to-favourites-btn .pi {
+  margin-right: 8px;
+}
+

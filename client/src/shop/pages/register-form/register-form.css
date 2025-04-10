@@ -1,0 +1,111 @@
+/* Register Page Background */
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 15px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #3f6c9978, #ffffff63);
+}
+
+/* Register Card */
+.register-card {
+  width: 50%;
+  background: #ffffff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #fff;
+  max-width: 600px; /* Maximum width to ensure the card doesn’t get too wide */
+  margin: 0 auto; /* Ensure it stays centered */
+}
+
+/* Form Title */
+.register-card h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #243c54;
+  text-align: center;
+}
+
+/* Form Inputs */
+.register-card input {
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.register-card input:focus {
+  border-color: #0066cc;
+  outline: none;
+}
+
+/* Register Button */
+.register-btn {
+  width: 50%; /* Button width */
+  background: linear-gradient(135deg, #0066cc, #003f88);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 10px;
+  transition: all 0.3s ease;
+  margin-top: 20px; /* Adjust space between input fields and button */
+  display: block; /* Makes the button a block-level element */
+  margin-left: auto; /* Centers the button horizontally */
+  margin-right: auto; /* Centers the button horizontally */
+}
+
+.register-btn:hover {
+  background: linear-gradient(135deg, #005bb5, #002d6b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+form {
+  background: #fff!important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .register-card {
+    width: 80%; /* Card takes up 80% of the screen width on tablets */
+    padding: 30px 20px;
+  }
+
+  .register-card h2 {
+    font-size: 1.8rem;
+  }
+
+  .register-btn {
+    width: 60%; /* Button width for tablets */
+    font-size: 1rem;
+    padding: 10px 18px;
+  }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 480px) {
+  .register-card {
+    width: 90%; /* Card takes up 90% of the screen width on mobile */
+    padding: 20px;
+  }
+
+  .register-card h2 {
+    font-size: 1.6rem;
+  }
+
+  .register-btn {
+    width: 70%; /* Button width for smaller devices */
+    font-size: 0.9rem;
+    padding: 10px 15px;
+  }
+}

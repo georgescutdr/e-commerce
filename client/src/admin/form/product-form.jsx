@@ -19,7 +19,7 @@ import { InputIcon } from "primereact/inputicon"
 import 'primeicons/primeicons.css'
 
 
-export const ProductForm = ({product, id}) => { //implement product
+const ProductForm = ({product, id}) => { //implement product
     const serverUrl = 'http://localhost:3001'
     const insertProductUrl = serverUrl + '/api/insert-product'
     const generateDescriptionUrl = serverUrl + '/api/generate-description'
@@ -140,3 +140,4 @@ export const ProductForm = ({product, id}) => { //implement product
   )
 }
 
+export default Productform

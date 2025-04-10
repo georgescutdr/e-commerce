@@ -1,0 +1,39 @@
+.options-style {
+  /*background: linear-gradient(135deg, #243c54, #0066cc);*/
+  color: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.0);
+  text-align: center;
+}
+
+.options-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.option-pill {
+  background-color: #0058b3;
+  color: #f0faff;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.option-pill:hover {
+  background-color: #00428c;
+  transform: scale(1.05);
+}

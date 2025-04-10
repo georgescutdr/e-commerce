@@ -1,0 +1,30 @@
+.product-reviews {
+  margin-top: 20px;
+}
+
+.reviews-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.review-item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+}
+
+.review-header {
+  font-weight: bold;
+}
+
+.lazy-load-trigger {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}

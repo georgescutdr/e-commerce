@@ -16,7 +16,7 @@ import { Toast } from 'primereact/toast'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import "primereact/resources/themes/lara-light-cyan/theme.css"
 
-export const CategoryForm = ({id}) => {
+const CategoryForm = ({id}) => {
     const serverUrl = 'http://localhost:3001'
     const insertCategoryUrl = serverUrl + '/api/insert-category'
     const updateCategoryUrl = serverUrl + '/api/update-category'
@@ -134,3 +134,5 @@ export const CategoryForm = ({id}) => {
       </>
     )
 }
+
+export default CategoryForm

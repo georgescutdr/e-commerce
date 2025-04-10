@@ -1,0 +1,16 @@
+.price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.new-price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2ecc71; /* green color */
+}
+
+.old-price {
+  font-size: 1.2rem;
+  color: #e74c3c; /* red color for the crossed-out old price */
+}

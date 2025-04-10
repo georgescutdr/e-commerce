@@ -1,0 +1,57 @@
+/* Styling for the ListGroup.Item */
+.list-group-item {
+  background-color: #f1f1f1; /* Light background to contrast with footer */
+  border: none; /* Remove the default border */
+  padding: 10px 15px; /* Padding for spacing */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+  margin-bottom: 10px; /* Space between list items */
+  transition: background-color 0.3s ease; /* Smooth background transition on hover */
+}
+
+.list-group-item:hover {
+  background-color: #e0e0e0; /* Slightly darker background on hover */
+}
+
+/* Styling for the Form.Label */
+.list-group-item .p-2 .me-auto {
+  font-size: 1rem; /* Normal font size */
+  font-weight: 500; /* Medium font weight */
+  color: #2b528d; /* Darker color to contrast with the background */
+  text-transform: capitalize; /* Capitalize the label */
+  margin-bottom: 5px; /* Space between label and buttons */
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px; /* Space between buttons */
+}
+
+/* Edit Button Styling */
+.button-group .btn-secondary {
+  background-color: #2b528d; /* Match footer dark blue */
+  color: white; /* White text color */
+  border: 1px solid #2b528d; /* Matching border color */
+  transition: background-color 0.3s, border-color 0.3s; /* Smooth transition */
+}
+
+.button-group .btn-secondary:hover {
+  background-color: #1c3c5f; /* Darker blue for hover */
+  border-color: #1c3c5f; /* Darker border on hover */
+}
+
+/* Delete Button Styling (Outlined and Red on Hover) */
+.button-group .btn-danger {
+  background-color: transparent; /* Transparent background */
+  color: #d9534f; /* Red color */
+  border: 1px solid #d9534f; /* Red border */
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* Smooth transition */
+}
+
+.button-group .btn-danger:hover {
+  background-color: #d9534f; /* Red background on hover */
+  color: white; /* White text on hover */
+  border-color: #d9534f; /* Red border on hover */
+}

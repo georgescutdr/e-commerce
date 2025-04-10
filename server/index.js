@@ -1,21 +1,32 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+import { createRequire } from 'module'
+import { fileURLToPath } from 'url';
+import path2 from 'path'
+
+// __dirname equivalent in ES modules
+const __dirname = path2.dirname(fileURLToPath(import.meta.url));
+
+const require = createRequire(import.meta.url)
 const express = require('express')
-const app = express()
+const multer = require('multer')
 const mysql = require('mysql')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path')
-const multer = require('multer')
 const fs = require('fs')
 const dotenv = require('dotenv')
 const axios = require('axios')
 const openai = require('openai')
+const xlsx = require('xlsx')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
+// Initialize environment variables
+dotenv.config()
+
+const app = express()
 
 const genai = require('@google/generative-ai')
-
-dotenv.config()
 
 const db = mysql.createPool({
 	host: "localhost",
@@ -24,263 +35,77 @@ const db = mysql.createPool({
 	database: "virtual_shop"
 })
 
-app.use(bodyParser.urlencoded({extended: true}))
-app.use(express.json()) //allow grabbing json from frontend
-app.use(cors()) //for No 'Access-Control-Allow-Origin errors
+// Middleware
+app.use(express.json()) // to parse JSON body
+app.use(express.urlencoded({ extended: true })) // to parse form data
+app.use(cors())
 
-// CATEGORY
-app.post('/api/insert-category', (req, res) => {
-	const name = req.body.name
-	const description = req.body.description
-	const slug = req.body.slug
-	const category = req.body.category
+// Function to handle image uploads dynamically
+const handleImageUpload = (fieldName, multiple = false) => {
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            const { itemType, id } = req.body
 
-	const sql = "insert into category(name, description, slug, parent_id) values(?, ?, ?, ?);"
-	db.query(sql, [name, description, slug, category], (err, result) => {
-		res.send({insertId: result.insertId})
-	})
-})
+            if (!itemType) {
+                return cb(new Error("Item type is required."), false)
+            }
 
-app.get('/api/delete-category', (req, res) => {
-	const id = req.query.id
+            let uploadPath = path.join(__dirname, 'uploads', itemType)
 
-	const sql = "delete from category where id =?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
+            if (id) {
+                uploadPath = path.join(uploadPath, id.toString())
+            } else {
+                uploadPath = path.join(uploadPath, 'new-item')
+            }
 
-app.get('/api/get-category', (req, res) => {
-	let where = req.query.id == null ? 'slug=?;' : 'id=?;'
-	
-	let category = typeof  req.query.id !== "undefined" ? req.query.id : req.query.slug
+            fs.mkdirSync(uploadPath, { recursive: true })
+            cb(null, uploadPath);
+        },
+        filename: function (req, file, cb) {
+            cb(null, Date.now() + '-' + file.originalname)
+        }
+    })
 
-	const sql = "select * from category where " + where
-	db.query(sql, category, (err, result) => {
-		res.send(result)
-	})
-})
+    return multiple ? multer({ storage }).array(fieldName, 10) : multer({ storage }).single(fieldName)
+}
 
-app.get('/api/delete-category-image', (req, res) => {
-	let id = req.query.id
+// Function to remove "new-item" folder after successful upload
+const cleanNewItemFolder = (itemType) => {
+    const tempFolder = path.join(__dirname, 'uploads', itemType, 'new-item')
+    fs.rm(tempFolder, { recursive: true, force: true }, (err) => {
+        if (err) console.error("Error deleting temporary folder:", err)
+    })
+}
 
-	const rootDir = '../client/public/uploads/category/'
-	let dir = rootDir + id
+//MULTIPLE IMAGES UPLOAD
+// Insert ITEM Route (Multiple Images Upload)
+app.post('/api/insert-ITEM', handleImageUpload('images', true), (req, res) => {
+    const { name, description, price, itemType } = req.body;
+    const images = req.files ? req.files.map(file => file.filename) : [];
 
-	fs.rmSync(dir, { recursive: true, force: true });
-	
-	const sql = "update category set image_name='', image_url='' where id=?"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
+    const sql = "INSERT INTO product (name, description, price, images) VALUES (?, ?, ?, ?);";
+    const values = [name, description, price, JSON.stringify(images)];
 
-app.post('/api/update-category', (req, res) => {
-	const id = req.body.id
-	const name = req.body.name
-	const description = req.body.description
-	const slug = req.body.slug
-	const parent_id = req.body.category
+    db.query(sql, values, (err, result) => {
+        if (err) return res.status(500).send({ message: "Error inserting product", error: err });
 
-	const sql = "update category set name =?, description =?, slug=?, parent_id=? where id =?;"
-	db.query(sql, [name, description, slug, parent_id, id], (err, result) => {
-		res.send(result)
-	})
-})
+        const itemId = result.insertId;
 
-app.get('/api/get-categories', (req, res) => {
-	const parentId = req.query.parentId ? req.query.parentId : 0
-	
-	let where = ''
+        if (images.length > 0) {
+            const oldPath = path.join(__dirname, 'uploads', itemType, 'new-item');
+            const newPath = path.join(__dirname, 'uploads', itemType, itemId.toString());
 
-	switch(req.query.type) {
-		case 'all':
-			break;
-		case 'parents':
-			where = 'where parent_id = 0;'
-			break;
-		case 'children':
-			where = 'where parent_id > 0;'
-		default:
-			where = parentId > 0 ? 'where parent_id =?;' : ''
+            fs.rename(oldPath, newPath, (err) => {
+                if (err) return res.status(500).send({ message: "Error renaming image folder" });
 
-	}
-
-	const sql = "select * from category " + where
-	db.query(sql, parentId,(err, result) => {
-		//console.log(where)
-		res.send(result)
-	})
-})
-
-// BRAND
-app.get('/api/get-brands', (req, res) => {
-	const sql = "select * from brand;"
-
-	db.query(sql, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/get-brand', (req, res) => {
-	const id = req.query.id
-
-	const sql = "select * from brand where id=?;"
-	db.query(sql, id, (err, result) => {
-		
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-brand', (req, res) => {
-	const name = req.body.name
-	const description = req.body.description
-
-	const sql = "insert into brand (name, description) values(?, ?);"
-	db.query(sql, [name, description], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/update-brand', (req, res) => {
-	const id = req.body.id
-	const name = req.body.name
-	const description = req.body.description
-
-	const sql = "update brand set name=?, description=? where id=?;"
-	db.query(sql, [name, description, id], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-brand', (req, res) => {
-	const id = req.query.id
-
-	const sql = "delete from brand where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-brand-image', (req, res) => {
-	const id = req.query.id
-
-	const rootDir = '../client/public/uploads/brand/'
-	let dir = rootDir + id
-
-	fs.rmSync(dir, { recursive: true, force: true });
-
-	const sql = "update brand set image_name='', image_url='' where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-// PRODUCT
-app.post('/api/insert-product', (req, res) => {
-	const name = req.body.name
-	const categoryId = req.body.category
-
-	const sql = "insert into product(category_id, name) values(?, ?);"
-	db.query(sql, [categoryId, name], (err, result) => {
-		console.log(err)
-	})
-})
-
-app.get('/api/get-products', (req, res) => {
-	const categoryId = req.query.categoryId
-
-//(select product_id from pi where pi.product_id=p.id and pi.thumb=1)
-	const sql = `select p.*, pi.image_name as thumb
-		from product as p 
-		left join product_image as pi 
-		on pi.product_id=p.id
-		and pi.thumb=1
-		where p.category_id=? 
-		group by pi.id, p.id;`
-	db.query(sql, categoryId, (err, result) => {
-		console.log(err)
-		res.send(result)
-	})
-})
-
-app.get('/api/get-product', (req, res) => {
-	let product = req.query.slug !== null ? req.query.slug : req.query.id
-	let where = req.query.slug !== null ? 'slug=?;' : 'id=?;'
-// join with attributes, options and images
-	const sql = "select * from product where " + where
-	db.query(sql, product, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/get-product-all', (req, res) => {
-	let product = req.query.slug ? req.query.slug : req.query.id
-	let where = req.query.slug ? 'p.slug=?' : 'p.id=?'
-	
-	// join with attributes, options and images
-	const sql = `select p.*, b.name as brand, GROUP_CONCAT(
-					DISTINCT CONCAT(pa.id, ',', pa.name, ',', pa.value)
-					ORDER BY pa.product_id
-					separator ';'
-				) attributes,
-				GROUP_CONCAT(
-					DISTINCT CONCAT(pi.image_name)
-					ORDER BY pi.product_id
-					separator ';'
-				) images,
-				GROUP_CONCAT(
-					DISTINCT CONCAT(o.name, ',', o.description)
-					ORDER BY o.id
-					separator ';'
-				) options,
-				GROUP_CONCAT(
-					DISTINCT CONCAT(pr.name, ',', pr.value, ',', pr.type, ',', pr.description)
-					ORDER BY pr.id
-					separator ';'
-				) promotions,
-				avg(rating) rating
-				from product p
-				left join product_attribute pa on p.id=pa.product_id
-				left join brand b on b.id=p.id
-				left join product_image pi on p.id=pi.product_id
-				left join product_promotion pp on p.id=pp.product_id
-				left join promotion pr on pp.promotion_id=pr.id 
-				left join product_option po on p.id=po.product_id
-				left join \`option\` o on po.option_id=o.id
-				left join review r on p.id=r.product_id
-				where ` + where + `
-				group by p.id`
-
-	db.query(sql, product, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/edit-product', (req, res) => {
-	const id = req.body.id
-	const name = req.body.name
-	const description = req.body.description
-	const categoryId = req.body.category
-	const price = req.body.price
-	const newPrice = req.body.newPrice
-	const brandId = req.body.brand
-	const qty = req.body.qty
-
-	const sql = "update product set name=?, category_id=?, description=?, price=?, new_price=?, qty=?, brand_id=? where id=?);"
-	db.query(sql, [name, categoryId, description, price, newPrice, qty, brandId, id], (err, result) => {
-		console.log(err)
-	})
-})
-
-app.post('/api/delete-product', (req, res) => {
-	const id = req.body.id
-
-	const sql = "delete from products where id = ?;"
-	db.query(sql, id, (err, result) => {
-		console.log(err)
-	})
-})
+                cleanNewItemFolder(itemType);
+                res.send({ message: "Product inserted successfully!", itemId });
+            });
+        } else {
+            res.send({ message: "Product inserted successfully without images.", itemId });
+        }
+    });
+});
 
 // REVIEW
 app.post('/api/insert-review', (req, res) => {
@@ -328,50 +153,14 @@ app.get('/api/get-product-options', (req, res) => {
 	})
 })
 
-app.get('/api/get-options', (req, res) => {
-
-	const sql = "select * from `option`;"
-	db.query(sql, (err, result) => {
-		console.log(err)
-		res.send(result)
-	})
-})
-
 app.get('/api/get-option', (req, res) => {
 	const id = req.query.id
 
-	const sql = "select * from `option` where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
+	const where = id ? ' where id=?' : ';'
 
-app.get('/api/delete-option', (req, res) => {
-	const id = req.query.id
-
-	const sql = "delete from `option` where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-option', (req, res) => {
-	const name = req.body.name
-	const description = req.body.description
-
-	const sql = "insert into `option`(name, description) values(?, ?);"
-	db.query(sql, [name, description], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/update-option', (req, res) => {
-	const id = req.body.id
-	const name = req.body.name
-	const description = req.body.description
-
-	const sql = "update `option` set name=?, description=? where id=?;"
-	db.query(sql, [name, description, id], (err, result) => {
+	const sql = "select * from `option`" + where
+ 	db.query(sql, [id], (err, result) => {
+		console.log(err)
 		res.send(result)
 	})
 })
@@ -398,259 +187,12 @@ app.post('/api/delete-product-option', (req, res) => {
 })
 
 
-// PRODUCT ATTRIBUTES
-app.get('/api/get-product-attributes', (req, res) => {
-	const id = req.query.productId
-
-	const sql = "select * from `product_attribute` where product_id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-product-attribute', (req, res) => {
-	const productId = req.body.productId
-	const attributeName = req.body.attributeName
-	const attributeValue = req.body.attributeValue
-
-	const sql = "insert into product_attribute(product_id, name, value) values(?, ?, ?);"
-	db.query(sql, [productId, attributeName, attributeValue], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-product-attribute', (req, res) => {
-	const id = req.query.id
-
-	const sql = "delete from product_attribute where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-// PRODUCT IMAGES
-app.get('/api/get-product-images', (req, res) => {
-	const id = req.query.productId
-
-	const sql = "select * from `product_image` where product_id=?;"
-	db.query(sql, id, (err, result) => {
-		console.log(err)
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-product-image', (req, res) => {
-	const imageUrl = req.query.imageUrl
-
-	fs.unlinkSync(imageUrl); //full path
-
-	const sql = "delete from product_image where image_url=?;"
-	db.query(sql, imageUrl, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/set-thumb-image', (req, res) => {
-	const imageUrl = req.query.imageUrl
-	const thumb = req.query.thumb == 'true' ? 1 : 0
-
-	let sql = ''
-
-	if(thumb === 1) {
-		sql = "update product_image set thumb=0 where thumb=1;"
-		db.query(sql)
-	}
-
-	sql = "update product_image set thumb=? where image_url=?;"
-	db.query(sql, [thumb, imageUrl], (err, result) => {
-		console.log(thumb)
-		res.send(result)
-	})
-})
-
-
-// VOUCHER
-app.get('/api/get-vouchers', (req, res) => {
-	const sql = "select * from voucher;"
-	db.query(sql, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/get-voucher', (req, res) => {
-	const id = req.query.id
-
-	const sql = "select * from voucher where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-voucher', (req, res) => {
-	const name = req.body.name
-	const description = req.body.description
-	const type = req.body.type
-	const num = req.body.num
-	const date = req.body.date
-	const value = req.body.value
-	const code = req.body.code
-
-	const sql = "insert into voucher(name, description, type, value, date, num, code) values(?, ?, ?, ?, ?, ?, ?);"
-	db.query(sql, [name, description, type, value, date, num, code], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/update-voucher', (req, res) => {
-	const id = req.body.id
-	const name = req.body.name
-	const description = req.body.description
-	const type = req.body.type
-	const num = req.body.num
-	const value = req.body.value
-	const date = req.body.date
-	const code = req.body.code
-
-	const sql = "update voucher set name=?, description=?, type=?, value=?, date=?, num=?, code=? where id=?;"
-	db.query(sql, [name, description, type, value, date, num, code, id], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-voucher', (req, res) => {
-	const id = req.query.id
-
-	const sql = "delete from voucher where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-product-voucher', (req, res) => {
-	const productId = req.body.productId
-	const voucherId = req.body.voucherId
-
-	const sql = "insert into product_voucher(product_id, voucher_id) values(?, ?);"
-	db.query(sql, [productId, voucherId], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/delete-product-voucher', (req, res) => {
-	const voucherId = req.body.voucherId
-	const productId = req.body.productId
-
-	const sql = "delete from product_voucher where product_id=? and voucher_id=?;"
-	db.query(sql, [productId, voucherId], (err, result) => {
-		res.send(result)
-	})
-})
-
-// PROMOTION
-
-app.get('/api/get-product-promotions', (req, res) => {
-	const sql = "select * from promotion;"
-	db.query(sql, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/get-promotions', (req, res) => {
-	const sql = "select * from promotion;"
-	db.query(sql, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/get-promotion', (req, res) => {
-	const id = req.query.id
-
-	const sql = "select * from promotion where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-promotion', (req, res) => {
-	const name = req.body.name
-	const description = req.body.description
-	const type = req.body.type
-	const value = req.body.value
-	const startDate = req.body.startDate
-	const endDate = req.body.endDate
-	const home = req.body.home
-
-	const sql = "insert into promotion(name, description, type, value, start_date, end_date, home) values(?, ?, ?, ?, ?, ?, ?);"
-	db.query(sql, [name, description, type, value, startDate, endDate, home], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/update-promotion', (req, res) => {
-	const id = req.body.id
-	const name = req.body.name
-	const description = req.body.description
-	const type = req.body.type
-	const value = req.body.value
-	const startDate = req.body.startDate
-	const endDate = req.body.endDate
-	const home = req.body.home
-
-	const sql = "update promotion set name=?, description=?, type=?, value=?, start_date=?, end_date=?, home=? where id=?;"
-	db.query(sql, [name, description, type, value, startDate, endDate, home, id], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-promotion-image', (req, res) => {
-	const id = req.query.id
-
-	const rootDir = '../client/public/uploads/promotion/'
-	let dir = rootDir + id
-
-	fs.rmSync(dir, { recursive: true, force: true });
-
-	const sql = "update promotion set image_name='', image_url='' where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.get('/api/delete-promotion', (req, res) => {
-	const id = req.query.id
-
-	const sql = "delete from promotion where id=?;"
-	db.query(sql, id, (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/insert-product-promotion', (req, res) => {
-	const productId = req.body.productId
-	const promotionId = req.body.promotionId
-
-	const sql = "insert into product_promotion(product_id, promotion_id) values(?, ?);"
-	db.query(sql, [productId, promotionId], (err, result) => {
-		res.send(result)
-	})
-})
-
-app.post('/api/delete-product-promotion', (req, res) => {
-	const productId = req.body.productId
-	const promotionId = req.body.promotionId
-
-	const sql = "delete from product_promotion where product_id=? and promotion_id=?;"
-	db.query(sql, [productId, promotionId], (err, result) => {
-		res.send(result)
-	})
-})
-
 
 // ORDER
 
-app.get('/api/get-orders', (req, res) => {
+app.get('/api/get-order', (req, res) => {
 	const id = req.query.id
-	const where = id ? ' where o.id=?' : ''
+	const where = id ? ' where o.id=?' : ';'
 
 	const sql = `
 		SELECT 
@@ -664,16 +206,68 @@ app.get('/api/get-orders', (req, res) => {
 		LEFT JOIN \`user\` u ON u.id=o.user_id
 		LEFT JOIN billing_information bi ON bi.id=o.billing_id
 		LEFT JOIN shipping_information si ON si.id=o.shipping_id
-		`+ where +`
-		;`
+		`+ where 
 	db.query(sql, [id], (err, result) => {
 		res.send(result)
 	})
 })
 
+
+app.post('/api/insert-order-shipping-status', (req, res) => {
+	const orderId = req.body.orderId
+	const statusId = req.body.statusId
+
+	const date = '';
+
+	const sql = "insert into order_shipping_status(order_id, shipping_status_id, date) values(?, ?);"
+	db.query(sql, [orderId, statusId, date], (err, result) => {
+		res.send(result)
+	})
+})
+
+app.post('/api/delete-order-shipping-status', (req, res) => {
+	const orderId = req.body.orderId
+	const statusId = req.body.statusId
+
+	const sql = "delete from order_shipping_status where order_id=? and shipping_status_id=?;"
+	db.query(sql, [orderId, statusId], (err, result) => {
+		res.send(result)
+	})
+})
+
+// WISHLIST
+
+app.get('/api/insert-wishlist-product', (req, res) => {
+	const userId = req.query.userId
+	const productId = req.query.productId
+
+	const sql = "insert into wishlist(user_id, product_id) values(?,?);"
+	db.query(sql, [userId, productId], (err, result) => {
+		res.send(result)
+	})
+})
+
+app.get('/api/delete-wishlist-product', (req, res) => {
+	const userId = req.query.userId
+	const productId = req.query.productId
+
+	const sql = "delete from wishlist where user_id=? and product_id=?;"
+	db.query(sql, [userId, productId], (err, result) => {
+		res.send(result)
+	})
+})
+
+
 // MENU
 app.get('/api/get-menu', (req, res) => {
-	const sql = "SELECT c1.id as subcategory_id, c1.name as subcategory_name, c2.id, c2.name as category_name, c1.category_id FROM category c2 LEFT JOIN subcategory c1 ON c2.id = c1.category_id;"
+	const sql = `
+		SELECT c1.id as subcategory_id, 
+			c1.name as subcategory_name, 
+			c2.id, c2.name as category_name, 
+			c1.category_id 
+		FROM category c2 
+		LEFT JOIN subcategory c1 ON c2.id = c1.category_id
+		;`
 	db.query(sql, (err, result) => {
 		
 		let resultArr = {};
@@ -693,52 +287,6 @@ app.get('/api/get-menu', (req, res) => {
 		res.send(resultArr)
 	})
 })
-
-// FILE UPLOAD
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-  	const rootDir = '../client/public/uploads/'
-  	const id = req.body.id
-  	var typeDir = req.body.type + '/'
-
-  	if (!fs.existsSync(rootDir + typeDir)){
-	    fs.mkdirSync(rootDir + typeDir);
-	}
-
-	var dir = rootDir + typeDir + id + '/'
-
-	if (!fs.existsSync(dir)){
-	    fs.mkdirSync(dir);
-	}
-
-    cb(null, path.join(__dirname, dir))
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + '-' + Date.now() + file.originalname.match(/\..*$/)[0],
-    )
-  },
-})
-
-const multi_upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype == 'image/png' ||
-      file.mimetype == 'image/jpeg' ||
-      file.mimetype == 'image/jpg'
-    ) {
-      cb(null, true)
-    } else {
-      cb(null, false)
-      const err = new Error('Only .jpg .jpeg .png images are supported!')
-      err.name = 'ExtensionError'
-      return cb(err)
-    }
-  },
-}).array('uploadImages', 10)
 
 app.post('/api/upload', (req, res) => {
     multi_upload(req, res, function (err) {
@@ -859,8 +407,543 @@ app.post('/api/generate-attributes', async (req, res) => {
 	res.send(result)
 })
 
+// DOWNLOAD EXAMPLE IMPORT FILE
+
+app.get('/api/download-example-file', (req, res) => {
+	const type = req.query.itemType
+	const columns = JSON.parse(req.query.columns)
+
+	// Create directory if it doesn't exist
+    const dirPath = path.join(__dirname, 'uploads', 'import-example-file')
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+	const exampleFileName = 'example-' + type + '-file.xls'
+	const exampleFilePath = path.join(dirPath, exampleFileName)
+
+    // Check if the example file exists
+    if (!fs.existsSync(exampleFilePath)) {
+        createExampleFile(exampleFilePath, columns)
+    }
+
+    // Send the file to the user
+    res.download(exampleFilePath, exampleFileName, (err) => {
+        if (err) {
+            console.error('Error during file download:', err)
+            res.status(500).send('Error downloading file')
+        }
+    })
+})
+
+// Function to create the example Excel file
+const createExampleFile = (filePath, columns) => {
+    const headerRow = columns.map(col => col.label)
+    const exampleRow = columns.map(col => col.example)
+
+    // Prepare the data to be written to the file
+    const data = []
+    data.push(headerRow)  
+    data.push(exampleRow) 
+
+    // Create a new worksheet
+    const ws = xlsx.utils.aoa_to_sheet(data)
+
+    // Create a new workbook
+    const wb = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(wb, ws, 'Sheet1')
+
+    xlsx.writeFile(wb, filePath)
+}
+
+// IMPORT EXCEL
+
+// Set up multer for file upload
+const storageImport = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/')
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname))
+    },
+})
+
+const upload = multer({ storage: storageImport })
+
+app.post('/api/import-items', upload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded');
+    }
+
+    const filePath = path.join(__dirname, 'uploads', req.file.filename);
+
+    // Read and parse the Excel file
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0]; // Get the first sheet
+    const sheet = workbook.Sheets[sheetName];
+
+    // Convert sheet to JSON
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+	const table = req.body.table
+    const columns = JSON.parse(req.body.columns)
+
+
+    // Define columns (you would probably get this from the request or a config file)
+    const columns2 = [
+        { name: 'first_name', label: 'First name', example: 'John' },
+        { name: 'last_name', label: 'Last name', example: 'Smith' },
+        { name: 'email', label: 'E-mail', example: 'johnsmith@gmail.com' },
+        { name: 'phone', label: 'Phone', example: '+1(501)-333-3334' },
+        { name: 'birth', label: 'Date of birth', example: '1980-03-23' },
+        { name: 'gender', label: 'Gender', example: 'M' },
+    ];
+
+    // Create a string of column names (for SQL INSERT)
+    const columnNames = columns.map(col => col.name).join(', ');
+
+    // Loop through the data and insert each row
+    data.forEach(row => {
+        // Extract the values for each column dynamically
+        const values = columns.map(col => row[col.name]);
+console.log(values)
+return
+        // Generate the placeholders for the SQL query (e.g. ?, ?, ?, ...)
+        const placeholders = columns.map(() => '?').join(', ');
+
+        // Prepare the dynamic SQL INSERT query
+        const query = `INSERT INTO ${table} (${columnNames}) VALUES (${placeholders})`;
+
+        // Execute the query to insert the row into the database
+        db.query(query, values, (err, results) => {
+            if (err) {
+                console.error('Error inserting data into the database:', err);
+            } else {
+                console.log('Row inserted:', results);
+            }
+        });
+    });
+
+    // Send response
+    res.send('File uploaded and data imported successfully');
+});
+
+// GET ITEMS
+app.get('/api/get-items', (req, res) => {
+    const id = req.query.id;
+    const table = req.query.table;
+
+    if (!table) {
+        return res.status(400).json({ error: "Table name is required" });
+    }
+
+    const where = id ? ' WHERE id = ?' : '';
+    const sql = `SELECT * FROM \`${table}\`${where}`;
+
+    db.query(sql, id ? [id] : [], (err, items) => {
+        if (err) {
+            console.error("Error fetching items:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+
+        if (!items.length) {
+            return res.status(200).json([]); // No items found, return empty array
+        }
+
+        const itemIds = items.map(item => item.id);
+
+        const fileSql = `SELECT * FROM uploaded_files WHERE item_id IN (?) AND item_type = ?`;
+
+        db.query(fileSql, [itemIds, table], (fileErr, files) => {
+            if (fileErr) {
+                console.error("Error fetching files:", fileErr);
+                return res.status(500).json({ error: "Database error" });
+            }
+
+            // Attach files to their corresponding items
+            const itemsWithFiles = items.map(item => ({
+                ...item,
+                files: files.filter(file => file.item_id === item.id)
+            }));
+
+            res.status(200).json(itemsWithFiles);
+        });
+    });
+});
+
+// ADMIN - SAVE ITEM
+
+// File filter (optional)
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
+        cb(null, true);
+    } else {
+        cb(new Error('Only images and PDFs are allowed!'), false);
+    }
+};
+
+// Configure storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // Ensure that 'table' and 'id' exist, fallback to 'default' if missing
+        const table = req.body.itemType || 'default';
+        const itemId = req.body.id || 'default';
+
+        const uploadDir = path.join(__dirname, '../client/public/uploads/', table, itemId);
+
+        // Create the directory and all missing parent directories if needed
+        fs.mkdir(uploadDir, { recursive: true }, (err) => {
+            if (err) {
+                console.error("Error creating directory:", err);
+                return cb(err, uploadDir); // Pass error to callback
+            }
+            cb(null, uploadDir); // Directory is ready
+        });
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname); // Unique file names
+    }
+});
+
+// Initialize multer
+const uploadFiles = multer({
+    storage: storage,
+    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB max file size
+    fileFilter: fileFilter
+});
+
+const deleteFiles = (deletedFiles, itemType, itemId) => {
+	if (!deletedFiles || deletedFiles.length === 0) {
+            return; // No files to delete
+        }
+
+        // Prepare SQL query to delete files from the database
+        const deleteSql = "DELETE FROM uploaded_files WHERE id = ?";
+        const deleteParams = deletedFiles.map(file => [file.id]);
+
+        // Delete files from the database
+        db.query(deleteSql, deleteParams, (err, result) => {
+            if (err) {
+                console.error('Error deleting files from database:', err);
+                return 
+            }
+
+            const rootDir = path.join(__dirname, '../client/public/uploads/', itemType)
+
+            // Now delete files from the server file system
+            const uploadDir = path.join(rootDir, itemId);
+            deletedFiles.forEach(file => {
+                const filePath = path.join(uploadDir, file.filename);
+                
+                // Delete the file from the server if it exists
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error(`Error deleting file ${file.filename}:`, err);
+                    } else {
+                        console.log(`File ${file.filename} deleted from server.`);
+                    }
+                });
+            });
+
+            // Check if the uploadDir is empty after deletion and remove it if it is
+	        if (removeDirectoryIfEmpty(uploadDir)) {
+	            // If uploadDir was removed, check if rootDir is empty
+	            if (removeDirectoryIfEmpty(rootDir)) {
+	                console.log(`Root directory ${rootDir} deleted as it is empty.`);
+	            }
+	        }
+        });
+}
+
+function removeDirectoryIfEmpty(directoryPath) {
+	try {
+    	// Read the contents of the directory synchronously
+    	const files = fs.readdirSync(directoryPath);
+
+    	// If the directory is empty, delete it
+    	if (files.length === 0) {
+        	fs.rmSync(directoryPath, { recursive: true, force: true });
+        	console.log(`Directory ${directoryPath} deleted as it is empty.`);
+        	return true;
+ 		}
+	} catch (err) {
+    	console.error(`Error checking or deleting directory ${directoryPath}:`, err);
+	}
+	return false;
+}
+
+// Handle File Uploads + Item Save
+app.post('/api/save-item', uploadFiles.array('files', 10), (req, res) => {
+    const id = req.body.id;
+    const table = req.body.table;
+    const columns = JSON.parse(req.body.columns);
+    const deletedFiles = JSON.parse(req.body.deletedFiles)
+
+console.log('deleted files:', deletedFiles)
+    console.log("Received body:", req.body);
+    console.log("Received files:", req.files); // Debugging
+
+    // Filter out file-type fields
+    const nonFileColumns = columns.filter(field => field.type !== 'file');
+
+    // Prepare SQL column names & placeholders dynamically
+    const columnNames = nonFileColumns.map(field => `\`${field.name}\``).join(', ');
+    const placeholders = nonFileColumns.map(() => '?').join(', ');
+
+    // Process values dynamically
+    const values = nonFileColumns.map(field => req.body[field.name] || null);
+
+    let sql = '';
+    let params = [];
+
+    if (id) {
+        // UPDATE item
+        const updateSet = nonFileColumns.map(field => `\`${field.name}\` = ?`).join(', ');
+        sql = `UPDATE \`${table}\` SET ${updateSet} WHERE id = ?;`;
+        params = [...values, id];
+    } else {
+        // INSERT item
+        sql = `INSERT INTO \`${table}\` (${columnNames}) VALUES (${placeholders});`;
+        params = values;
+    }
+
+    console.log('SQL Query:', sql);
+    console.log('Params:', params);
+
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            console.error('DB Error:', err);
+            return res.status(500).send({ error: "Database error", details: err });
+        }
+
+        const itemId = id || result.insertId;
+
+        //delete files from server and db
+        if(deletedFiles && deletedFiles.length > 0) {
+        	deleteFiles(deletedFiles, table, id)
+        }
+
+        // Ensure we have files before attempting to insert them
+        if (req.files && req.files.length > 0) {
+            const fileValues = req.files.map(file => [
+                itemId,
+                table,
+                file.filename,
+                file.path,
+                file.mimetype
+            ]);
+
+            const fileSql = `INSERT INTO uploaded_files (item_id, item_type, file_name, file_path, file_type) VALUES ?`;
+
+            db.query(fileSql, [fileValues], (fileErr, fileResult) => {
+                if (fileErr) {
+                    console.error('File DB Error:', fileErr);
+                    return res.status(500).send({ error: "File database error", details: fileErr });
+                }
+                res.status(200).send({ message: 'Item saved successfully', itemId });
+            });
+        } else {
+            res.status(200).send({ message: 'Item saved successfully', itemId });
+        }
+    });
+});
+
+// SHOP - GET ITEMS
+app.get('/api/shop/get-items', (req, res) => {
+    const {table, joinTables, ...params } = req.query;
+
+	if (!table) {
+	    return res.status(400).json({ error: "Table name is required" });
+	}
+
+	const queryParams = [];
+	let whereClause = '';
+
+	queryParams.push(table); // for f.item_type = ?
+
+	for (const [key, value] of Object.entries(params)) {
+	    if (value) {
+	        whereClause += whereClause ? ' AND ' : 'WHERE ';
+	        whereClause += `\`${table}\`.${key} = ? `;
+	        queryParams.push(value);
+	    }
+	}
+
+	let joinQuery = '';
+	let selectFields = '';
+
+	if (joinTables && joinTables.length > 0) {
+	    joinTables.forEach((item) => {
+	        const joinedTable = item.table;
+	        const pivot = `${table}_${joinedTable}`;
+	        const itemIdField = `${joinedTable}_id`;
+
+	        joinQuery += `
+	            LEFT JOIN \`${pivot}\` ON \`${pivot}\`.${table}_id = \`${table}\`.id
+	            LEFT JOIN \`${joinedTable}\` ON \`${pivot}\`.${itemIdField} = \`${joinedTable}\`.id
+	        `;
+
+	        let jsonFields = '';
+
+	        if (item.fields) {
+	            item.fields.forEach((field) => {
+	                jsonFields += `'${field}', \`${joinedTable}\`.${field}, `;
+	            });
+	        }
+
+	        // Remove trailing comma and space
+	        jsonFields = jsonFields.trim().replace(/,\s*$/, '');
+
+	        if (jsonFields) {
+	            selectFields += `,
+	                JSON_ARRAYAGG(
+	                    JSON_OBJECT(${jsonFields})
+	                ) AS \`${joinedTable}\`
+	            `;
+	        }
+	    });
+	}
+
+	const sql = `
+	    SELECT 
+	        \`${table}\`.*,
+	        JSON_ARRAYAGG(
+	            IF(f.id IS NOT NULL,
+	                JSON_OBJECT(
+	                    'id', f.id,
+	                    'file_name', f.file_name,
+	                    'item_id', f.item_id,
+	                    'item_type', f.item_type
+	                ),
+	                NULL
+	            )
+	        ) AS files
+	        ${selectFields}
+	    FROM \`${table}\`
+	    ${joinQuery}
+	    LEFT JOIN uploaded_files AS f
+	        ON f.item_id = \`${table}\`.id AND f.item_type = ?
+	    ${whereClause}
+	    GROUP BY \`${table}\`.id
+	`;
+
+    console.log(sql)
+  //  return
+
+    db.query(sql, queryParams, (err, results) => {
+        if (err) {
+            console.error("Error executing query:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+
+        // Parse aggregated files JSON
+        const parsed = results.map(row => {
+            try {
+                row.files = JSON.parse(row.files).filter(f => f && f.id !== null);
+            } catch {
+                row.files = [];
+            }
+
+            // Parse dynamic join table fields (e.g., vouchers, promotions, etc.)
+	        if (joinTables && joinTables.length > 0) {
+	            joinTables.forEach(item => {
+	                const field = item.table;
+	                try {
+	                    row[field] = JSON.parse(row[field]).filter(e => e && e.id !== null);
+	                } catch {
+	                    row[field] = [];
+	                }
+	            });
+	        }
+        
+            return row;
+        });
+
+        res.status(200).json(parsed);
+    });
+});
+
+
+
+// DELETE ITEM
+app.post('/api/delete-item', (req, res) => {
+	const table = req.body.table
+	const id = req.body.id
+
+	const sql = `DELETE FROM \`${table}\` WHERE id=?;`
+
+	db.query(sql, [id], (err, result) => {
+		res.status(200).send(result)
+	})
+})
 
  //////////////////
+
+
+ // REGISTER
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret' // Put in .env for real use
+
+app.post('/register', async (req, res) => {
+    const { name, email, password } = req.body
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    try {
+        const existingUser = await User.findOne({ where: { email } })
+        if (existingUser) {
+            return res.status(409).json({ message: 'Email already registered' })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const newUser = await User.create({
+            name,
+            email,
+            password: hashedPassword
+        })
+
+        res.status(201).json({ message: 'User registered successfully', user: { id: newUser.id, name: newUser.name, email: newUser.email } })
+    } catch (error) {
+        console.error('Register Error:', error)
+        res.status(500).json({ message: 'Something went wrong during registration' })
+    }
+})
+
+
+// LOGIN
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body
+
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' })
+    }
+
+    try {
+        const user = await User.findOne({ where: { email } })
+
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password' })
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid email or password' })
+        }
+
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' })
+
+        res.json({ message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email } })
+    } catch (error) {
+        console.error('Login Error:', error)
+        res.status(500).json({ message: 'Something went wrong during login' })
+    }
+})
+
+
+/////////////////////////
 
 app.listen(3001, () => {
 	console.log('run')

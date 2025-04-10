@@ -1,4 +1,8 @@
 
+export const randomKey = () => {
+  return window.crypto?.randomUUID?.() || `key-${Math.random().toString(36).substr(2, 9)}`
+}
+
 export const computePrice = (price, promotions) => {
 	let percentAmount = 0
 	let valueAmount = 0
