@@ -9,7 +9,7 @@ import Fade from 'react-bootstrap/Fade'
 import Button from 'react-bootstrap/Button'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Toast } from 'primereact/toast'
-import { config, siteConfig } from '../config'
+import { config, siteConfig } from '../../config'
 import './select-items.css'
 
 export const SelectItems = ({items, setItems, type}) => {

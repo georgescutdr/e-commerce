@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import './view-items.css'
 import Axios from 'axios'
-import { ItemGrid } from './components/item-grid'
+import { ItemGrid } from '../../components/item-grid'
 import { useParams, useLocation } from 'react-router-dom'
-import { shopConfig } from '../admin/config' 
-import { capitalize } from '../utils'
+import { shopConfig } from '../../../config' 
+import { capitalize } from '../../../utils'
 
-export const ViewItems = ({props}) => {
+const ViewItems = ({props}) => {
     const [items, setItems] = useState([])
     const params = useParams()
     const location = useLocation()
@@ -47,3 +47,5 @@ export const ViewItems = ({props}) => {
         </div>
     )
 }
+
+export default ViewItems;

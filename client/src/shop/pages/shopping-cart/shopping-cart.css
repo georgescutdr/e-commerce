@@ -1,10 +1,9 @@
 .shopping-cart-container {
   padding: 2rem;
-  background: linear-gradient(135deg, #243c54, #0066cc);
-  color: white;
+  background: linear-gradient(135deg, #3976b200, #ffffff);
+  color: black;
   border-radius: 10px;
   margin: 30px auto;
-  max-width: 900px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -56,3 +55,29 @@
 .shopping-cart-table button:hover {
   background-color: darkred;
 }
+
+.checkout-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.checkout-button-container button,
+.checkout-button-container .p-button {
+    width: 20%;
+    min-width: 120px;
+}
+
+/* Responsive for small devices */
+@media (max-width: 768px) {
+    .checkout-button-container {
+        justify-content: center; /* Center on small screens (optional) */
+    }
+
+    .checkout-button-container button,
+    .checkout-button-container .p-button {
+        width: 100%;
+    }
+}
+
+

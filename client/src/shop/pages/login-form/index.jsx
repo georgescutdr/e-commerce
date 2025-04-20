@@ -1,17 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import './login-form.css';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
+import Axios from 'axios';
+import { AuthContext } from '../../context/auth-context'; // update path as needed
+import { useNavigate } from 'react-router-dom';
+import { shopConfig } from '../../../config'
 
-export const LoginForm = () => {
+const LoginForm = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [error, setError] = useState('');
 
-	const handleLogin = (e) => {
+	const { login } = useContext(AuthContext);
+	const { loadWishlist } = useWishlist();
+	const navigate = useNavigate();
+
+	const handleLogin = async (e) => {
 		e.preventDefault();
-		console.log('Login with:', { email, password });
-		// Perform login logic here
+		setError(''); // reset error
+		try {
+			const res = await Axios.post(shopConfig.api.loginApiUrl, { email, password });
+			const { token, user } = res.data;
+
+			login(user, token); // saves to context + localStorage
+
+			//loadWishlist(user); //load wishlist to localStorage
+
+			navigate('/');
+		} catch (err) {
+			console.error('Login failed:', err.response?.data || err.message);
+			setError(err.response?.data?.message || 'Login failed. Please try again.');
+		}
 	};
 
 	return (
@@ -43,9 +64,12 @@ export const LoginForm = () => {
 							required
 						/>
 					</div>
+					{error && <div className="login-error">{error}</div>}
 					<Button label="Login" icon="pi pi-sign-in" className="login-button" />
 				</form>
 			</div>
 		</div>
 	);
 };
+
+export default LoginForm;

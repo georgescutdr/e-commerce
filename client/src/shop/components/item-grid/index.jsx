@@ -3,9 +3,9 @@ import './item-grid.css';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { PrimeIcons } from 'primereact/api';
-import { AddToCartButton } from './add-to-cart-button'
-import { StockStatus } from './stock-status'
-import { Price } from './price'
+import { AddToCartButton } from '../add-to-cart-button'
+import { StockStatus } from '../stock-status'
+import { Price } from '../price'
 
 
 export const ItemGrid = ({items, props}) => {

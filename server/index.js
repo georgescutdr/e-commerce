@@ -9,7 +9,7 @@ const __dirname = path2.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url)
 const express = require('express')
 const multer = require('multer')
-const mysql = require('mysql')
+const mysql = require('mysql2/promise')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path')
@@ -20,6 +20,8 @@ const openai = require('openai')
 const xlsx = require('xlsx')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
 
 // Initialize environment variables
 dotenv.config()
@@ -237,24 +239,64 @@ app.post('/api/delete-order-shipping-status', (req, res) => {
 
 // WISHLIST
 
-app.get('/api/insert-wishlist-product', (req, res) => {
-	const userId = req.query.userId
-	const productId = req.query.productId
+app.get('/api/shop/wishlist/', async (req, res) => {
+    const userId = req.query.userId;
 
-	const sql = "insert into wishlist(user_id, product_id) values(?,?);"
-	db.query(sql, [userId, productId], (err, result) => {
-		res.send(result)
-	})
-})
+    if (!userId) {
+        return res.status(400).json({ message: 'Missing userId' });
+    }
+console.log(userId)
+    try {
+        const [rows] = await db.query(
+            `
+            SELECT p.* 
+            FROM wishlist w
+            JOIN product p ON p.id = w.product_id
+            WHERE w.user_id = ?
+            `,
+            [userId]
+        );
 
-app.get('/api/delete-wishlist-product', (req, res) => {
-	const userId = req.query.userId
-	const productId = req.query.productId
+        res.json({ wishlist: rows });
+    } catch (error) {
+        console.error('Error fetching wishlist:', error);
+        res.status(500).json({ message: 'Server error fetching wishlist' });
+    }
+});
 
-	const sql = "delete from wishlist where user_id=? and product_id=?;"
-	db.query(sql, [userId, productId], (err, result) => {
-		res.send(result)
-	})
+app.post('/api/shop/wishlist/toggle', async (req, res) => {
+	const { userId, productId } = req.body;
+	console.log(req.body)
+
+    if (!userId || !productId) {
+        return res.status(400).json({ message: 'Missing userId or productId' });
+    }
+
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM wishlist WHERE user_id = ? AND product_id = ?',
+            [userId, productId]
+        );
+
+        if (rows.length > 0) {
+            // Item exists — remove from wishlist
+            await db.query(
+                'DELETE FROM wishlist WHERE user_id = ? AND product_id = ?',
+                [userId, productId]
+            );
+            return res.json({ message: 'Product removed from wishlist' });
+        } else {
+            // Item not in wishlist — add it
+            await db.query(
+                'INSERT INTO wishlist (user_id, product_id) VALUES (?, ?)',
+                [userId, productId]
+            );
+            return res.json({ message: 'Product added to wishlist' });
+        }
+    } catch (error) {
+        console.error('Wishlist toggle error:', error);
+        res.status(500).json({ message: 'Server error toggling wishlist' });
+    }
 })
 
 
@@ -283,17 +325,15 @@ app.get('/api/get-menu', (req, res) => {
 		    	'id': result[i].id
 		    })
 		}
-		console.log(resultArr)
+	
 		res.send(resultArr)
 	})
 })
 
 app.post('/api/upload', (req, res) => {
     multi_upload(req, res, function (err) {
-      	console.log(req.files)
 	    //multer error
 		if (err instanceof multer.MulterError) {
-	      console.log(err)
 	      res
 	        .status(500)
 	        .send({
@@ -528,7 +568,7 @@ return
     res.send('File uploaded and data imported successfully');
 });
 
-// GET ITEMS
+// ADMIN - GET ITEMS
 app.get('/api/get-items', (req, res) => {
     const id = req.query.id;
     const table = req.query.table;
@@ -749,7 +789,7 @@ console.log('deleted files:', deletedFiles)
 });
 
 // SHOP - GET ITEMS
-app.get('/api/shop/get-items', (req, res) => {
+app.get('/api/shop/get-items', async (req, res) => {
     const {table, joinTables, ...params } = req.query;
 
 	if (!table) {
@@ -827,40 +867,40 @@ app.get('/api/shop/get-items', (req, res) => {
 	    GROUP BY \`${table}\`.id
 	`;
 
-    console.log(sql)
   //  return
 
-    db.query(sql, queryParams, (err, results) => {
-        if (err) {
-            console.error("Error executing query:", err);
-            return res.status(500).json({ error: "Database error" });
-        }
+    try {
+        const [results] = await db.query(sql, queryParams);
 
-        // Parse aggregated files JSON
         const parsed = results.map(row => {
+            // Parse files
             try {
                 row.files = JSON.parse(row.files).filter(f => f && f.id !== null);
             } catch {
                 row.files = [];
             }
 
-            // Parse dynamic join table fields (e.g., vouchers, promotions, etc.)
-	        if (joinTables && joinTables.length > 0) {
-	            joinTables.forEach(item => {
-	                const field = item.table;
-	                try {
-	                    row[field] = JSON.parse(row[field]).filter(e => e && e.id !== null);
-	                } catch {
-	                    row[field] = [];
-	                }
-	            });
-	        }
-        
+            // Parse join table fields
+            if (joinTables && joinTables.length > 0) {
+                joinTables.forEach(item => {
+                    const field = item.table;
+                    try {
+                        row[field] = JSON.parse(row[field]).filter(e => e && e.id !== null);
+                    } catch {
+                        row[field] = [];
+                    }
+                });
+            }
+
             return row;
         });
 
         res.status(200).json(parsed);
-    });
+
+    } catch (err) {
+        console.error("Error executing query:", err);
+        res.status(500).json({ error: "Database error" });
+    }
 });
 
 
@@ -881,67 +921,345 @@ app.post('/api/delete-item', (req, res) => {
 
 
  // REGISTER
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret' // Put in .env for real use
+const JWT_SECRET = process.env.JWT_SECRET || 'jwt_secret' // Put in .env for real use
 
-app.post('/register', async (req, res) => {
-    const { name, email, password } = req.body
+app.post('/api/register', async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
 
-    if (!name || !email || !password) {
-        return res.status(400).json({ message: 'All fields are required' })
+    if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({ message: 'All fields are required' });
     }
 
     try {
-        const existingUser = await User.findOne({ where: { email } })
-        if (existingUser) {
-            return res.status(409).json({ message: 'Email already registered' })
+        // Check if user already exists
+        const [existingUser] = await db.query('SELECT id FROM user WHERE email = ?', [email]);
+
+        if (existingUser.length > 0) {
+            return res.status(409).json({ message: 'Email already registered' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await User.create({
-            name,
-            email,
-            password: hashedPassword
-        })
+        // Insert new user
+        const [result] = await db.query(
+            'INSERT INTO user (first_name, last_name, email, password, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
+            [firstName, lastName, email, hashedPassword]
+        );
 
-        res.status(201).json({ message: 'User registered successfully', user: { id: newUser.id, name: newUser.name, email: newUser.email } })
+        const newUserId = result.insertId;
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: {
+                id: newUserId,
+                firstName,
+                lastName,
+                email
+            }
+        });
     } catch (error) {
-        console.error('Register Error:', error)
-        res.status(500).json({ message: 'Something went wrong during registration' })
+        console.error('Register Error:', error);
+        res.status(500).json({ message: 'Something went wrong during registration' });
     }
-})
+});
 
 
 // LOGIN
 
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' })
+        return res.status(400).json({ message: 'Email and password are required' });
     }
 
     try {
-        const user = await User.findOne({ where: { email } })
+        // Find user by email using raw SQL
+        const [rows] = await db.query('SELECT * FROM user WHERE email = ?', [email]);
 
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' })
+        if (rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password)
+        const user = rows[0];
+
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid email or password' })
+            return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' })
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
 
-        res.json({ message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email } })
+        res.json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar || null, // optional if avatar is stored
+            }
+        });
     } catch (error) {
-        console.error('Login Error:', error)
-        res.status(500).json({ message: 'Something went wrong during login' })
+        console.error('Login Error:', error);
+        res.status(500).json({ message: 'Something went wrong during login' });
     }
-})
+});
 
+// Save Order
+app.post('/api/shop/save-order', async (req, res) => {
+    const {
+        user_id,
+        total,
+        payment_method,
+        shipping_method,
+        discount = 0,
+        shipping_cost = 0,
+        tax_amount = 0,
+        shippingData,
+        cartItemsArr
+    } = req.body;
+
+    try {
+        // Check if shipping info already exists
+        const [existing] = await db.query(
+            'SELECT id FROM shipping_information WHERE address = ? AND user_id = ?',
+            [shippingData.address, user_id]
+        );
+
+        let shipping_id;
+
+        if (existing.length > 0) {
+            shipping_id = existing[0].id;
+        } else {
+            const [result] = await db.query(
+                `INSERT INTO shipping_information 
+                    (user_id, name, address, city, state, postal_code, country, phone, email, instructions) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    user_id,
+                    shippingData.name,
+                    shippingData.address,
+                    shippingData.city,
+                    shippingData.state,
+                    shippingData.postal_code,
+                    shippingData.country,
+                    shippingData.phone,
+                    shippingData.email,
+                    shippingData.instructions
+                ]
+            );
+            shipping_id = result.insertId;
+        }
+
+        const orderCode = `ORD-${uuidv4().slice(0, 8).toUpperCase()}`;
+
+        const [orderInsert] = await db.query(
+            `INSERT INTO \`order\`
+                (code, user_id, total, shipping_id, payment_method, shipping_method, discount, shipping_cost, tax_amount, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [
+                orderCode,
+                user_id,
+                total,
+                shipping_id,
+                payment_method,
+                shipping_method,
+                discount,
+                shipping_cost,
+                tax_amount
+            ]
+        );
+
+        const order_id = orderInsert.insertId;
+
+        // Insert into order_shipping_information to link shipping info
+        await db.query(
+            `INSERT INTO order_shipping_information (order_id, shipping_information_id) VALUES (?, ?)`,
+            [order_id, shipping_id]
+        );
+
+        // Insert each product into order_product with quantity and price
+        const orderProductPromises = cartItemsArr.map(async (item) => {
+            const { product_id, quantity, price } = item;
+
+            await db.query(
+                `INSERT INTO order_product (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)`,
+                [order_id, product_id, quantity, price]
+            );
+        });
+
+        await Promise.all(orderProductPromises);
+
+        res.status(201).json({
+            message: 'Order placed successfully',
+            order_id: order_id,
+            order_code: orderCode
+        });
+    } catch (err) {
+        console.error('Error saving order:', err);
+        res.status(500).json({ error: 'Failed to save order' });
+    }
+});
+
+// CONTACT FORM 
+
+// Load from .env
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_TO = process.env.EMAIL_TO || EMAIL_USER; // recipient
+
+app.post('/contact', async (req, res) => {
+	const { firstName, lastName, email, message, recaptchaToken } = req.body;
+
+	if (!recaptchaToken) {
+		return res.status(400).json({ error: 'reCAPTCHA token missing' });
+	}
+
+	try {
+		// Verify reCAPTCHA token
+		const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
+		const response = await axios.post(
+			verifyUrl,
+			new URLSearchParams({
+				secret: RECAPTCHA_SECRET_KEY,
+				response: recaptchaToken,
+			})
+		);
+
+		const { success, score, action } = response.data;
+		if (!success) {
+			return res.status(403).json({ error: 'reCAPTCHA verification failed' });
+		}
+
+		// Setup Nodemailer transport
+		const transporter = nodemailer.createTransport({
+			service: 'gmail', 
+			auth: {
+				user: EMAIL_USER,
+				pass: EMAIL_PASS,
+			},
+		});
+
+		// Compose email
+		const mailOptions = {
+			from: `"Website Contact" <${EMAIL_USER}>`,
+			to: EMAIL_TO,
+			subject: 'New Contact Message',
+			text: `
+				Name: ${name}
+				Email: ${email}
+				Message: ${message}
+			`,
+		};
+
+		await transporter.sendMail(mailOptions);
+
+		return res.status(200).json({ message: 'Message sent successfully.' });
+	} catch (err) {
+		console.error('Error in /contact:', err);
+		return res.status(500).json({ error: 'Failed to send message.' });
+	}
+});
+
+// SEARCH
+
+// SEARCH AUTOCOMPLETE
+app.get('/api/search-autocomplete', async (req, res) => {
+  const { query } = req.query;
+
+  if (!query || query.trim() === '') {
+    return res.status(400).json({ error: 'Search query is required' });
+  }
+
+  const searchTerm = query.trim().toLowerCase();
+
+  try {
+    const [categoryRows] = await db.query(`SELECT name FROM category`);
+    const [productRows] = await db.query(`SELECT name FROM product`);
+
+    const categoryWords = categoryRows.flatMap(row =>
+      row.name.split(/\s+/)
+    );
+    const productWords = productRows.flatMap(row =>
+      row.name.split(/\s+/)
+    );
+
+    const allWords = [...categoryWords, ...productWords];
+
+    const uniqueMatches = [...new Set(
+      allWords.filter(word =>
+        word.toLowerCase().includes(searchTerm)
+      )
+    )];
+
+    res.json({ suggestions: uniqueMatches });
+
+  } catch (err) {
+    console.error('Autocomplete search error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// SEARCH
+app.get('/api/search', async (req, res) => {
+  const { query } = req.query;
+
+  if (!query || query.trim() === '') {
+    return res.status(400).json({ error: 'Search query is required' });
+  }
+
+  const words = query
+    .toLowerCase()
+    .split(/\s+/) // split on whitespace
+    .filter(Boolean);
+
+  if (words.length === 0) {
+    return res.status(400).json({ error: 'No valid search terms provided.' });
+  }
+
+  try {
+    // Category search (match any word)
+    const categoryConditions = words.map(() => `LOWER(name) LIKE ?`).join(' OR ');
+    const categoryValues = words.map(word => `%${word}%`);
+
+    const [categories] = await db.query(
+      `SELECT id, name FROM categories WHERE ${categoryConditions}`,
+      categoryValues
+    );
+
+    const categoryIds = categories.map(cat => cat.id);
+
+    // Product search (match any word in name or description)
+    const productConditions = words
+      .map(() => `(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)`)
+      .join(' OR ');
+
+    const productValues = words.flatMap(word => [`%${word}%`, `%${word}%`]);
+
+    let queryStr = `
+      SELECT p.id, p.name, p.description, p.category_id
+      FROM products p
+      WHERE ${productConditions}
+    `;
+
+    // Include products from matched categories
+    if (categoryIds.length > 0) {
+      const placeholders = categoryIds.map(() => '?').join(',');
+      queryStr += ` OR p.category_id IN (${placeholders})`;
+      productValues.push(...categoryIds);
+    }
+
+    const [products] = await db.query(queryStr, productValues);
+
+    res.json({ products });
+
+  } catch (err) {
+    console.error('Search error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 /////////////////////////
 

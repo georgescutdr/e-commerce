@@ -1,0 +1,75 @@
+.category-menu-wrapper {
+  padding: 1rem;
+  background: #fff;
+  z-index: 999;
+  position: relative;
+}
+
+.menu-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.products-wrapper {
+  position: relative;
+}
+
+.products-tiered-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.products-wrapper:hover .products-tiered-menu {
+  display: block;
+}
+
+.p-tieredmenu .p-submenu-list {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Force submenus to open on hover */
+.p-tieredmenu .p-menuitem {
+  position: relative;
+}
+
+.p-tieredmenu .p-menuitem:hover > .p-submenu-list {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+/* Hide submenus by default */
+.p-tieredmenu .p-submenu-list {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  top: 0;
+  left: 100%;
+  position: absolute;
+  background: white;
+  min-width: 200px;
+  z-index: 999;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+

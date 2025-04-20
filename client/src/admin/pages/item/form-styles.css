@@ -1,0 +1,132 @@
+/* Full-width form container */
+form {
+  width: 100%; /* Set form to be 100% width */
+  margin: 0 auto; /* Center the form */
+  padding: 30px; /* Padding for internal space */
+  background: linear-gradient(135deg, #b4c5db78, #ffffff80);
+  border-radius: 0px; /* Rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  color: white; /* White text color */
+}
+
+/* Label Headers */
+label {
+  font-size: 1.25rem; /* Slightly larger font size for the headers */
+  color: white; /* White color for text */
+  font-weight: 600; /* Bold text for emphasis */
+  margin-bottom: 15px;
+  display: block;
+  text-transform: capitalize; /* Capitalize first letters */
+  letter-spacing: 0.5px; /* Subtle letter spacing for elegance */
+  background: linear-gradient(90deg, #3784b6, #207bb8); /* Lighter blue gradient */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Make text transparent to show the gradient */
+  font-family: 'Poppins', sans-serif; /* Modern, clean font for the labels */
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1); /* Soft shadow for a floating effect */
+}
+
+/* Input Fields and Text Areas Styling */
+input, select, textarea, .p-inputswitch, .p-inputtext, .p-calendar, .p-dropdown {
+  width: 100%; /* Make all form fields full width */
+  padding: 12px; /* Padding for better spacing */
+  border: 1px solid #8eb7e0; /* Soft blue border */
+  border-radius: 8px; /* Rounded corners */
+  background-color: #e7f3ff; /* Light blue background */
+  font-size: 1rem; /* Slightly bigger font size */
+  box-sizing: border-box; /* Prevent overflow */
+  transition: all 0.3s ease; /* Smooth transition for focus effect */
+}
+
+input:focus, select:focus, textarea:focus, .p-inputtext:focus, .p-dropdown:focus, .p-calendar:focus {
+  border-color: #66c2ff; /* Lighter blue focus border */
+  outline: none; /* Remove default outline */
+  box-shadow: 0 0 5px rgba(102, 194, 255, 0.5); /* Focus glow effect */
+}
+
+/* Submit Button */
+button[type="submit"], button[type="button"] {
+  width: 100%; /* Make button full-width */
+  padding: 15px; /* Larger padding for more prominent button */
+  background-color: #288dd0; /* Lighter blue button */
+  color: white; /* White text */
+  font-size: 1.1rem; /* Larger text size */
+  font-weight: bold; /* Bold text */
+  border: none; /* Remove default border */
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.3s ease; /* Smooth transition */
+  text-transform: uppercase; /* Uppercase for button text */
+}
+
+/* Hover effect on submit button */
+button[type="submit"]:hover {
+  background-color: #19497aba; /* Darker blue on hover */
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3); /* Subtle shadow */
+}
+
+/* Back Button Styling */
+button[type="button"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #f0faff; /* Light blue background */
+  border: 1px solid #66c2ff; /* Blue border */
+  color: #66c2ff; /* Blue text */
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect for back button */
+button[type="button"]:hover {
+  background-color: #19497aba;
+  color: white; /* White text on hover */
+}
+
+button + button {
+  margin-top: 10px; /* Adds space to the top of the second button */
+}
+
+/* Input Switch Styling */
+.p-inputswitch .p-label {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(90deg, #66c2ff, #a0d9ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+/* Input Textarea */
+.p-inputtextarea {
+  width: 100%;
+  background: #e7f3ff; /* Light blue background */
+  border: 1px solid #8eb7e0; /* Soft blue border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Textarea focus effect */
+.p-inputtextarea:focus {
+  border-color: #8eb7e0; /* Lighter blue focus border */
+  box-shadow: 0 0 5px rgba(102, 194, 255, 0.5); /* Focus glow effect */
+}
+
+/* Form field spacing */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-actions {
+  margin-top: 60px;
+}
+
+.view-container {
+    margin-top: 0px!important; 
+}

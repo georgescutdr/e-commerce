@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Button } from 'primereact/button';
 import Axios from 'axios';
-import { shopConfig } from '../../admin/config' 
-import { Review } from './review'
-import { LoadMoreButton } from './load-more-button'
+import { shopConfig } from '../../../config' 
+import { Review } from '../review'
+import { LoadMoreButton } from '../load-more-button'
 
 export const Reviews = ({ itemId }) => {
   const [reviews, setReviews] = useState([]);

@@ -1,0 +1,74 @@
+/* orders.css */
+
+.orders-container {
+  padding: 1rem;
+}
+
+.orders-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.orders-empty {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.orders-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.orders-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  transition: box-shadow 0.2s ease;
+  padding: 20px;
+}
+
+.orders-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.orders-details {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.orders-details p {
+  margin: 0.25rem 0;
+}
+
+.orders-details strong {
+  color: #111827;
+}
+
+.orders-status {
+  font-weight: 600;
+  color: #2563eb; /* blue-600 */
+}
+
+.orders-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10rem;
+}
+
+.order-code-link {
+  color: #1141a9;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.order-code-link:hover {
+  text-decoration: underline;
+}
+
+.order-subtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}

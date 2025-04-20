@@ -1,9 +1,17 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
+import Cookies from "js-cookie";
 
 export const ShopContext = createContext();
 
 export const ShopContextProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState({});
+    const [cartItems, setCartItems] = useState(() => {
+        const stored = Cookies.get('cartItems');
+        return stored ? JSON.parse(stored) : {};
+    });
+
+    useEffect(() => {
+        Cookies.set('cartItems', JSON.stringify(cartItems), { expires: 7 });
+    }, [cartItems]);
 
     const addToCart = (product) => {
         setCartItems(prev => {
@@ -38,7 +46,9 @@ export const ShopContextProvider = ({ children }) => {
 
     return (
         <ShopContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity }}>
-          {children}
+            {children}
         </ShopContext.Provider>
     );
 };
+
+export const useShop = () => useContext(ShopContext);

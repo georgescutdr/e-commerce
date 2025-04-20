@@ -8,7 +8,7 @@ import Axios from 'axios'
 import { Rating } from 'primereact/rating'
 import * as moment from 'moment'
 
-export const CreateReview = (product) => {
+const CreateReview = ({props}) => {
     const serverUrl = 'http://localhost:3001'
     const insertReviewUrl = serverUrl + '/api/insert-review'
 
@@ -57,3 +57,5 @@ export const CreateReview = (product) => {
         </Stack>
     )
 }
+
+export default CreateReview;

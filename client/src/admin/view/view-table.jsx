@@ -14,7 +14,7 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Tooltip } from 'primereact/tooltip'
 import { ContextMenu } from 'primereact/contextmenu'
-import { config, siteConfig } from '../config'
+import { config, siteConfig } from '../../config'
 import './view-table.css'
 
 export const ViewTable = ({items, props}) => {

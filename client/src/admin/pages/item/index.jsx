@@ -19,7 +19,7 @@ import { Toast } from 'primereact/toast'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { TabView, TabPanel } from 'primereact/tabview'
 import { ProgressSpinner } from 'primereact/progressspinner'
-import { config, siteConfig } from './config'
+import { config, siteConfig } from '../../../config'
 
 export const Item = ({route, props}) => {
     const [item, setItem] = useState(null)

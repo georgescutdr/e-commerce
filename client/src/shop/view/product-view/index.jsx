@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Galleria } from 'primereact/galleria';
 import { Rating } from 'primereact/rating';
 import { useParams } from 'react-router-dom';
-import { AddToCartButton } from '../components/add-to-cart-button';
-import { AddToFavouritesButton } from '../components/add-to-favourites-button';
-import { Price } from '../components/price';
-import { Reviews } from '../components/reviews';
-import { StockStatus } from '../components/stock-status'
-import { Attributes } from '../components/attributes'
-import { Options } from '../components/options'
+import { AddToCartButton } from '../../components/add-to-cart-button';
+import { AddToWishlistButton } from '../../components/add-to-wishlist-button';
+import { Price } from '../../components/price';
+import { Reviews } from '../../components/reviews';
+import { StockStatus } from '../../components/stock-status'
+import { Attributes } from '../../components/attributes'
+import { Options } from '../../components/options'
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -80,7 +80,7 @@ export const ProductView = ({item}) => {
       </div>
       <StockStatus quantity={ item.quantity } />
       <AddToCartButton item={ item } />
-      <AddToFavouritesButton item={ item } />
+      <AddToWishlistButton item={ item } userId={ 1 } />
     </div>
   </div>
   <div className="product-attributes">

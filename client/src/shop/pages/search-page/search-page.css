@@ -1,0 +1,34 @@
+.search-page {
+  width: 80%;
+  margin: 2rem auto;
+}
+
+.highlight {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.results-list {
+  list-style: none;
+  padding: 0;
+}
+
+.results-list li {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #ffe5e5;
+  color: #b00020;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}

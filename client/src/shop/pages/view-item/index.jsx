@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { useParams } from 'react-router-dom'
 import Axios from 'axios'
-import { shopConfig } from '../admin/config' 
+import { shopConfig } from '../../../config' 
 import './view-item.css'
-import { ProductView } from './view/product-view'
+import { ProductView } from '../../view/product-view'
 
-export const ViewItem = ({props}) => {
+const ViewItem = ({props}) => {
 	const [item, setItem] = useState(null)
 	const params = useParams()
 	const paramValues = Object.values(params)
@@ -58,3 +58,5 @@ export const ViewItem = ({props}) => {
 		</div>
 	)
 }
+
+export default ViewItem;

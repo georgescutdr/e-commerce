@@ -9,10 +9,13 @@ import Axios from 'axios'
 import { Sidebar } from './sidebar'
 import { Button } from 'primereact/button'
 import { randomKey } from '../../utils'
+import { useAuth } from '../../shop/context/auth-context';
 
-import { adminCategories, config } from '../../admin/config.js'
+import { adminCategories, config } from '../../config.js'
 
 export const ShopNavbar = () => {
+  const { user, logout } = useAuth();
+
   const serverUrl = 'http://localhost:3001'
   const getMenuUrl = serverUrl + '/api/get-menu'
   const getCategoriesUrl = serverUrl + '/api/get-categories'
@@ -49,8 +52,38 @@ export const ShopNavbar = () => {
             </NavDropdown>
             <Nav.Link href="#home">Brands</Nav.Link>
             <Nav.Link href="#link">Contact</Nav.Link>
+            {user ? (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={user.avatar || '/images/default-avatar.png'}
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <span className="font-medium">{user.first_name}</span>
+                  <button onClick={logout} className="text-sm text-blue-500 ml-3">
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Button
+                    label="Login"
+                    icon="pi pi-sign-in"
+                    className="ml-3 p-button-sm"
+                    onClick={() => navigate('/login')}
+                  />
+                  <Button
+                    label="Register"
+                    icon="pi pi-user-plus"
+                    className="ml-3 p-button-sm"
+                    onClick={() => navigate('/register')}
+                  />
+                </div>
+              )}
+
           </Nav>
         </Navbar.Collapse>
+        <Button type="button" label="Wishlist" onClick={() => navigate('/wishlist')} icon="pi pi-heart" outlined badge="2" badgeClassName="p-badge-danger" />
         <Button type="button" label="Cart" onClick={() => navigate('/shopping-cart')} icon="pi pi-shopping-cart" outlined badge="2" badgeClassName="p-badge-danger" />
       </Container>
     </Navbar>
@@ -59,6 +92,8 @@ export const ShopNavbar = () => {
 }
 
 export const AdminNavbar = () => {
+  const { user, logout } = useAuth();
+
   return (
     <Navbar expand="lg" className="admin-navbar">
       <Container>
@@ -92,6 +127,27 @@ export const AdminNavbar = () => {
             </NavDropdown>
             </>
           ))}
+          {user ? (
+            <div className="flex items-center gap-3">
+              <img
+                src={user.avatar || '/images/default-avatar.png'}
+                alt="avatar"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <span className="font-medium">{user.name}</span>
+              <button onClick={logout} className="text-sm text-blue-500 ml-3">
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Button
+              label="Login"
+              icon="pi pi-sign-in"
+              className="ml-3 p-button-sm"
+              onClick={() => navigate('/login')}
+            />
+          )}
+
           </Nav>
         </Navbar.Collapse>
       </Container>

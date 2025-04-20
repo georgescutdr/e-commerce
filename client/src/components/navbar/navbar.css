@@ -52,3 +52,8 @@
 .navbar-toggler:focus {
   box-shadow: 0 0 0 2px rgba(160, 217, 255, 0.4);
 }
+
+.navbar img {
+  width: 50px;
+  border: 2px solid #ccc;
+}

@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { useLocation } from 'react-router'
-import { siteConfig, config } from './config'
-import { capitalize } from '../utils'
+import { siteConfig, config } from '../../../config'
+import { capitalize } from '../../../utils'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import 'primeicons/primeicons.css'
 import './items.css'
-import { ViewList } from './view/view-list'
-import { ViewTable } from './view/view-table'
+import { ViewList } from '../../view/view-list'
+import { ViewTable } from '../../view/view-table'
 
 export const Items = ({ props }) => {
 

@@ -1,34 +1,39 @@
-import { useState } from 'react'
+import React, { useState, Suspense, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import { useParams } from "react-router"
-import { AdminNavbar, ShopNavbar } from './components/navbar/navbar'
+import Axios from 'axios'
 
-import { CreateReview } from './shop/create-review'
-import { Dashboard } from './admin/dashboard'
-import { ViewItems } from './shop/view-items'
-import { ViewItem } from './shop/view-item'
-import { ShoppingCart } from './shop/shopping-cart'
+import { ShopNavbar } from './shop/components/navbar/shop-navbar'
+import { AdminNavbar } from './admin/components/navbar/admin-navbar'
+
+import { Dashboard } from './admin/pages/dashboard'
+
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-import { LoginForm } from './shop/login-form'
-import { RegisterForm } from './shop/register-form'
 
 import './admin/admin.css'
 import './shop/shop.css'
 
 import { PrimeReactProvider, PrimeReactContext } from 'primereact/api'
-import "primereact/resources/themes/lara-light-cyan/theme.css"
-import { ShopContextProvider } from "./shop/context/shop-context"
+
+import { ShopContextProvider } from './shop/context/shop-context'
+import { AuthProvider } from './shop/context/auth-context';
+import { WishlistProvider } from './shop/context/wishlist-context';
+import { ProtectedRoute } from './components/protected-route';
 
 import { randomKey } from './utils'
 
-import { shopConfig, config } from './admin/config.js'
-import config2 from './shop/config.json' 
+import { shopConfig, config } from './config.js'
 
-import { Item } from './admin/item'
-import { Items } from './admin/items'
+import { Item } from './admin/pages/item'
+import { Items } from './admin/pages/items'
 import { Footer } from './components/footer'
+
+import { ProgressSpinner } from 'primereact/progressspinner';
+
+import 'primereact/resources/themes/lara-light-blue/theme.css'; // or any other theme
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 /*
 For admin dashboard
@@ -55,63 +60,111 @@ Order History: A log of all order activities, such as status changes, refunds, o
 */
 
 function App() {
-  const [isAdmin, setIsAdmin] = useState(false)
+    const [componentMap, setComponentMap] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
-  let params = useParams()
+    const loadComponentMap = async () => {
+        const map = {};
+        for (const item of shopConfig.items) {
+            if (!map[item.component]) {
+              const module = await import(`./shop/pages/${item.component}/index.jsx`);
+              map[item.component] = module.default;
+            }
+        }
+        return map;
+    };
 
-  return (
-      <>
-      <ShopContextProvider>
-      <PrimeReactProvider>
-      
+    const fetchDbPages = async () => {
+        try {
+            const pageRes = await Axios.get(shopConfig.getItemsUrl, { params: { table: 'page' } });
+
+            // Loop through pageRes and add the slug with 'view-item' component
+            const updatedMap = { ...componentMap }; // Clone the current component map
+            pageRes.data.forEach(page => {
+                updatedMap['view-item'] = `./shop/pages/view-item/index.jsx`;
+            });
+
+            // Update the state with the new map
+            setComponentMap(updatedMap);
+        } catch (error) {
+            console.error('Error fetching pages:', error);
+        }
+    };
+
+    useEffect(() => {
+        loadComponentMap().then(setComponentMap);
+    //    fetchDbPages();
+    }, []);
+
+    if (!componentMap) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem' }}>
+                <ProgressSpinner />
+            </div>
+        );
+    }
+
+  //const { user } = useAuth();
+  //{user?.isAdmin ? <AdminNavbar /> : <ShopNavbar />}
+
+    return (
+        <>
+        <AuthProvider>
+        <WishlistProvider>
+        <ShopContextProvider>
+        <PrimeReactProvider>
         <Router>
             {isAdmin && <AdminNavbar />}
-              {!isAdmin && <ShopNavbar />}
-              <Routes>
-                <Route key="1" path="/" element={ <ViewItems /> } />
+            {!isAdmin && <ShopNavbar />}
+            <Routes>
+            <>
+            {shopConfig.items.map((item, index) => {
+                const Component = componentMap[item.component];
 
-                <Route key="2" path="/product-reviews/:productId" element={ <ViewItems /> } />
-                <Route key="3" path="/review/create-review/:productId" element={ <CreateReview /> } />
+                if (!Component) {
+                    console.warn(`❌ Component not found for: ${item.component}`);
+                    return null;
+                }
 
-                <Route key="login" path="/login" element={ <LoginForm /> } />
-                <Route key="register" path="/register" element={ <RegisterForm /> } />
+                const element = item.protectedRoute
+                    ? <ProtectedRoute><Component props={item} /></ProtectedRoute>
+                    : <Component props={item} />;
 
-                {shopConfig.items?.map((item) => {
-                    return (
-                        <>
-                            <Route 
-                                key={ item.path } 
-                                path={ item.path } 
-                                element={ item.listType == 'single' ? <ViewItem props={ item } /> : <ViewItems props={ item } />}
-                            />
-                        </>   
-                    )
-                })}
+                return (
+                    <Route
+                        key={`shop-${index}`}
+                        path={item.path}
+                        element={element}
+                    />
+                );
+            })}
+            </>
+ 
+            {config.dashboard.active && (
+                <Route key='7' path={'/admin/dashboard'} element={ <Dashboard /> } /> 
+            )}
 
-                <Route key="6" path="/shopping-cart" element={ <ShoppingCart /> } />
-                {config.dashboard.active && (
-                    <Route key='7' path={'/admin/dashboard'} element={ <Dashboard /> } /> 
-                )}
-                {config.items?.map((item) => {
-                    // console.log('/admin/' + item.type)
-                    return (
-                        <>
-                            <Route key={ item.type + '1' } path={'/admin/insert-' + item.type} element={ <Item props={ item } /> } />
-                            <Route key={ item.type  + '2' } path={'/admin/edit-' + item.type + '/:itemId'} element={ <Item props={ item } /> } />
-                            <Route key={ item.type + '3' } path={'/admin/' + item.type} element={ <Items props={ item } /> } /> 
-                            {item.import && (
-                                <Route key={ item.type + '4' } path={ item.import.route } element={ <Item props={ item } /> } /> 
-                            )}
-                        </>   
-                    )
-                })}
-             </Routes>
-         </Router>
-       </PrimeReactProvider>
-       <Footer />
-       </ShopContextProvider>
-    </>
-  )
+            {config.items?.map((item) => {
+                return (
+                    <>
+                    <Route key={ item.type + '1' } path={'/admin/insert-' + item.type} element={ <Item props={ item } /> } />
+                    <Route key={ item.type  + '2' } path={'/admin/edit-' + item.type + '/:itemId'} element={ <Item props={ item } /> } />
+                    <Route key={ item.type + '3' } path={'/admin/' + item.type} element={ <Items props={ item } /> } /> 
+                    {item.import && (
+                        <Route key={ item.type + '4' } path={ item.import.route } element={ <Item props={ item } /> } /> 
+                    )}
+                    </>   
+                )
+            })}
+            </Routes>
+        </Router>
+        </PrimeReactProvider>
+        <Footer />
+        </ShopContextProvider>
+        </WishlistProvider>
+        </AuthProvider>
+        </>
+    )
 }
 
 export default App
