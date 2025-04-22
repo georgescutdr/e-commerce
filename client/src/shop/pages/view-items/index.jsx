@@ -2,34 +2,45 @@ import React, { useEffect, useState } from 'react'
 import './view-items.css'
 import Axios from 'axios'
 import { ItemGrid } from '../../components/item-grid'
+import { ItemGridSkeleton } from '../../components/item-grid-skeleton';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import { useParams, useLocation } from 'react-router-dom'
 import { shopConfig } from '../../../config' 
 import { capitalize } from '../../../utils'
 
 const ViewItems = ({props}) => {
     const [items, setItems] = useState([])
+    const [loading, setLoading] = useState(true);
     const params = useParams()
     const location = useLocation()
 
     const searchParams = new URLSearchParams(location.search)
 
     useEffect(() => {
-        props.table = searchParams.get('type')
-
         let queryParams = {
             table: props.table,
-          //  joinTables: props.joinTables
+        };
+
+        if (props.table === 'product') {
+            queryParams.category_id = params.id;
+            queryParams.joinTables = [
+                {table: 'promotion', fields: ['id', 'type', 'value', 'start_date', 'end_date'], pivot: true},
+                {table: 'brand', fields: ['id', 'name'], pivot: true}, 
+                {table: 'review', fields: ['rating'], pivot: true}, 
+            ];
         }
 
-        if(props.table == 'category' && params.id) {
-            queryParams.parent_id = params.id
-        }
-
-        Axios.get(shopConfig.getItemsUrl, { params: queryParams })
-            .then((res) => setItems(res.data))
-            .catch((err) => console.error('Error loading items:', err))
-            
-    }, [])
+        Axios.post(shopConfig.getItemsUrl, queryParams)
+            .then((res) => {
+                console.log(res.data)
+                setItems(res.data);
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error('Error loading items:', err);
+                setLoading(false);
+            });
+    }, []);
 
     console.log(searchParams.get('type'))
 
@@ -40,12 +51,19 @@ const ViewItems = ({props}) => {
     return (
         <div className="items-page">
             <div className="items-header">
-                <h1>{ title }</h1>
+                <h1>{title}</h1>
                 <p>Browse our categories, brands, and products</p>
             </div>
-            <ItemGrid items={ items } props={ props } />
+
+            {loading ? (
+                <ItemGridSkeleton count={8} />
+            ) : (
+                <ItemGrid items={items} props={props} />
+            )}
+
         </div>
-    )
+    );
+
 }
 
 export default ViewItems;

@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { createRequire } from 'module'
 import { fileURLToPath } from 'url';
 import path2 from 'path'
+import qs from 'qs'
 
 // __dirname equivalent in ES modules
 const __dirname = path2.dirname(fileURLToPath(import.meta.url));
@@ -789,121 +790,129 @@ console.log('deleted files:', deletedFiles)
 });
 
 // SHOP - GET ITEMS
-app.get('/api/shop/get-items', async (req, res) => {
-    const {table, joinTables, ...params } = req.query;
+app.post('/api/shop/get-items', async (req, res) => {
+    const { table, joinTables, ...params } = req.body;
 
-	if (!table) {
-	    return res.status(400).json({ error: "Table name is required" });
-	}
-
-	const queryParams = [];
-	let whereClause = '';
-
-	queryParams.push(table); // for f.item_type = ?
-
-	for (const [key, value] of Object.entries(params)) {
-	    if (value) {
-	        whereClause += whereClause ? ' AND ' : 'WHERE ';
-	        whereClause += `\`${table}\`.${key} = ? `;
-	        queryParams.push(value);
-	    }
-	}
-
-	let joinQuery = '';
-	let selectFields = '';
-
-	if (joinTables && joinTables.length > 0) {
-	    joinTables.forEach((item) => {
-	        const joinedTable = item.table;
-	        const pivot = `${table}_${joinedTable}`;
-	        const itemIdField = `${joinedTable}_id`;
-
-	        joinQuery += `
-	            LEFT JOIN \`${pivot}\` ON \`${pivot}\`.${table}_id = \`${table}\`.id
-	            LEFT JOIN \`${joinedTable}\` ON \`${pivot}\`.${itemIdField} = \`${joinedTable}\`.id
-	        `;
-
-	        let jsonFields = '';
-
-	        if (item.fields) {
-	            item.fields.forEach((field) => {
-	                jsonFields += `'${field}', \`${joinedTable}\`.${field}, `;
-	            });
-	        }
-
-	        // Remove trailing comma and space
-	        jsonFields = jsonFields.trim().replace(/,\s*$/, '');
-
-	        if (jsonFields) {
-	            selectFields += `,
-	                JSON_ARRAYAGG(
-	                    JSON_OBJECT(${jsonFields})
-	                ) AS \`${joinedTable}\`
-	            `;
-	        }
-	    });
-	}
-
-	const sql = `
-	    SELECT 
-	        \`${table}\`.*,
-	        JSON_ARRAYAGG(
-	            IF(f.id IS NOT NULL,
-	                JSON_OBJECT(
-	                    'id', f.id,
-	                    'file_name', f.file_name,
-	                    'item_id', f.item_id,
-	                    'item_type', f.item_type
-	                ),
-	                NULL
-	            )
-	        ) AS files
-	        ${selectFields}
-	    FROM \`${table}\`
-	    ${joinQuery}
-	    LEFT JOIN uploaded_files AS f
-	        ON f.item_id = \`${table}\`.id AND f.item_type = ?
-	    ${whereClause}
-	    GROUP BY \`${table}\`.id
-	`;
-
-  //  return
+    if (!table) {
+        return res.status(400).json({ error: "Table name is required" });
+    }
 
     try {
+        // Get column names for ANY_VALUE wrapping
+        const [columns] = await db.query(`SHOW COLUMNS FROM \`${table}\``);
+        const anyValueColumns = columns.map(col => `ANY_VALUE(\`${table}\`.\`${col.Field}\`) AS \`${col.Field}\``).join(',\n');
+
+        const queryParams = []; // for f.item_type = ?
+        let whereClause = '';
+
+        for (const [key, value] of Object.entries(params)) {
+            if (value) {
+                whereClause += whereClause ? ' AND ' : 'WHERE ';
+                whereClause += `\`${table}\`.${key} = ? `;
+                queryParams.push(value);
+            }
+        }
+
+        let joinQuery = '';
+        let selectFields = '';
+
+        if (joinTables && Array.isArray(joinTables)) {
+            joinTables.forEach((item) => {
+                const joinedTable = item.table;
+                const fields = item.fields || [];
+                let jsonFields = fields.map(f => `'${f}', \`${joinedTable}\`.${f}`).join(', ');
+
+                if (item.pivot) {
+                    const pivot = `${table}_${joinedTable}`;
+                    const itemIdField = `${joinedTable}_id`;
+
+                    joinQuery += `
+                        LEFT JOIN \`${pivot}\` ON \`${pivot}\`.${table}_id = \`${table}\`.id
+                        LEFT JOIN \`${joinedTable}\` ON \`${pivot}\`.${itemIdField} = \`${joinedTable}\`.id
+                    `;
+                } else {
+                    joinQuery += `
+                        LEFT JOIN \`${joinedTable}\` ON \`${table}\`.${joinedTable}_id = \`${joinedTable}\`.id
+                    `;
+                }
+
+                if (jsonFields) {
+				    selectFields += `,
+				        JSON_ARRAYAGG(
+				            IF(\`${joinedTable}\`.id IS NOT NULL,
+				                JSON_OBJECT(${jsonFields}),
+				                NULL
+				            )
+				        ) AS \`${joinedTable}_array\`
+				    `;
+				}
+
+            });
+        }
+
+        const sql = `
+		    SELECT 
+		        ${anyValueColumns},
+		        JSON_ARRAYAGG(
+		        	IF(f.id IS NOT NULL,
+		                JSON_OBJECT(
+		                    'id', f.id,
+		                    'file_name', f.file_name,
+		                    'item_id', f.item_id,
+		                    'item_type', f.item_type
+		            ),
+	                NULL
+	                )
+		        ) AS files
+		        ${selectFields}
+		    FROM \`${table}\`
+		    ${joinQuery}
+		    LEFT JOIN uploaded_files AS f
+		        ON f.item_id = \`${table}\`.id AND f.item_type = "${table}"
+		    ${whereClause}
+		    GROUP BY \`${table}\`.id
+		`;
+//console.log('SQL: ', sql);
+//console.log('Query Params:', queryParams);
+//return
         const [results] = await db.query(sql, queryParams);
 
         const parsed = results.map(row => {
-            // Parse files
             try {
                 row.files = JSON.parse(row.files).filter(f => f && f.id !== null);
             } catch {
                 row.files = [];
             }
 
-            // Parse join table fields
             if (joinTables && joinTables.length > 0) {
-                joinTables.forEach(item => {
-                    const field = item.table;
-                    try {
-                        row[field] = JSON.parse(row[field]).filter(e => e && e.id !== null);
-                    } catch {
-                        row[field] = [];
-                    }
-                });
-            }
+			    joinTables.forEach(item => {
+			        const field = item.table;
+			        try {
+			            const parsedField = JSON.parse(row[field]);
+
+			            const cleaned = parsedField.filter(e => e && e.id !== null);
+
+			            if (cleaned.length > 0) {
+			                row[field] = cleaned;
+			            } else {
+			                delete row[field]; // remove the field entirely
+			            }
+			        } catch {
+			            delete row[field];
+			        }
+			    });
+			}
+
 
             return row;
         });
 
         res.status(200).json(parsed);
-
     } catch (err) {
         console.error("Error executing query:", err);
         res.status(500).json({ error: "Database error" });
     }
 });
-
-
 
 // DELETE ITEM
 app.post('/api/delete-item', (req, res) => {

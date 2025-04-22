@@ -1,7 +1,7 @@
 
 export const siteConfig = {
 	serverUrl: 'http://localhost:3001',
-}
+} 
 
 export const adminCategories = [
 	{name: 'products', label: 'Products & Catalog'},
@@ -19,6 +19,7 @@ export const shopConfig = {
 		loginApiUrl: siteConfig.serverUrl + '/api/login',
 		registerApiUrl: siteConfig.serverUrl + '/api/register',
 		searchApiUrl: siteConfig.serverUrl + '/api/search',
+		searchAutocompleteUrl: siteConfig.serverUrl + '/api/search-autocomplete'
 	},
 	items: [
 		{
@@ -147,8 +148,8 @@ export const shopConfig = {
 			'component': 'view-item'
 		},
 		{
-			'path': '/:category/pd/:id',
-			'table': 'category',
+			'path': '/:category/pd/:id/&type=product',
+			'table': 'product',
 			'joinTables': [],
 			'listType': 'multiple',
 			'component': 'view-items'

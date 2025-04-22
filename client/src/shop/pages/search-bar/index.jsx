@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Axios from 'axios';
+import { shopConfig } from '../../../config'
 import './search-bar.css';
 
 export const SearchBar = () => {
@@ -19,7 +20,7 @@ export const SearchBar = () => {
     }
 
     try {
-      const res = await Axios.get('/api/search-autocomplete', {
+      const res = await Axios.get(shopConfig.api.searchAutocompleteUrl, {
         params: { query: searchQuery }
       });
       setSuggestions(res.data?.suggestions || []);

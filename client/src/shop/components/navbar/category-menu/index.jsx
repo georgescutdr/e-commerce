@@ -20,8 +20,8 @@ export const CategoryMenu = () => {
         const fetchData = async () => {
             try {
                 const [categoryRes, pageRes] = await Promise.all([
-                  Axios.get(shopConfig.getItemsUrl, { params: { table: 'category' } }),
-                  Axios.get(shopConfig.getItemsUrl, { params: { table: 'page' } }),
+                  Axios.post(shopConfig.getItemsUrl, { table: 'category' }),
+                  Axios.post(shopConfig.getItemsUrl, { table: 'page' }),
                 ]);
 
                 setCategories(categoryRes.data);
@@ -44,7 +44,7 @@ export const CategoryMenu = () => {
             .filter(sub => sub.parent_id === cat.id)
             .map(sub => ({
                 label: sub.name,
-                command: () => navigate(`/category/${sub.id}`),
+                command: () => navigate(`/${sub.name}/pd/${sub.id}/&type=product`),
             })),
         }));
 

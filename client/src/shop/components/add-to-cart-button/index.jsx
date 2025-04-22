@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { PrimeIcons } from 'primereact/api';
 
-export const AddToCartButton = ({item, props}) => {
+export const AddToCartButton = ({item, props = {}}) => {
     const { addToCart } = useContext(ShopContext);
 
     const handleAddToCart = () => {
@@ -19,7 +19,7 @@ export const AddToCartButton = ({item, props}) => {
 
     console.log("AddToCart context:", useContext(ShopContext));
 
-    const label = props.label === false ? '' : 'Add to Cart' 
+    const label = props.label && props.label === false ? '' : 'Add to Cart' 
     
     return (
         <>
