@@ -1,4 +1,33 @@
 /* Review Item */
+.review-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.review-avatar {
+  margin-right: 1rem;
+}
+
+.review-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.review-date {
+  font-size: 0.875rem;
+  color: #6b7280; /* Tailwind's gray-500 */
+}
+
+.review-rating {
+  margin-left: auto;
+}
+
 .review-item {
   background-color: #ffffff;
   border-radius: 10px;

@@ -5,6 +5,7 @@ import Axios from 'axios'
 import { shopConfig } from '../../../config' 
 import './view-item.css'
 import { ProductView } from '../../view/product-view'
+import { ProductSkeleton } from '../../components/skeleton/product-skeleton';
 
 const ViewItem = ({props}) => {
 	const [item, setItem] = useState(null)
@@ -19,7 +20,7 @@ const ViewItem = ({props}) => {
             joinTables: props.joinTables,
         }
 
-        Axios.get(shopConfig.getItemsUrl, { params: queryParams })
+        Axios.post(shopConfig.getItemsUrl, queryParams)
             .then((res) => {
             	console.log(res.data)
             	setItem(res.data[0])
@@ -29,9 +30,7 @@ const ViewItem = ({props}) => {
 
 	if (!item) {
 		return (
-			<div className="spinner-container">
-				<ProgressSpinner style={{ width: '60px', height: '60px' }} />
-			</div>
+			<ProductSkeleton />
 		)
 	}
 
@@ -44,10 +43,10 @@ const ViewItem = ({props}) => {
 
 	switch(props.table) {
 		case 'product':
-			view = <ProductView item={ item } />
+			view = <ProductView item={ item } props={ props } />
 			break;
 		default:
-			view = <ItemView item={ item } />
+			view = <ItemView item={ item } props={ props } />
 	}
 
 	return (

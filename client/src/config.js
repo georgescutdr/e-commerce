@@ -19,7 +19,11 @@ export const shopConfig = {
 		loginApiUrl: siteConfig.serverUrl + '/api/login',
 		registerApiUrl: siteConfig.serverUrl + '/api/register',
 		searchApiUrl: siteConfig.serverUrl + '/api/search',
-		searchAutocompleteUrl: siteConfig.serverUrl + '/api/search-autocomplete'
+		searchAutocompleteUrl: siteConfig.serverUrl + '/api/search-autocomplete',
+		submitVoucherUrl: siteConfig.serverUrl + '/api/shop/submit-voucher',
+		getProductAttributesUrl: siteConfig.serverUrl + '/api/shop/get-product-attributes',
+		getPriceBoundsUrl: siteConfig.serverUrl + '/api/shop/get-price-bounds',
+		getCategoryBrandsUrl: siteConfig.serverUrl + '/api/shop/get-category-brands'
 	},
 	items: [
 		{
@@ -165,12 +169,17 @@ export const shopConfig = {
 			'path': '/:product/pd/:id/view_product',
 			'table': 'product',
 			'joinTables': [
-				{table: 'attribute_value', fields: ['id', 'attribute_id', 'value']},
-				{table: 'category', fields: ['id', 'name', 'single_name', 'description']}, 
-				{table: 'brand', fields: ['id', 'name', 'description']}, 
-				{table: 'voucher', fields: ['id', 'name', 'description', 'type', 'value', 'expires', 'num', 'code']}, 
-				{table: 'promotion', fields: ['id', 'name', 'description', 'type', 'value', 'start_date', 'end_date', 'home']}, 
-				{table: 'option', fields: ['id', 'name', 'description']}, 
+			//	{table: 'attribute_value', fields: ['id', 'attribute_id', 'value']},
+				{table: 'category', fields: ['id', 'name', 'description']}, 
+				{table: 'brand', fields: ['id', 'name', 'description'], pivot: true}, 
+				{table: 'voucher', fields: ['id', 'name', 'description', 'type', 'value', 'expires_at', 'num', 'code'], pivot: true}, 
+				{table: 'promotion', fields: ['id', 'name', 'description', 'type', 'value', 'start_date', 'end_date', 'home'], pivot: true}, 
+				{table: 'option', fields: ['id', 'name', 'description'], pivot: true},
+				{table: 'review', fields: ['id', 'rating'], pivot: true},
+				{table: 'attribute', fields: ['id', 'name'], pivot: true, joinTables: [
+						{table: 'attribute_value', pivot_table: 'product_attribute_value'}
+					]},
+				{table: 'image', fields: ['id', 'image_name', 'thumb'], pivot: true},
 			],
 			'listType': 'single',
 			'component': 'view-item'
@@ -196,6 +205,14 @@ export const shopConfig = {
 			'joinTables': [],
 			'listType': 'multiple',
 			'component': 'search-page'
+		},
+		{
+			'path': '/:promotionName/pd/:id/?type=view_promotion',
+			'table': 'promotion', 
+			'label': '',
+			'joinTables': [],
+			'listType': 'single',
+			'component': 'view-item'
 		},
 
 	],

@@ -44,6 +44,15 @@
   text-decoration: none;
 }
 
+.grid-item .stock-status {
+  font-size: 14px;
+}
+
+
+.grid-item .voucher-label {
+  font-size: 14px;
+}
+
 /*
 .grid-item:hover {
   transform: translateY(-1px);

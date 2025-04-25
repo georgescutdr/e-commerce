@@ -6,6 +6,7 @@ import { Rating } from 'primereact/rating';
 import { PrimeIcons } from 'primereact/api';
 import { AddToCartButton } from '../add-to-cart-button';
 import { StockStatus } from '../stock-status';
+import { VoucherLabel } from '../voucher-label';
 import { Price } from '../price';
 import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, makeItemTitle} from '../../../utils';
 
@@ -63,7 +64,12 @@ console.log(items)
                                             className="mb-2"
                                         />
                                     </div>
-                                        <StockStatus quantity={item.quantity} />
+                                        <div className="stock-status">
+                                            <StockStatus quantity={item.quantity} />
+                                        </div>
+                                        <div className="voucher-label">
+                                            <VoucherLabel vouchers={item.voucher_array} />
+                                        </div>
                                         <Price
                                             newPrice={
                                                 item.promotion_array?.[0]

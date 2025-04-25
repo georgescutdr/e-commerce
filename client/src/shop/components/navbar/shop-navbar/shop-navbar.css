@@ -51,6 +51,10 @@
   min-width: 12rem;
 }
 
+.p-menu ul {
+  padding-left: 0;
+}
+
 /* Menu items */
 .p-menuitem {
   transition: background 0.2s ease;

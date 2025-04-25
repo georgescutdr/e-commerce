@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Axios from 'axios';
 import { shopConfig } from '../../../config';
+import { ItemGrid } from '../../components/item-grid'
 import './search-page.css';
 
 const SearchPage = () => {
@@ -22,11 +23,12 @@ const SearchPage = () => {
             setError(null);
 
             try {
-                const res = await Axios.get(shopConfig.searchApiUrl, {
-                    params: { search: search.trim() },
+                const res = await Axios.get(shopConfig.api.searchApiUrl, {
+                    params: { query: search.trim() },
                 });
 
                 const data = res?.data;
+                console.log('data: ', data.products)
                 setResults(Array.isArray(data.products) ? data.products : []);
             } catch (err) {
                 console.error('Search error:', err);
@@ -59,13 +61,12 @@ const SearchPage = () => {
             )}
 
             {!loading && !error && results.length > 0 && (
-                <ul className="results-list">
-                    {results.map((item, index) => (
-                        <li key={item.id || index}>
-                            {item.name || <em>Unnamed Item</em>}
-                        </li>
-                    ))}
-                </ul>
+                <div className="results-list">
+                    <ItemGrid 
+                        items={results} 
+                        props={{table: 'product'}}
+                    />
+                </div>
             )}
         </div>
     );

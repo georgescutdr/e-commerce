@@ -13,7 +13,7 @@
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 2rem;
-  text-align: center;
+  text-align: left;
 }
 
 .product-columns {
@@ -50,8 +50,6 @@
   gap: 1.5rem;
   align-items: flex-start;
   justify-content: flex-start;
-  padding-top: 1rem;
-
   padding: 1.5rem;
   background: #ffffff;
   border-radius: 12px;
@@ -66,7 +64,7 @@
 }
 
 .product-reviews {
-  margin-top: 50px;  
+  margin-top: 50px;
 }
 
 @media screen and (max-width: 1024px) {
@@ -76,9 +74,74 @@
 
   .product-side-info {
     align-items: center;
+    padding: 1rem; /* Reduce padding on medium screens */
+    width: 100%; /* Ensure it takes full width */
   }
 
   .product-title {
     font-size: 1.5rem;
+  }
+
+  .product-price {
+    font-size: 1.5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .product-columns {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .product-title {
+    font-size: 1.2rem;
+  }
+
+  .product-price {
+    font-size: 1.5rem;
+  }
+
+  .product-description {
+    font-size: 0.9rem;
+  }
+
+  .product-reviews {
+    margin-top: 30px;
+  }
+
+  .product-gallery {
+    max-height: 400px;
+  }
+
+  .product-side-info {
+    padding: 1rem; /* Reduce padding on smaller screens */
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* Ensure full width for small screens */
+  }
+
+  .product-price {
+    font-size: 1.4rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .product-title {
+    font-size: 1.1rem;
+  }
+
+  .product-side-info {
+    padding: 0.8rem; /* Even smaller padding on very small screens */
+    align-items: center;
+    width: 100%;
+    gap: 1rem; /* Adjust gap between items */
+  }
+
+  .product-price {
+    font-size: 1.3rem;
+  }
+
+  .product-reviews {
+    margin-top: 20px;
   }
 }

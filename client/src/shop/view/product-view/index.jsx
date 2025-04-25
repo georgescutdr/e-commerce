@@ -9,86 +9,70 @@ import { Reviews } from '../../components/reviews';
 import { StockStatus } from '../../components/stock-status'
 import { Attributes } from '../../components/attributes'
 import { Options } from '../../components/options'
+import { ProductGallery } from '../../components/product-gallery'
+import { PromotionsList } from '../../components/promotions-list'
+import { VoucherLabel } from '../../components/voucher-label'
+import { makeItemTitle, getAverageRating, applyPromotions } from '../../../utils'
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import './product-view.css';
 
-export const ProductView = ({item}) => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [reviews, setReviews] = useState(0);
-  const params = useParams();
+export const ProductView = ({ item, props }) => {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [reviews, setReviews] = useState(0);
+    const params = useParams();
 
-  const images = item.files?.map(
-    (file) => `/public/uploads/${item.table}/${item.id}/${file.file_name}`
-  ) || ['/public/uploads/default-image.jpg'];
+    const title = makeItemTitle(item)
 
-  const galleriaItem = (item) => (
-    <img
-      src={item}
-      alt="Product"
-      className="main-image"
-    />
-  );
+    return (
+        <div className="product-page">
+            <h1 className="product-title">{title}</h1>
 
-  const thumbnailTemplate = (item) => (
-    <img
-      src={item}
-      alt="Thumbnail"
-      className="thumbnail-image"
-    />
-  );
+            <div className="product-columns">
+                {/* Left: Image Gallery */}
+                <div className="product-gallery">
+                    <ProductGallery images={item.image_array} productId={item.id} />
+                </div>
 
-  const title = `${item.brand[0].name} ${item.category[0].single_name} ${item.name}`
+                {/* Middle: Description + Rating */}
+                <div className="product-description">
+                    <div className="product-rating">
+                        <Rating value={getAverageRating(item.review_array)} readOnly cancel={false} stars={5} />
+                        <span className="rating-text">{item.rating}</span>
+                    </div>
+                    <p>{item.description}</p>
+                    <div className="product-options">
+                        <Options items={item.option} />
+                    </div>
+                </div>
 
-  return (
-    <div className="product-page">
-  <h1 className="product-title">{ title }</h1>
+                {/* Right: Price + Add to Cart */}
+                <div className="product-side-info">
+                    <div className="product-price">
+                        <Price
+                            newPrice={
+                                item.promotion_array?.[0]
+                                    ? applyPromotions(item.promotion_array, item.price)
+                                    : 0
+                            }
+                            price={item.price}
+                        />
+                    </div>
+                    <StockStatus quantity={item.quantity} />
+                    <PromotionsList promotions={item.promotion_array} />
+                    <VoucherLabel vouchers={item.voucher_array} />
+                    <AddToCartButton item={item} />
+                    <AddToWishlistButton item={item} userId={1} />
+                </div>
+            </div>
 
-  <div className="product-columns">
-    {/* Left: Image Gallery */}
-    <div className="product-gallery">
-      <Galleria
-        value={images}
-        activeIndex={activeIndex}
-        onItemChange={(e) => setActiveIndex(e.index)}
-        item={galleriaItem}
-        thumbnail={thumbnailTemplate}
-        thumbnailsPosition="bottom"
-        numVisible={4}
-        circular
-        style={{ maxWidth: '100%' }}
-      />
-    </div>
-
-    {/* Middle: Description + Rating */}
-    <div className="product-description">
-      <div className="product-rating">
-        <Rating value={item.rating} readOnly cancel={false} stars={5} />
-        <span className="rating-text">{item.rating}</span>
-      </div>
-      <p>{item.description}</p>
-      <div className="product-options">
-      	<Options items={ item.option } />
-      </div>
-    </div>
-
-    {/* Right: Price + Add to Cart */}
-    <div className="product-side-info">
-      <div className="product-price">
-        <Price price={item.price} newPrice={300} />
-      </div>
-      <StockStatus quantity={ item.quantity } />
-      <AddToCartButton item={ item } />
-      <AddToWishlistButton item={ item } userId={ 1 } />
-    </div>
-  </div>
-  <div className="product-attributes">
-  	<Attributes items={ item.attribute_value } />
-  </div>
-  <div className="product-reviews">
-  	<Reviews itemId={ item.id } />
-  </div>
-</div>
-  );
+            <div className="product-attributes">
+                <Attributes item={item} />
+            </div>
+            <div className="product-reviews">
+                <Reviews itemId={item.id} />
+            </div>
+        </div>
+    );
 };

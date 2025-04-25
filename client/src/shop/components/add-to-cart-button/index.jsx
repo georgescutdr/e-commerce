@@ -9,13 +9,16 @@ export const AddToCartButton = ({item, props = {}}) => {
     const { addToCart } = useContext(ShopContext);
 
     const handleAddToCart = () => {
-        addToCart({
-            product_id: item.id,
-            name: item.name,
-            price: item.price,
-            brand: item.brand[0].name
-        });
+      addToCart({
+        id: item.id,
+        product_id: item.id,
+        name: item.name,
+        price: item.price,
+        brand: item.brand_array?.[0]?.name,
+        promotion_array: item.promotion_array 
+      });
     };
+
 
     console.log("AddToCart context:", useContext(ShopContext));
 

@@ -8,7 +8,7 @@ export const ItemView = ({item}) => {
 	const params = useParams()
 	const paramValues = Object.values(params)
 	
-
+	console.log(item)
 	
 	const imageUrl =
 		item.files && item.files.length > 0

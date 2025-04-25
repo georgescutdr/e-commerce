@@ -1,0 +1,14 @@
+.voucher-status {
+    margin-top: 1rem;
+}
+
+.voucher-message {
+    display: flex;
+    align-items: center;
+    color: #f00;
+}
+
+.voucher-icon {
+    margin-right: 8px; /* Add some space between the icon and the text */
+    font-size: 1.5rem;
+}

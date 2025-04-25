@@ -35,27 +35,30 @@ export const Review = ({ item }) => {
           </div>
 
           {/* User Avatar and Rating */}
-          <div className="flex items-center mb-3">
-            <Avatar
-              image={item.user_avatar || '/images/default-avatar.png'} // Fallback to default avatar if not provided
-              size="large"
-              shape="circle"
-              className="mr-3"
-            />
-            <div className="flex flex-col">
-              <strong className="text-lg">{item.author}</strong>
-              <span className="text-sm text-gray-500">{formattedDate}</span>
-            </div>
-            <div className="ml-auto">
-              <Rating 
-                value={item.rating} 
-                cancel={false} 
-                readOnly 
-                stars={5} 
-                className="text-yellow-500" 
+          <div className="review-header">
+              <Avatar
+                image={item.user_avatar || '/images/default-avatar.png'}
+                size="large"
+                shape="circle"
+                className="review-avatar"
               />
+              <div className="review-user-info">
+                <span className="review-name">
+                  {(item.user_array?.[0]?.first_name || '') + ' ' + (item.user_array?.[0]?.last_name || '')}
+                </span>
+                <span className="review-date">{formattedDate}</span>
+              </div>
+              <div className="review-rating">
+                <Rating 
+                  value={item.rating} 
+                  cancel={false} 
+                  readOnly 
+                  stars={5} 
+                  className="text-yellow-500" 
+                />
+              </div>
             </div>
-          </div>
+
 
           {/* Review Comment */}
           <p className="text-gray-700">{item.description}</p>

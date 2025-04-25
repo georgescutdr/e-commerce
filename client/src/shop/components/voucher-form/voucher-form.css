@@ -1,0 +1,15 @@
+.error-text {
+  margin-left: 10px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  text-align: center; 
+}
+
+.voucher-form h3 {
+	color: #288dd0;
+}
+
+.voucher-form .submit-btn {
+	margin-top: 10px;
+}

@@ -23,7 +23,7 @@ export const computePrice = (price, promotions) => {
 }
 
 
-export const capitalize = s => (s && String(s[0]).toUpperCase() + String(s).slice(1)) || ""
+export const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 
 export const responsive = {
   superLargeDesktop: {
@@ -52,7 +52,13 @@ export const applyPromotions = (promotions = [], originalPrice) => {
     let finalPrice = originalPrice;
     const now = new Date();
 
-    promotions.forEach(promotion => {
+    // Remove duplicates by promotion.id
+    const uniquePromotions = promotions.filter(
+        (promotion, index, self) =>
+            index === self.findIndex(p => p.id === promotion.id)
+    );
+
+    uniquePromotions.forEach(promotion => {
         const startDate = new Date(promotion.start_date);
         const endDate = new Date(promotion.end_date);
 
@@ -81,14 +87,19 @@ export const getAverageRating = (reviews) => {
 };
 
 export const getPromotionLabel = (promotions = []) => {
-    if(!promotions || !promotions.length) return null;
+    if (!promotions || !promotions.length) return null;
 
     const now = new Date();
+
+    // Deduplicate by promotion.id
+    const uniquePromos = Array.from(
+        new Map(promotions.filter(p => p && p.id).map(p => [p.id, p])).values()
+    );
 
     let percentTotal = 0;
     let valueTotal = 0;
 
-    promotions.forEach(promo => {
+    uniquePromos.forEach(promo => {
         const startDate = new Date(promo.start_date);
         const endDate = new Date(promo.end_date);
 
@@ -111,6 +122,15 @@ export const getPromotionLabel = (promotions = []) => {
     } else {
         return null;
     }
+};
+
+
+export const slugify = (str) => {
+    return str
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // remove special characters
+        .replace(/\s+/g, '-')     // replace spaces with dashes
 }
 
 export const makeItemUrl = (item) => {
@@ -120,13 +140,6 @@ export const makeItemUrl = (item) => {
 
     const brand = item.brand_array?.[0]?.name || '';
     const productName = item.name || '';
-
-    const slugify = (str) =>
-        str
-            .toLowerCase()
-            .trim()
-            .replace(/[^\w\s-]/g, '') // remove special characters
-            .replace(/\s+/g, '-')     // replace spaces with dashes
 
     return `${slugify(brand)}-${slugify(productName)}`;
 };
@@ -149,4 +162,19 @@ export const makeItemTitle = (item) => {
     return `${toTitleCase(brand)} ${toTitleCase(productName)}`;
 };
 
+export const getStockLabel = (quantity) => {
+    if (quantity > 5) {
+        return <div className="stock-green">In stock</div>;
+    } else if (quantity > 1) {
+        return <div className="stock-red">The last {quantity} products</div>;
+    } else if (quantity === 1) {
+        return <div className="stock-red">The last product in stock</div>;
+    } else {
+        return <div className="stock-red">Out of stock</div>;
+    }
+};
+
+//display products in stack or grid
+//add has voucher label on product card
+//pagination for items
 

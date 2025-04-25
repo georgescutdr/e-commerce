@@ -1,0 +1,30 @@
+.items-content-wrapper {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+}
+
+.search-panel-container {
+  flex: 0 0 15%;
+  max-width: 15%;
+}
+
+.item-grid-container {
+  flex: 1;
+}
+
+/* Hide the left column on smaller screens */
+@media (max-width: 768px) {
+  .search-panel-container {
+    display: none;
+  }
+
+  .items-content-wrapper {
+    flex-direction: column; /* Stack the columns vertically */
+  }
+
+  .item-grid-container {
+    flex: 1; /* Take full width */
+  }
+}

@@ -1,0 +1,78 @@
+.dropdown-product-card {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  gap: 10px;
+  border-bottom: 1px solid #ddd;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dropdown-product-card .product-image {
+  width: 40px!important;
+  height: 40px!important;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.dropdown-product-card .product-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  min-width: 0; /* <-- IMPORTANT for ellipsis to work */
+}
+
+
+.dropdown-product-card .product-title {
+  font-size: 0.85rem!important;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0!important;
+}
+
+.dropdown-product-card .product-price {
+  font-size: 0.8rem!important;
+  color: #555;
+  margin-top: 2px;
+}
+
+.dropdown-product-card .product-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.dropdown-product-card .product-quantity {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.dropdown-product-card .remove-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.dropdown-product-card .remove-btn:hover {
+  color: #999;
+}
+
+.dropdown-product-card .product-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.dropdown-product-card .product-title-link:hover .product-title {
+  text-decoration: underline;
+}
+
+

@@ -1,232 +1,28 @@
-/* Checkout Container */
-.card.flex.justify-content-center {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 50px 30px;
-    background-color: #ffffff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    box-sizing: border-box;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-}
-
-/* Stepper Wrapper */
-.p-stepper {
-    width: 100%;
-    background-color: #f0f4ff;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
-}
-
-/* Form Panel Styling */
-.border-2 {
-    background-color: #ffffff;
-    border: 0px solid #007bff !important;
-    padding: 30px 25px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    max-width: 700px;
-    margin: auto;
-    transition: box-shadow 0.3s ease;
-}
-
-.border-2:hover {
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
-}
-
-/* Input Fields */
-.border-2 input,
-.border-2 .p-inputtextarea {
-    padding: 12px 15px;
-    border: 1px solid #007bff;
-    border-radius: 10px;
-    font-size: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    background-color: #f9fcff;
-}
-
-.border-2 input:focus,
-.border-2 .p-inputtextarea:focus {
-    border-color: #0056b3;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-
-/* Headings */
-h3, .step-header {
-    color: #007bff;
-    margin-bottom: 20px;
-    font-weight: 700;
-    font-size: 1.5rem;
-    text-align: center;
-}
-
-/* Buttons */
-.p-button {
-    background-color: #085db2;
-    font-weight: 600;
-    border-radius: 10px;
-    padding: 12px 24px;
-    border: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.p-button:hover {
-    background-color: #0165c9 !important;
-    transform: translateY(-1px);
-}
-
-/* Place Order Button */
-.place-order-btn {
-    margin-top: 30px;
-    width: 100%;
-}
-
-/* Navigation Areas */
-.flex.pt-4 {
-    padding-top: 30px;
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-}
-
-.error-text {
-    color: #d32f2f;
-    font-size: 0.85rem;
-    margin-top: -6px;
-    margin-bottom: 10px;
-    display: block;
-}
-
-/* Label Styling */
-.field label {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    display: block;
-    color: #333;
-}
-
-/* Dropdown & Textarea */
-.p-dropdown,
-.p-inputtextarea {
-    font-size: 1rem;
-}
-
-.cart-item {
-  background-color: #fff;
-  border: 1px solid #e0e7ff;
-  border-radius: 10px;
+.stepper-voucher-container {
   display: flex;
-  flex-direction: row; /* Horizontal layout */
-  gap: 1.5rem;
-  padding: 1rem;
-  align-items: center;
-}
-
-.cart-item-img {
-  width: 6rem;
-  height: 6rem;
-  object-fit: cover;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-/* Title is centered horizontally */
-.cart-item .font-semibold {
-  text-align: center;
+  flex-wrap: wrap;
   width: 100%;
-}
-
-.cart-item {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
-.cart-remove-btn {
-  display: flex;
-  align-items: center;  /* Vertically centers the icon */
-  justify-content: center; /* Horizontally centers the icon */
-  width: 40px;  /* Make the button wider */
-  height: 40px;  /* Make the button taller */
-  border-radius: 50%;  /* Round the button */
-  background-color: #f8f8f8;  /* Light background color */
-  border: 1px solid #ddd;  /* Border for the button */
-  font-size: 1.5rem;  /* Bigger icon */
-  cursor: pointer;  /* Make it clickable */
+.stepper-col {
+  width: 70%;
+  padding: 1rem;
 }
 
-.cart-remove-btn:hover {
-  background-color: #f1f1f1;  /* Change background on hover */
-  border-color: #ccc;  /* Slightly darker border on hover */
+.voucher-col {
+  width: 30%;
+  padding: 1rem;
 }
 
-
-/* Quantity buttons horizontally centered below the title */
-.flex.justify-content-center {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-/* Quantity button styling */
-.qty-btn {
-  background-color: #e0e7ff;
-  border: none;
-  padding: 0.25rem 0.6rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.qty-btn:hover {
-  background-color: #c7d2fe;
-}
-
-/* Price */
-.cart-item .text-primary {
-  text-align: center;
-  margin-top: 10px;
-}
-
-
-.total {
-    border-top: 1px solid #d0d7ff;
-    margin-top: 20px;
-    padding-top: 10px;
-    font-size: 1.1rem;
-    color: #084298;
-}
-
-/* Responsive Design */
+/* Media Query for smaller screens */
 @media (max-width: 768px) {
-    .p-stepper {
-        padding: 20px;
-    }
+  .stepper-col, .voucher-col {
+    width: 100%;
+    margin-bottom: 1rem; /* Add spacing between the columns on smaller screens */
+  }
 
-    .border-2 {
-        padding: 20px;
-        max-width: 100%;
-    }
-
-    .flex.pt-4 {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .flex.pt-4 .p-button {
-        width: 100%;
-    }
-
-    .place-order-btn {
-        width: 100%;
-    }
+  .stepper-voucher-container {
+    flex-direction: column; /* Stack the columns vertically */
+  }
 }

@@ -14,12 +14,12 @@ export const AddToWishlistButton = ({ item, userId }) => {
     const { toggleWishlist, isInWishlist } = useWishlist();
 
     useEffect(() => {
-        // Optional: fetch initial state here
+       
     }, [item.id, userId]);
 
     const handleWishListToggle = () => {
         //toggle item in the wishlist from the local storage
-        toggleWishlist(product)
+        toggleWishlist(item)
 
         //toggle in the db
         Axios.post(shopConfig.api.wishlistToggleUrl, {

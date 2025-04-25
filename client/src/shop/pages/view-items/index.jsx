@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import './view-items.css'
 import Axios from 'axios'
 import { ItemGrid } from '../../components/item-grid'
-import { ItemGridSkeleton } from '../../components/item-grid-skeleton';
+import { SearchPanel } from '../../components/search-panel'
+import { ItemGridSkeleton } from '../../components/skeleton/item-grid-skeleton';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useParams, useLocation } from 'react-router-dom'
 import { shopConfig } from '../../../config' 
@@ -27,6 +28,7 @@ const ViewItems = ({props}) => {
                 {table: 'promotion', fields: ['id', 'type', 'value', 'start_date', 'end_date'], pivot: true},
                 {table: 'brand', fields: ['id', 'name'], pivot: true}, 
                 {table: 'review', fields: ['rating'], pivot: true}, 
+                {table: 'voucher', fields: ['id', 'expires_at'], pivot: true}, 
             ];
         }
 
@@ -54,12 +56,18 @@ const ViewItems = ({props}) => {
                 <h1>{title}</h1>
                 <p>Browse our categories, brands, and products</p>
             </div>
-
-            {loading ? (
-                <ItemGridSkeleton count={8} />
-            ) : (
-                <ItemGrid items={items} props={props} />
-            )}
+            <div className="items-content-wrapper">
+                <div className="search-panel-container">
+                    <SearchPanel categoryId={ params.id } />
+                </div>
+                <div className="item-grid-container">
+                    {loading ? (
+                        <ItemGridSkeleton count={8} />
+                    ) : (
+                        <ItemGrid items={items} props={props} />
+                    )}
+                </div>
+            </div>
 
         </div>
     );

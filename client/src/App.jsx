@@ -23,7 +23,7 @@ import { ProtectedRoute } from './components/protected-route';
 
 import { randomKey } from './utils'
 
-import { shopConfig, config } from './config.js'
+import { shopConfig, config } from './config'
 
 import { Item } from './admin/pages/item'
 import { Items } from './admin/pages/items'
@@ -98,11 +98,12 @@ function App() {
 
     if (!componentMap) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem' }}>
+            <div className="spinner-container">
                 <ProgressSpinner />
             </div>
         );
     }
+
 
   //const { user } = useAuth();
   //{user?.isAdmin ? <AdminNavbar /> : <ShopNavbar />}

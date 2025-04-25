@@ -19,10 +19,13 @@ export const Reviews = ({ itemId }) => {
       setLoading(true);
       try {
           //`/api/products/${itemId}/reviews?page=${page}
-        const response = await Axios.get(shopConfig.getItemsUrl, {params: {
+        const response = await Axios.post(shopConfig.getItemsUrl, {
             table: 'review',
-            product_id: itemId
-        }});
+            product_id: itemId,
+            joinTables: [
+                {table: 'user', fields: ['first_name', 'last_name']}
+            ]
+        });
         const newReviews = response.data;
         console.log('reviews: ', response.data)
         
