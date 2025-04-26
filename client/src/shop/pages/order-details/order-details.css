@@ -69,3 +69,31 @@
     font-size: 0.9rem;
     color: #555;
 }
+
+.order-details-container .order-status-tag {
+  color: #fff;
+  padding: 4px 6px;
+}
+
+.order-summary-tracking-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.order-summary-tracking-grid .order-details-card {
+    flex: 1 1 48%;
+    min-width: 300px; /* Makes it not shrink too much on narrow screens */
+}
+
+@media (max-width: 768px) {
+    .order-summary-tracking-grid {
+        flex-direction: column;
+    }
+
+    .order-summary-tracking-grid .order-details-card {
+        flex: 1 1 100%;
+    }
+}
+

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Axios from 'axios';
 import { Card } from 'primereact/card';
+import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useAuth } from '../../context/auth-context';
 import { shopConfig } from '../../../config';
+import { capitalize } from '../../../utils'
 import './orders.css';
 
 const Orders = () => {
@@ -17,9 +19,11 @@ const Orders = () => {
 	useEffect(() => {
 		const fetchOrders = async () => {
 			try {
-				const response = await Axios.get(shopConfig.getItemsUrl, {
-					params: { table: 'order', user_id: user?.id },
-				});
+				const response = await Axios.post(shopConfig.getItemsUrl, 
+					{ table: 'order', user_id: 1, joinTables: [
+						{'table': 'shipping_status', fields: ['id', 'name', 'description', 'color'], pivot: true}
+					] },
+				);
 				const data = response.data;
 
 				if (Array.isArray(data)) {
@@ -80,13 +84,23 @@ const Orders = () => {
 								</p>
 								<p>
 									<strong>Status:</strong>{' '}
-									<span className="orders-status">{order.status}</span>
+									{order.shipping_status_array && order.shipping_status_array.length > 0 && (
+									  <Tag
+									    value={capitalize(order.shipping_status_array[order.shipping_status_array.length - 1].name)}
+									    className="order-status-tag"
+									    style={{
+									      backgroundColor: order.shipping_status_array[order.shipping_status_array.length - 1].color || '#fff',
+									      color: '#fff', 
+									      border: 'none',
+									    }}
+									  />
+									)}
 								</p>
 
 								<Button
 									label="View Details"
 									className="mt-3"
-									onClick={() => navigate(`/orders/${order.id}`)}
+									onClick={() => navigate(`/order-details/${order.id}`)}
 								/>
 							</div>
 						</Card>

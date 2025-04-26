@@ -1219,7 +1219,21 @@ app.get('/api/search-autocomplete', async (req, res) => {
 // SEARCH
 app.get('/api/search', async (req, res) => {
   const { query, filters } = req.query;
-console.log('pl')
+
+  let parsedFilters = {};
+
+	// Parse filters if it's a JSON string
+  if (typeof filters === 'string') {
+    parsedFilters = JSON.parse(filters);
+  }
+
+  const filtersObj = {};
+  for (const filter of parsedFilters) {
+    filtersObj[filter.name] = filter.values;
+  }
+
+  console.log(filtersObj);
+
   const words = query
     .toLowerCase()
     .split(/\s+/)
@@ -1256,57 +1270,58 @@ console.log('pl')
 
     const queryValues = [...likeValues];
 
-    // Apply category filters if there are any
-    if (categoryIds.length > 0) {
-      const placeholders = categoryIds.map(() => '?').join(',');
-      productQuery += ` AND p.category_id IN (${placeholders})`;
-      queryValues.push(...categoryIds);
-    }
+    const filterConditions = [];
+	const filterValues = [];
 
-    // Apply brand filters if there are any
-    if (brandIds.length > 0) {
-      const placeholders = brandIds.map(() => '?').join(',');
-      productQuery += ` AND p.brand_id IN (${placeholders})`;
-      queryValues.push(...brandIds);
-    }
+	// Promotions
+	if (filters.promotions?.length > 0) {
+	  const placeholders = filters.promotions.map(() => '?').join(',');
+	  filterConditions.push(`p.id IN (SELECT product_id FROM product_promotion WHERE promotion_id IN (${placeholders}))`);
+	  filterValues.push(...filters.promotions);
+	}
 
-    // Apply price range filter if present
-    if (filters.priceRange && filters.priceRange.length > 0) {
-      const [minPrice, maxPrice] = filters.priceRange[0].id.split('-').map(Number);
-      productQuery += ` AND p.price BETWEEN ? AND ?`;
-      queryValues.push(minPrice, maxPrice);
-    }
+	// Options
+	if (filters.options?.length > 0) {
+	  const placeholders = filters.options.map(() => '?').join(',');
+	  filterConditions.push(`p.id IN (SELECT product_id FROM product_option WHERE option_id IN (${placeholders}))`);
+	  filterValues.push(...filters.options);
+	}
 
-    // Apply options filter if present
-    if (filters.options && filters.options.length > 0) {
-      const optionIds = filters.options.map(opt => opt.id);
-      const placeholders = optionIds.map(() => '?').join(',');
-      productQuery += ` AND p.id IN (SELECT product_id FROM product_option WHERE option_id IN (${placeholders}))`;
-      queryValues.push(...optionIds);
-    }
-console.log(filters.promotions.map(promo => promo.id))
-    // Apply promotions filter if present
-    if (filters.promotions && filters.promotions.length > 0) {
-      const promotionIds = filters.promotions.map(promo => promo.id);
-      const placeholders = promotionIds.map(() => '?').join(',');
-      productQuery += ` AND p.id IN (SELECT product_id FROM product_promotion WHERE promotion_id IN (${placeholders}))`;
-      queryValues.push(...promotionIds);
-    }
+	// Brands
+	if (filters.brands?.length > 0) {
+	  const placeholders = filters.brands.map(() => '?').join(',');
+	  filterConditions.push(`p.brand_id IN (${placeholders})`);
+	  filterValues.push(...filters.brands);
+	}
 
-    // Apply rating filter if present
-    if (filters.minRating && filters.minRating.length > 0) {
-      const minRating = filters.minRating[0].id;
-      productQuery += ` AND p.id IN (SELECT product_id FROM review WHERE rating >= ? GROUP BY product_id)`;
-      queryValues.push(minRating);
-    }
+	// Price Range
+	if (filters.priceRange?.length > 0) {
+	  const priceConditions = [];
+	  for (const rangeString of filters.priceRange) {
+	    const [minPrice, maxPrice] = rangeString.split('-').map(Number);
+	    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+	      priceConditions.push(`(p.price BETWEEN ? AND ?)`);
+	      filterValues.push(minPrice, maxPrice);
+	    }
+	  }
+	  if (priceConditions.length > 0) {
+	    filterConditions.push(`(${priceConditions.join(' OR ')})`);
+	  }
+	}
 
-    // Apply attribute filters if present
-    if (filters.color && filters.color.length > 0) {
-      const colorIds = filters.color.map(color => color.id);
-      const placeholders = colorIds.map(() => '?').join(',');
-      productQuery += ` AND p.id IN (SELECT product_id FROM attribute_value WHERE attribute_id IN (SELECT attribute_id FROM attribute_category WHERE category_id = ?) AND text_value IN (${placeholders}))`;
-      queryValues.push(categoryId, ...colorIds);
-    }
+	// Min Rating
+	if (filters.minRating?.length > 0) {
+	  const ratingConditions = [];
+	  for (const minRating of filters.minRating) {
+	    ratingConditions.push(`p.id IN (SELECT product_id FROM review WHERE rating >= ? GROUP BY product_id)`);
+	    filterValues.push(minRating);
+	  }
+	  if (ratingConditions.length > 0) {
+	    filterConditions.push(`(${ratingConditions.join(' OR ')})`);
+	  }
+	}
+
+
 
     // Execute the query
     const [products] = await db.query(productQuery, queryValues);

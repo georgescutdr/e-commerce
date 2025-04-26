@@ -3,6 +3,14 @@ export const randomKey = () => {
   return window.crypto?.randomUUID?.() || `key-${Math.random().toString(36).substr(2, 9)}`
 }
 
+export const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    const pad = (n) => n.toString().padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
+
 export const computePrice = (price, promotions) => {
 	let percentAmount = 0
 	let valueAmount = 0
