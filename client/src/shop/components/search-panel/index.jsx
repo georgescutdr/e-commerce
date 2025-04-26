@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Axios from 'axios';
 import { shopConfig } from '../../../config';
 import { Rating } from 'primereact/rating';
@@ -6,17 +7,36 @@ import { capitalize } from '../../../utils';
 import { SearchPanelSkeleton } from '../skeleton/search-panel-skeleton';
 import './search-panel.css';
 
-export const SearchPanel = ({ categoryId }) => {
+export const SearchPanel = ({ categoryId, selected, setSelected }) => {
   const [attributes, setAttributes] = useState({});
   const [options, setOptions] = useState([]);
   const [promotions, setPromotions] = useState([]);
   const [priceRanges, setPriceRanges] = useState([]);
-  const [selected, setSelected] = useState({});
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all filter-related data
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+      const parsed = {};
+      for (const [key, value] of searchParams.entries()) {
+        parsed[key] = value.split(',').map((v) => {
+          const [id, label] = v.split(':');
+          return { id: isNaN(id) ? id : Number(id), label: decodeURIComponent(label) };
+        });
+      }
+
+      // Set default structure to prevent undefined access in SearchPanel
+      const allKeys = ['minRating', 'priceRange', 'options', 'brands', 'promotions'];
+      allKeys.forEach((key) => {
+        if (!parsed[key]) parsed[key] = [];
+      });
+
+      setSelected(parsed);
+    }, [searchParams]);
+
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
@@ -25,9 +45,9 @@ export const SearchPanel = ({ categoryId }) => {
           Axios.post(shopConfig.getItemsUrl, { table: 'option' }),
           Axios.post(shopConfig.getItemsUrl, { table: 'promotion' }),
           Axios.get(shopConfig.api.getProductAttributesUrl, { params: { categoryId } }),
-          Axios.get(shopConfig.api.getPriceBoundsUrl, {params:{categoryId: categoryId }}),
+          Axios.get(shopConfig.api.getPriceBoundsUrl, { params: { categoryId } }),
         ]);
-console.log('PRICE: ', priceBoundsRes.data)
+
         setBrands(brandsRes.data);
         processOptions(optionsRes.data);
         processPromotions(promotionsRes.data);
@@ -62,11 +82,32 @@ console.log('PRICE: ', priceBoundsRes.data)
     }
   };
 
-  const toggleCheckbox = (attrName, valueId) => {
+  const toggleCheckbox = (attrName, valueId, label = valueId) => {
     setSelected((prev) => {
-      const prevSet = new Set(prev[attrName] || []);
-      prevSet.has(valueId) ? prevSet.delete(valueId) : prevSet.add(valueId);
-      return { ...prev, [attrName]: Array.from(prevSet) };
+      const prevList = prev[attrName] || [];
+      const exists = prevList.some((item) => item.id === valueId);
+
+      const newList = exists
+        ? prevList.filter((item) => item.id !== valueId)
+        : [...prevList, { id: valueId, label }];
+
+      const updated = { ...prev, [attrName]: newList };
+      if (newList.length === 0) {
+        delete updated[attrName];
+      }
+
+      // Update URL params
+      const params = new URLSearchParams();
+      Object.entries(updated).forEach(([key, values]) => {
+        const encoded = values
+          .map((v) => `${v.id}:${encodeURIComponent(v.label)}`)
+          .join(',');
+        params.set(key, encoded);
+      });
+
+      navigate(`/search/pd/${categoryId}/?${params.toString()}`, { replace: true });
+
+      return updated;
     });
   };
 
@@ -93,8 +134,8 @@ console.log('PRICE: ', priceBoundsRes.data)
             <label key={starCount} className="checkbox-label">
               <input
                 type="checkbox"
-                checked={selected[attrName]?.includes(starCount) || false}
-                onChange={() => toggleCheckbox(attrName, starCount)}
+                checked={selected[attrName]?.some((v) => v.id === starCount) || false}
+                onChange={() => toggleCheckbox(attrName, starCount, `${starCount} stars`)}
               />
               <Rating value={starCount} readOnly cancel={false} stars={5} />
             </label>
@@ -109,7 +150,7 @@ console.log('PRICE: ', priceBoundsRes.data)
 
     const handleCheckboxChange = (range) => {
       const rangeKey = `${range.from}-${range.to}`;
-      toggleCheckbox(attrName, rangeKey);
+      toggleCheckbox(attrName, rangeKey, range.label);
     };
 
     return (
@@ -127,7 +168,7 @@ console.log('PRICE: ', priceBoundsRes.data)
               <label key={idx} className="checkbox-label">
                 <input
                   type="checkbox"
-                  checked={selected[attrName]?.includes(rangeKey) || false}
+                  checked={selected[attrName]?.some((v) => v.id === rangeKey) || false}
                   onChange={() => handleCheckboxChange(range)}
                 />
                 {range.label}
@@ -152,8 +193,10 @@ console.log('PRICE: ', priceBoundsRes.data)
           <label key={item.id} className="checkbox-label">
             <input
               type="checkbox"
-              checked={selected[attrName]?.includes(item.id) || false}
-              onChange={() => toggleCheckbox(attrName, item.id)}
+              checked={selected[attrName]?.some((v) => v.id === item.id) || false}
+              onChange={() =>
+                toggleCheckbox(attrName, item.id, item.display || item.name)
+              }
             />
             {item.display || item.name}
           </label>
@@ -168,8 +211,6 @@ console.log('PRICE: ', priceBoundsRes.data)
 
   return (
     <div className="search-panel">
-      <h3 className="search-panel-title">Filter by Attributes</h3>
-
       {Object.entries(attributes).map(
         ([attrName, values]) =>
           values.length > 0 && (
@@ -185,8 +226,10 @@ console.log('PRICE: ', priceBoundsRes.data)
                   <label key={val.id} className="checkbox-label">
                     <input
                       type="checkbox"
-                      checked={selected[attrName]?.includes(val.id) || false}
-                      onChange={() => toggleCheckbox(attrName, val.id)}
+                      checked={selected[attrName]?.some((v) => v.id === val.id) || false}
+                      onChange={() =>
+                        toggleCheckbox(attrName, val.id, val.display || val.name)
+                      }
                     />
                     {val.display}
                   </label>

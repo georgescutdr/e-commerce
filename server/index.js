@@ -1218,12 +1218,8 @@ app.get('/api/search-autocomplete', async (req, res) => {
 
 // SEARCH
 app.get('/api/search', async (req, res) => {
-  const { query } = req.query;
-
-  if (!query || query.trim() === '') {
-    return res.status(400).json({ error: 'Search query is required' });
-  }
-
+  const { query, filters } = req.query;
+console.log('pl')
   const words = query
     .toLowerCase()
     .split(/\s+/)
@@ -1258,19 +1254,62 @@ app.get('/api/search', async (req, res) => {
       WHERE ${likeConditions}
     `;
 
+    const queryValues = [...likeValues];
+
+    // Apply category filters if there are any
     if (categoryIds.length > 0) {
       const placeholders = categoryIds.map(() => '?').join(',');
-      productQuery += ` OR p.category_id IN (${placeholders})`;
-      likeValues.push(...categoryIds);
+      productQuery += ` AND p.category_id IN (${placeholders})`;
+      queryValues.push(...categoryIds);
     }
 
+    // Apply brand filters if there are any
     if (brandIds.length > 0) {
       const placeholders = brandIds.map(() => '?').join(',');
-      productQuery += ` OR p.brand_id IN (${placeholders})`;
-      likeValues.push(...brandIds);
+      productQuery += ` AND p.brand_id IN (${placeholders})`;
+      queryValues.push(...brandIds);
     }
 
-    const [products] = await db.query(productQuery, likeValues);
+    // Apply price range filter if present
+    if (filters.priceRange && filters.priceRange.length > 0) {
+      const [minPrice, maxPrice] = filters.priceRange[0].id.split('-').map(Number);
+      productQuery += ` AND p.price BETWEEN ? AND ?`;
+      queryValues.push(minPrice, maxPrice);
+    }
+
+    // Apply options filter if present
+    if (filters.options && filters.options.length > 0) {
+      const optionIds = filters.options.map(opt => opt.id);
+      const placeholders = optionIds.map(() => '?').join(',');
+      productQuery += ` AND p.id IN (SELECT product_id FROM product_option WHERE option_id IN (${placeholders}))`;
+      queryValues.push(...optionIds);
+    }
+console.log(filters.promotions.map(promo => promo.id))
+    // Apply promotions filter if present
+    if (filters.promotions && filters.promotions.length > 0) {
+      const promotionIds = filters.promotions.map(promo => promo.id);
+      const placeholders = promotionIds.map(() => '?').join(',');
+      productQuery += ` AND p.id IN (SELECT product_id FROM product_promotion WHERE promotion_id IN (${placeholders}))`;
+      queryValues.push(...promotionIds);
+    }
+
+    // Apply rating filter if present
+    if (filters.minRating && filters.minRating.length > 0) {
+      const minRating = filters.minRating[0].id;
+      productQuery += ` AND p.id IN (SELECT product_id FROM review WHERE rating >= ? GROUP BY product_id)`;
+      queryValues.push(minRating);
+    }
+
+    // Apply attribute filters if present
+    if (filters.color && filters.color.length > 0) {
+      const colorIds = filters.color.map(color => color.id);
+      const placeholders = colorIds.map(() => '?').join(',');
+      productQuery += ` AND p.id IN (SELECT product_id FROM attribute_value WHERE attribute_id IN (SELECT attribute_id FROM attribute_category WHERE category_id = ?) AND text_value IN (${placeholders}))`;
+      queryValues.push(categoryId, ...colorIds);
+    }
+
+    // Execute the query
+    const [products] = await db.query(productQuery, queryValues);
 
     if (products.length === 0) {
       return res.json({ products: [] });
@@ -1374,6 +1413,7 @@ app.get('/api/search', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 // VOUCHER
@@ -1547,7 +1587,7 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
       const display = hasText
         ? textVal
         : (numVal !== null
-            ? `${numVal}${row.unit_symbol ? ' ' + row.unit_symbol : ''}`
+            ? `${numVal}${row.unit_symbol ? '' + row.unit_symbol : ''}`
             : null);
 
       if (display === null) continue;

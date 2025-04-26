@@ -207,6 +207,14 @@ export const shopConfig = {
 			'component': 'search-page'
 		},
 		{
+			'path': '/search/pd/:categoryId/',
+			'submitApi': siteConfig.serverUrl + '/api/shop/search/', 
+			'label': '',
+			'joinTables': [],
+			'listType': 'multiple',
+			'component': 'search-page'
+		},
+		{
 			'path': '/:promotionName/pd/:id/?type=view_promotion',
 			'table': 'promotion', 
 			'label': '',

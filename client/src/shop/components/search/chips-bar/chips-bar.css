@@ -1,0 +1,70 @@
+.filter-chip {
+  background-color: #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.chips-bar .filter-chip {
+ padding: 8px;
+ margin: 5px;
+}
+
+.chips-bar .filter-chip .p-chip-text {
+	margin-right: 4px;
+}
+
+.chips-bar .clear-filters-btn {
+	background: white;
+	color: #6e6e6e;
+}
+
+.chips-bar .clear-filters-btn:hover {
+	text-decoration: underline;
+	background: #fff!important;
+}
+
+.chips-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: flex-start; /* Chips aligned to the left */
+}
+
+.clear-filters-btn {
+  background-color: white;
+  color: #6e6e6e;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  transition: background-color 0.3s;
+  margin-left: 0.5rem; /* Ensure a small gap between last chip and button */
+}
+
+.clear-filters-btn:hover {
+  text-decoration: underline;
+  background-color: #f5f5f5; /* Optional hover background */
+}
+
+.filter-chip {
+  background-color: #f0f0f0;
+  font-size: 0.9rem;
+  padding: 8px;
+  margin: 5px;
+}
+
+.chips-bar .filter-chip .p-chip-text {
+  margin-right: 4px;
+}
+
+
