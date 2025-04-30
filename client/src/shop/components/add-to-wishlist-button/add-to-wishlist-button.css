@@ -1,4 +1,4 @@
-.add-to-favourites-btn {
+.add-to-wishlist-btn {
   width: 100%!important;
   background: #fff!important;
   background-color: #ffffff!important;
@@ -7,7 +7,7 @@
 }
 
 /* Shift icon to the far left while keeping label centered */
-.add-to-favourites-btn .pi-heart {
+.add-to-wishlist-btn .pi-heart {
   position: absolute;
   left: 1rem;
 }
@@ -20,29 +20,69 @@
   padding-bottom: 20px;
 }
 
-.add-to-favourites-btn {
+/* Keep button height stable even with spinner */
+.wishlist-spinner-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1rem; /* adjust to match text height */
+  min-height: 1rem;
+  line-height: 1rem;
+}
+
+/* Optional: fix button height to ensure no layout shift */
+.add-to-wishlist-btn {
   width: 200px;
+  height: 40px; /* fixed height */
   text-align: center;
   padding: 10px 20px;
   font-size: 1rem;
-  background-color: #0066cc; /* Use your desired color */
-  color: #002d6b;
-  border-color: #002d6b;
+  background-color: #fff !important;
+  color: #002d6b !important;
+  border: 1px solid #002d6b !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  line-height: 1rem;
 }
 
-.add-to-favourites-btn:hover {
+
+.add-to-wishlist-btn:hover {
   background-color: #ccc; /* Darker shade on hover */
-  color: #003f88;
-  border-color: #003f88;
+  color: #fff!important;
+  border: 1px
 }
 
-.add-to-favourites-btn:disabled {
+.add-to-wishlist-btn:disabled {
   background-color: #b0c4de;
   color: #6c757d;
   cursor: not-allowed;
 }
 
-.add-to-favourites-btn .pi {
+.add-to-wishlist-btn .pi {
   margin-right: 8px;
+}
+
+.wishlist-icon-button {
+  background-color: white !important;
+  border: none !important;
+  padding: 2px !important;
+  border-radius: 50% !important;
+  height: 30px;
+  width: 30px;
+  color: #000!important;
+  box-shadow: none !important;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  transition: background-color 0.2s ease;
+}
+
+.wishlist-icon-button.p-button-danger {
+  color: #e74c3c;
+}
+
+.wishlist-icon-button:hover {
+  background-color: #333 !important;
 }
 

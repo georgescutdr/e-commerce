@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Button } from 'primereact/button';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { useNavigate } from 'react-router-dom';
-import { DropdownProductCard } from '../cards/dropdown-product-card';
+import { ProductCard } from '../cards/dropdown/shopping-cart/product-card';
 import './cart-button.css';
 
 export const CartButton = ({ cartItems = {}, loading = false }) => {
@@ -46,8 +46,8 @@ export const CartButton = ({ cartItems = {}, loading = false }) => {
           <div className="empty-cart">Your cart is empty.</div>
         ) : (
           <>
-            {cartArray.slice(0, 5).map((item, index) => (
-              <DropdownProductCard key={index} item={item} />
+            {cartArray.slice(0, 3).map((item, index) => (
+              <ProductCard key={index} item={item} />
             ))}
             <div className="cart-total-row">
               <span className="cart-total-label">TOTAL: {itemCount} product{itemCount > 1 ? 's' : ''}</span>

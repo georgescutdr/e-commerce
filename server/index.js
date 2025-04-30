@@ -241,29 +241,103 @@ app.post('/api/delete-order-shipping-status', (req, res) => {
 // WISHLIST
 
 app.get('/api/shop/wishlist/', async (req, res) => {
-    const userId = req.query.userId;
+  const userId = parseInt(req.query.userId);
 
-    if (!userId) {
-        return res.status(400).json({ message: 'Missing userId' });
-    }
-console.log(userId)
-    try {
-        const [rows] = await db.query(
-            `
-            SELECT p.* 
-            FROM wishlist w
-            JOIN product p ON p.id = w.product_id
-            WHERE w.user_id = ?
-            `,
-            [userId]
-        );
+  if (isNaN(userId)) {
+    return res.status(400).json({ message: 'Missing or invalid userId' });
+  }
 
-        res.json({ wishlist: rows });
-    } catch (error) {
-        console.error('Error fetching wishlist:', error);
-        res.status(500).json({ message: 'Server error fetching wishlist' });
-    }
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT 
+        p.*, 
+        b.name AS brand_name,
+        AVG(r.rating) AS rating,
+
+        -- Aggregate valid promotions
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', pr.id,
+            'name', pr.name,
+            'type', pr.type,
+            'value', pr.value
+          )
+        ) AS promotion_array,
+
+        -- Aggregate valid vouchers
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', v.id,
+            'name', v.name,
+            'type', v.type,
+            'value', v.value
+          )
+        ) AS voucher_array
+
+      FROM product p
+      JOIN wishlist w ON p.id = w.product_id
+      LEFT JOIN brand b ON p.brand_id = b.id
+      LEFT JOIN review r ON p.id = r.product_id
+
+      -- Only valid promotions
+      LEFT JOIN product_promotion pp 
+        ON p.id = pp.product_id
+      LEFT JOIN promotion pr 
+        ON pp.promotion_id = pr.id 
+        AND pr.start_date <= NOW() 
+        AND pr.end_date >= NOW()
+
+      -- Only valid vouchers
+      LEFT JOIN product_voucher pv 
+        ON p.id = pv.product_id
+      LEFT JOIN voucher v 
+        ON pv.voucher_id = v.id 
+        AND v.expires_at > NOW() 
+        AND v.num != 0
+
+      WHERE w.user_id = ?
+
+      GROUP BY p.id
+      `,
+      [userId]
+    );
+
+    // Post-process to remove duplicates from JSON arrays
+    const cleanRows = rows.map(row => {
+	  const promotionArray = row.promotion_array || [];
+	  const voucherArray = row.voucher_array || [];
+
+	  // Deduplicate by 'id'
+	  const uniquePromotions = Object.values(
+	    (promotionArray || []).reduce((acc, promo) => {
+	      if (promo && promo.id) acc[promo.id] = promo;
+	      return acc;
+	    }, {})
+	  );
+
+	  const uniqueVouchers = Object.values(
+	    (voucherArray || []).reduce((acc, voucher) => {
+	      if (voucher && voucher.id) acc[voucher.id] = voucher;
+	      return acc;
+	    }, {})
+	  );
+
+	  return {
+	    ...row,
+	    promotion_array: uniquePromotions,
+	    voucher_array: uniqueVouchers,
+	  };
+	});
+
+    res.json(cleanRows);
+  } catch (error) {
+    console.error('Error fetching wishlist:', error);
+    res.status(500).json({ message: 'Server error fetching wishlist' });
+  }
 });
+
+
 
 app.post('/api/shop/wishlist/toggle', async (req, res) => {
 	const { userId, productId } = req.body;

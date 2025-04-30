@@ -148,6 +148,11 @@ export const ShopContextProvider = ({ children }) => {
       setTotal(newTotal);
     };
 
+    useEffect(() => {
+      if (isInitialized) {
+        Cookies.set('cartItems', JSON.stringify(cartItems), { expires: 7 }); // 7-day expiry
+      }
+    }, [cartItems, isInitialized]);
 
   return (
     <ShopContext.Provider value={{

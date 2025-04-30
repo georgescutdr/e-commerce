@@ -1,0 +1,68 @@
+import React, { useContext, useRef } from 'react';
+import { FiTrash2 } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { slugify } from '../../../../../../utils';
+import { WishlistContext } from '../../../../../context/wishlist-context';
+import Axios from 'axios';
+import { shopConfig } from '../../../../../../config';
+import { Toast } from 'primereact/toast';
+import './product-card.css';
+
+export const ProductCard = ({ item }) => {
+    const { toggleWishlist } = useContext(WishlistContext);
+    const toast = useRef(null);
+
+    if (!item) return null;
+
+    const image = item.image
+        ? `/public/uploads/product/${item.id}/${item.image}`
+        : `/public/uploads/default-image.jpg`;
+
+    const handleRemove = () => {
+        // Update context
+        toggleWishlist(item);
+
+        // Call API to update DB
+        Axios.post(shopConfig.api.wishlistToggleUrl, {
+            userId: 1, 
+            productId: item.id,
+        })
+        .then((res) => {
+            const msg = res.data.message;
+            toast.current.show({
+                severity: msg.includes('removed') ? 'warn' : 'success',
+                summary: 'Wishlist Updated',
+                detail: msg,
+                life: 3000,
+            });
+        })
+        .catch(() => {
+            toast.current.show({
+                severity: 'error',
+                summary: 'Wishlist Error',
+                detail: 'Failed to update wishlist',
+                life: 3000,
+            });
+        });
+    };
+
+    return (
+        <div className="dropdown-product-card">
+            <Toast ref={toast} />
+            <img className="product-image" src={image} alt={item.name} />
+            <div className="product-info">
+                <Link
+                    to={`/${slugify(item.name)}/pd/${item.id}/view_product`}
+                    className="product-title-link"
+                >
+                    <span className="product-title">{item.name}</span>
+                </Link>
+            </div>
+            <div className="product-meta">
+                <button className="remove-btn" onClick={handleRemove}>
+                    <FiTrash2 />
+                </button>
+            </div>
+        </div>
+    );
+};

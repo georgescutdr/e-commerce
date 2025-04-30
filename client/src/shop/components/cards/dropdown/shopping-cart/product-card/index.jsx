@@ -1,10 +1,11 @@
 import React, { useContext } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { ShopContext } from '../../../context/shop-context';
-import './dropdown-product-card.css';
+import { slugify } from '../../../../../../utils'
+import { ShopContext } from '../../../../../context/shop-context';
+import './product-card.css';
 
-export const DropdownProductCard = ({ item, onRemove }) => {
+export const ProductCard = ({ item, onRemove }) => {
     if (!item) return null;
 
     const {removeFromCart} = useContext(ShopContext);
@@ -17,7 +18,7 @@ export const DropdownProductCard = ({ item, onRemove }) => {
         <div className="dropdown-product-card">
             <img className="product-image" src={image} alt={item.name} />
             <div className="product-info">
-                <Link to={`/${item.name}/pd/${item.id}/view_product`} className="product-title-link">
+                <Link to={`/${slugify(item.name)}/pd/${item.id}/view_product`} className="product-title-link">
                     <span className="product-title">{`${item.brand} ${item.name}`}</span>
                 </Link>
                 <span className="product-price">${Number(item.price).toFixed(2)}</span>

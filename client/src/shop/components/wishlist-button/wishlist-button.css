@@ -1,0 +1,42 @@
+.wishlist-button-hover-container {
+  position: relative;
+  display: inline-block;
+}
+
+.wishlist-button-wrapper {
+  position: relative;
+}
+
+.item-count-badge {
+  position: absolute;
+  top: 0;
+  right: -5px;
+  background-color: red;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+.wishlist-dropdown-panel {
+  width: 300px;
+  padding: 10px;
+}
+
+.empty-wishlist {
+  padding: 10px;
+  text-align: center;
+  font-style: italic;
+}
+
+.wishlist-dropdown-footer {
+  margin-top: 10px;
+  display: block; /* Change from flex to block to allow full-width button */
+}
+
+.wishlist-dropdown-footer .wishlist-view-button {
+  width: 100%!important;
+  display: block; /* Ensure it behaves like a block-level element */
+}
+
+

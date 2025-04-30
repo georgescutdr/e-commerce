@@ -57,10 +57,8 @@
   font-family: 'Inter', sans-serif;
 }
 
-.product-price {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: #2563eb;
+.product-side-info .add-to-cart-btn {
+  width: 100%;
 }
 
 .product-reviews {

@@ -1,0 +1,24 @@
+.wishlist-card .product-title {
+	margin-bottom: 0px;
+}
+
+.wishlist-card .product-title a {
+	text-decoration: none;
+}
+
+.wishlist-card .product-title-link {
+	font-size: 1.5rem;
+	margin-top: 10px;
+}
+
+.wishlist-card-actions {
+	flex: 0 0 11%!important;
+}
+
+.wishlist-card-actions .add-to-cart-btn {
+	width: 100%;
+}
+
+.wishlist-card-actions .remove-btn:hover {
+	color: #fff!important;
+}

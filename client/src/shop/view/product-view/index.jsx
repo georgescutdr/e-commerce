@@ -62,7 +62,7 @@ export const ProductView = ({ item, props }) => {
                     <StockStatus quantity={item.quantity} />
                     <PromotionsList promotions={item.promotion_array} />
                     <VoucherLabel vouchers={item.voucher_array} />
-                    <AddToCartButton item={item} />
+                    <AddToCartButton item={item} className="add-to-cart-btn" />
                     <AddToWishlistButton item={item} userId={1} />
                 </div>
             </div>

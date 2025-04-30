@@ -101,7 +101,6 @@ const ShoppingCart = () => {
                               <span className="product-title-link">{`${item.brand} ${item.name}`}</span>
                            </Link>
                       </div>
-
                       {item.promotions?.length > 0 && (
                           <div className="promotions">
                             <strong>

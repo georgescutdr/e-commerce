@@ -25,7 +25,7 @@ const ViewItems = ({props}) => {
         if (props.table === 'product') {
             queryParams.category_id = params.id;
             queryParams.joinTables = [
-                {table: 'promotion', fields: ['id', 'type', 'value', 'start_date', 'end_date'], pivot: true},
+                {table: 'promotion', fields: ['id', 'name', 'type', 'value', 'start_date', 'end_date'], pivot: true},
                 {table: 'brand', fields: ['id', 'name'], pivot: true}, 
                 {table: 'review', fields: ['rating'], pivot: true}, 
                 {table: 'voucher', fields: ['id', 'expires_at'], pivot: true}, 
@@ -58,7 +58,7 @@ const ViewItems = ({props}) => {
             </div>
             <div className="items-content-wrapper">
                 <div className="search-panel-container">
-                    <SearchPanel categoryId={ params.id } />
+                    <SearchPanel categoryId={ params.id } displayOnly={true} />
                 </div>
                 <div className="item-grid-container">
                     {loading ? (

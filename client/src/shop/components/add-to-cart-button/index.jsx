@@ -14,7 +14,7 @@ export const AddToCartButton = ({item, props = {}}) => {
         product_id: item.id,
         name: item.name,
         price: item.price,
-        brand: item.brand_array?.[0]?.name,
+        brand: item.brand_name || item.brand_array?.[0]?.name,
         promotion_array: item.promotion_array 
       });
     };

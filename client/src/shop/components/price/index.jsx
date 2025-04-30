@@ -13,7 +13,7 @@ export const Price = ({ price, newPrice }) => {
         </div>
       ) : (
         <div>
-          <div className="p-2 old-price">
+          <div className="old-price">
             <s>
               <sup>{ dollarIcon }</sup> { price }
             </s>
@@ -23,6 +23,6 @@ export const Price = ({ price, newPrice }) => {
           </div>
         </div>
       )}
-    </div>
+    </div> 
   );
 };

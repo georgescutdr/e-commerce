@@ -2,51 +2,48 @@ import React, { useEffect, useState, useRef } from 'react';
 import Axios from 'axios';
 import { shopConfig } from '../../../config';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { Button } from 'primereact/button';
-import { Rating } from 'primereact/rating';
-import { Toast } from 'primereact/toast';
-import { AddToCartButton } from '../../components/add-to-cart-button'
 import { Card } from 'primereact/card';
+import { Toast } from 'primereact/toast';
+import { ProductCard } from '../../components/cards/wishlist/product-card';
+import { useWishlist } from '../../context/wishlist-context';
 import './wishlist.css';
 
-const Wishlist = ({ userId }) => {
-    const [items, setItems] = useState([]);
+const Wishlist = ({ props }) => {
+    const userId = 1;
     const [loading, setLoading] = useState(true);
     const toast = useRef(null);
 
-    // Load from localStorage if available
-    useEffect(() => {
-        const stored = localStorage.getItem('wishlistItems');
-        if (stored) {
-            setItems(JSON.parse(stored));
-        }
-    }, []);
+    const {
+        wishlistArray,
+        loadWishlist,
+        toggleWishlist
+    } = useWishlist();
 
-    // Fetch and sync with backend
     useEffect(() => {
-        if (!userId) return;
-        Axios.get(shopConfig.api.getWishlistUrl, { params: { userId: userId } })
+        Axios.get(shopConfig.api.getWishlistUrl, {
+            params: { userId }
+        })
             .then((res) => {
-                const wishlist = res.data.wishlist || [];
-                setItems(wishlist);
-                localStorage.setItem('wishlistItems', JSON.stringify(wishlist));
+                const wishlist = res.data || [];
+                loadWishlist(wishlist); // sync with context
             })
             .catch((err) => {
-                console.error('Error loading wishlist:', err);
+                console.error('Error fetching wishlist from DB:', err);
             })
             .finally(() => setLoading(false));
-    }, [userId]);
+    }, [props, loadWishlist]);
 
     const handleRemove = async (productId) => {
         try {
             await Axios.post(shopConfig.api.wishlistToggleUrl, {
-                userId: userId,
-                productId: productId,
+                userId,
+                productId,
             });
 
-            const updated = items.filter((item) => item.id !== productId);
-            setItems(updated);
-            localStorage.setItem('wishlistItems', JSON.stringify(updated));
+            const productToRemove = wishlistArray.find(item => item.id === productId);
+            if (productToRemove) {
+                toggleWishlist(productToRemove); // remove from context
+            }
 
             toast.current?.show({
                 severity: 'success',
@@ -70,8 +67,10 @@ const Wishlist = ({ userId }) => {
             <Toast ref={toast} />
             <h2>Your Wishlist</h2>
             <Card className="wishlist-info-card">
-                {items.length > 0 ? (
-                    <p className="wishlist-info-text">{items.length} product{items.length > 1 ? 's' : ''} in your wishlist</p>
+                {wishlistArray.length > 0 ? (
+                    <p className="wishlist-info-text">
+                        {wishlistArray.length} product{wishlistArray.length > 1 ? 's' : ''} in your wishlist
+                    </p>
                 ) : (
                     <p className="wishlist-info-text">Your wishlist is empty.</p>
                 )}
@@ -81,36 +80,15 @@ const Wishlist = ({ userId }) => {
                 <div className="wishlist-loader">
                     <ProgressSpinner />
                 </div>
-            ) : items.length === 0 ? (
-                <p className="wishlist-empty">Your wishlist is empty.</p>
             ) : (
                 <div className="wishlist-cards-container">
-                    {items.map((item) => (
-                        <div key={item.id} className="wishlist-card">
-                            <div className="wishlist-card-image">
-                                <img 
-                                    src={
-                                      item.files && item.files.length > 0
-                                        ? `/public/uploads/${props.table}/${item.id}/${item.files[0].file_name}`
-                                        : '/public/uploads/default-image.jpg'
-                                    } 
-                                    alt={item.name} 
-                                />
-                            </div>
-                            <div className="wishlist-card-details">
-                                <h3>{item.brand} {item.name}</h3>
-                                <p><Rating value={item.rating || 0} readOnly cancel={false} stars={5} />{ 4.82 }</p>
-                            </div>
-                            <div className="wishlist-card-actions">
-                                <AddToCartButton item={ item } props={{label: false}} />
-                                <Button
-                                    icon="pi pi-trash"
-                                    className="p-button-sm p-button-text p-button-danger mt-2 remove-btn"
-                                    label="Remove"
-                                    onClick={() => handleRemove(item.id)}
-                                />
-                            </div>
-                        </div>
+                    {wishlistArray.map((item) => (
+                        <ProductCard
+                            key={item.id}
+                            item={item}
+                            table={props.table}
+                            onRemove={handleRemove}
+                        />
                     ))}
                 </div>
             )}

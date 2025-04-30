@@ -93,7 +93,7 @@ export const shopConfig = {
 		},
 		{
 			'path': '/wishlist',
-			'table': '',
+			'table': 'wishlist',
 			'joinTables': [],
 			'listType': 'multiple',
 			'label': 'Wishlist',

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import Cookies from 'js-cookie';
 
 export const WishlistContext = createContext();
@@ -8,6 +8,7 @@ export const WishlistProvider = ({ children }) => {
     const stored = localStorage.getItem('wishlistItems') || Cookies.get('wishlistItems');
     return stored ? JSON.parse(stored) : {};
   });
+  const wishlistArray = Object.values(wishlistItems);
 
   // Sync to localStorage and cookies
   useEffect(() => {
@@ -15,16 +16,15 @@ export const WishlistProvider = ({ children }) => {
     Cookies.set('wishlistItems', JSON.stringify(wishlistItems), { expires: 7 });
   }, [wishlistItems]);
 
-  // Call this after login to load from backend if needed
-  const loadWishlist = (itemsArray) => {
+  const loadWishlist = useCallback((itemsArray) => {
     const wishlistMap = {};
     itemsArray.forEach(item => {
       wishlistMap[item.id] = item;
     });
     setWishlistItems(wishlistMap);
-  };
+  }, []);
 
-  const toggleWishlist = (product) => {
+  const toggleWishlist = useCallback((product) => {
     setWishlistItems(prev => {
       const exists = !!prev[product.id];
       const updated = { ...prev };
@@ -35,12 +35,20 @@ export const WishlistProvider = ({ children }) => {
       }
       return updated;
     });
-  };
+  }, []);
 
-  const isInWishlist = (id) => !!wishlistItems[id];
+  const isInWishlist = useCallback((id) => !!wishlistItems[id], [wishlistItems]);
 
   return (
-    <WishlistContext.Provider value={{ wishlistItems, loadWishlist, toggleWishlist, isInWishlist }}>
+    <WishlistContext.Provider
+      value={{
+        wishlistItems,
+        wishlistArray, 
+        loadWishlist,
+        toggleWishlist,
+        isInWishlist
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );

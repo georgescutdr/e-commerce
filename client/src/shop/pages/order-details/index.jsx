@@ -8,6 +8,7 @@ import { Skeleton } from 'primereact/skeleton';
 import { shopConfig } from '../../../config';
 import { capitalize, formatDateTime } from '../../../utils'
 import { Timeline } from 'primereact/timeline';
+import { OrderDetailsSkeleton } from '../../components/skeleton/order-details-skeleton'
 import './order-details.css';
 
 const removeDuplicateStatuses = (statuses) => {
@@ -42,7 +43,7 @@ const OrderDetails = () => {
                 {table: 'shipping_information', fields: [
                     'id', 'name', 'address', 'city', 'state', 'postal_code', 'country', 'phone', 'email', 'instructions'
                 ]}, 
-                {'table': 'shipping_status', fields: ['id', 'name', 'description', 'color'], pivot: true}
+                {'table': 'shipping_status', fields: ['id', 'name', 'description', 'color', 'icon'], pivot: true}
             ],
         }
 
@@ -58,8 +59,6 @@ const OrderDetails = () => {
             setShippingStatusArray(uniqueShippingStatuses);
             setProducts(data.product_array);
             setLoading(false);
-
-            console.log(data);
         }).catch((err) => {
             console.error('Error fetching order details:', err);
             setLoading(false);
@@ -68,11 +67,7 @@ const OrderDetails = () => {
 
     if (loading) {
         return (
-            <div className="p-6">
-                <Skeleton width="100%" height="3rem" className="mb-2" />
-                <Skeleton width="90%" height="2rem" className="mb-2" />
-                <Skeleton width="80%" height="2rem" />
-            </div>
+            <OrderDetailsSkeleton />
         );
     }
 
@@ -118,6 +113,7 @@ const OrderDetails = () => {
                         <Timeline
                             value={shippingStatusArray.map((statusItem) => ({
                                 status: capitalize(statusItem.name),
+                                description: statusItem.description || '',
                                 date: orderDetails.created_at, 
                                 icon: statusItem.icon ? statusItem.icon :  'pi pi-check',
                                 color: statusItem.color || '#000',
@@ -147,6 +143,7 @@ const OrderDetails = () => {
                                 <div className="timeline-content">
                                     <h6 className="mb-1">{item.status}</h6>
                                     <p className="m-0 text-sm">{formatDateTime(item.date)}</p>
+                                    {item.description && <p className="m-0 text-xs text-secondary">{item.description}</p>}
                                 </div>
                             )}
                         />
