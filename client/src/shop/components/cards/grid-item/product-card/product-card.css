@@ -22,6 +22,11 @@
   font-size: 14px;
 }
 
+.stock-status {
+  margin-top: -15px;
+  margin-bottom: 20px;
+}
+
 .item-image {
   width: 100%;
   height: 180px;
@@ -52,7 +57,7 @@
   margin-left: 0.5rem;
 }
 
-.promotion-label {
+.grid-item .promotion-label {
   position: absolute;
   top: 36px;
   left: 0;
@@ -87,7 +92,6 @@
 
 .grid-item {
   position: relative;
-  padding: 1rem;
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -96,8 +100,8 @@
 
 .grid-item .wishlist-icon-button {
   position: absolute;
-  top: 23px;
-  right: 22px;
+  top: 7px;
+  right: 7px;
   z-index: 10;
 }
 

@@ -65,7 +65,7 @@
 }
 
 .wishlist-icon-button {
-  background-color: white !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
   border: none !important;
   padding: 2px !important;
   border-radius: 50% !important;
@@ -84,5 +84,12 @@
 
 .wishlist-icon-button:hover {
   background-color: #333 !important;
+}
+
+.wishlist-icon-button .p-progress-spinner-svg {
+  top: 18px;
+  left: 2px;
+  width: 22px!important;
+  height: 22px!important;
 }
 

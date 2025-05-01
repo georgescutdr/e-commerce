@@ -127,13 +127,6 @@ div.app {
   font-size: 18px;
 }
 
-.new-price {
-  color: red;
-  font-weight: bold;
-  font-size: 21px;
-  margin-top: -20px;
-}
-
 .card-promotion {
   display: block;
   position: relative;

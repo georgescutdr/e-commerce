@@ -19,9 +19,6 @@ export const AddToCartButton = ({item, props = {}}) => {
       });
     };
 
-
-    console.log("AddToCart context:", useContext(ShopContext));
-
     const label = props.label && props.label === false ? '' : 'Add to Cart' 
     
     return (

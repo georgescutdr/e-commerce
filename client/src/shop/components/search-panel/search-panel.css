@@ -28,10 +28,12 @@
 }
 
 .attribute-card {
+  background-color: #fff;
   margin-bottom: 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
   overflow: hidden;
+  margin-bottom: 1rem;
 }
 
 .attribute-card-header {
@@ -98,22 +100,12 @@
   margin-bottom: 1rem;
 }
 
-.search-panel {
-  padding: 1rem;
-}
-
 .clear-filters-btn {
   background: #e53935;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  margin-bottom: 1rem;
-}
-
-.attribute-card {
-  border: 1px solid #ccc;
-  padding: 0.75rem;
   margin-bottom: 1rem;
 }
 

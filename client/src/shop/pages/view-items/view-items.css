@@ -1,17 +1,67 @@
 .items-content-wrapper {
   display: flex;
-  gap: 2rem;
+  gap: 1.2rem;
   align-items: flex-start;
   margin-top: 1.5rem;
 }
 
 .search-panel-container {
-  flex: 0 0 15%;
-  max-width: 15%;
+  flex: 0 0 18%;
+  max-width: 18%;
 }
 
 .item-grid-container {
   flex: 1;
+}
+
+
+
+.items-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+}
+
+.items-header-text h1 {
+    margin: 0;
+    text-align: left;
+}
+
+.view-toggle-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.view-toggle-btn {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    background: #f8f9fa;
+    color: #333;
+}
+
+.view-toggle-btn.active {
+    background-color: #002d6b;
+    color: #fff;
+    border-color: #002d6b;
+}
+
+.item-grid-container.loading-overlay {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.item-grid-container.loading-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 10;
+    backdrop-filter: blur(2px);
 }
 
 /* Hide the left column on smaller screens */

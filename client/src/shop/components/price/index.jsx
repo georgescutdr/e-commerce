@@ -1,6 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDollarSign } from '@fortawesome/free-solid-svg-icons';
+import './price.css'
 
 export const Price = ({ price, newPrice }) => {
   const dollarIcon = <FontAwesomeIcon icon={ faDollarSign } className="text-green-600" />;
@@ -8,7 +9,7 @@ export const Price = ({ price, newPrice }) => {
   return (
     <div className="price-container">
       {price === newPrice || !newPrice ? (
-        <div className="p-2 new-price">
+        <div className="new-price">
           <sup>{ dollarIcon }</sup> { price }
         </div>
       ) : (
@@ -18,7 +19,7 @@ export const Price = ({ price, newPrice }) => {
               <sup>{ dollarIcon }</sup> { price }
             </s>
           </div>
-          <div className="p-2 new-price">
+          <div className="new-price">
             <sup>{ dollarIcon }</sup> { newPrice }
           </div>
         </div>

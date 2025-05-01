@@ -49,14 +49,13 @@ export const ProductCard = ({ item, table }) => {
                       className="mb-2"
                     />
                   </div>
-
-                  <div className="card-bottom">
-                    <div className="stock-status">
+                  <div className="stock-status">
                       <StockStatus quantity={item.quantity} />
-                    </div>
-                    <div className="voucher-label">
+                  </div>
+                  <div className="voucher-label">
                         {item.voucher_array?.[0]?.id && <VoucherLabel vouchers={item.voucher_array} />}
-                    </div>
+                 </div>
+                  <div className="card-bottom">
                     <Price
                       newPrice={
                         item.promotion_array?.[0]

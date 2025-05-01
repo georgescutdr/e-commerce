@@ -78,10 +78,7 @@ export const AddToWishlistButton = ({ item, userId, iconOnly = false }) => {
                     label={
                         loading ? (
                             <ProgressSpinner
-                                style={{ width: '20px', height: '20px' }}
-                                strokeWidth="8"
-                                fill="var(--surface-ground)"
-                                animationDuration=".5s"
+                                className="progress-spinner"
                             />
                         ) : null
                     }

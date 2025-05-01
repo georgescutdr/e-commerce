@@ -1,0 +1,12 @@
+.view-toggle-btn {
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.view-toggle-btn:focus,
+.view-toggle-btn:active {
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
