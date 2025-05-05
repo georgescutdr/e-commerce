@@ -2,14 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import Axios from 'axios';
 import { ViewToggleButtons } from '../../components/view-toggle-buttons'
+import { ItemGridSkeleton } from '../../components/skeleton/item-grid-skeleton'
+import { ItemStackSkeleton } from '../../components/skeleton/item-stack-skeleton'
 import { shopConfig } from '../../../config';
 import { ItemGrid } from '../../components/item-grid';
 import { SearchPanel } from '../../components/search-panel';
 import { ChipsBar } from '../../components/search/chips-bar';
+import { ItemStack } from '../../components/item-stack'
 import Cookies from 'js-cookie'
 import './search-page.css';
 
-const SearchPage = () => {
+const SearchPage = ({props}) => {
   const { search, categoryId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [results, setResults] = useState([]);
@@ -143,7 +146,16 @@ const SearchPage = () => {
       <div className={`item-grid-container ${viewMode} ${viewLoading ? 'loading-overlay' : ''}`}>
         <ChipsBar selected={selected} onRemove={handleRemoveChip} onClearAll={clearAllFilters} />
 
-        {loading && <p>Loading...</p>}
+        {loading ? (
+                        viewMode === 'grid'
+                            ? <ItemGridSkeleton count={8} />
+                            : <ItemStackSkeleton count={3} />
+                        
+                    ) : (
+                        viewMode === 'grid'
+                            ? <ItemGrid items={results} props={props} />
+                            : <ItemStack items={results} props={props} />
+        )}
 
         {error && (
           <div className="error-message">
@@ -153,12 +165,6 @@ const SearchPage = () => {
         )}
 
         {!loading && !error && results.length === 0 && <p>No results found.</p>}
-
-        {!loading && !error && results.length > 0 && (
-          <div className="results-list">
-            <ItemGrid items={results} props={{ table: 'product' }} />
-          </div>
-        )}
       </div>
     </div>
     </div>
