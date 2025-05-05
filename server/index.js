@@ -1337,11 +1337,6 @@ app.get('/api/search', async (req, res) => {
 	    }
 	}
 
-/*	if (combinedAttributeValues.length > 0) {
-	    whereConditions.push(`pav.attribute_value_id IN (?)`);
-	    whereValues.push(combinedAttributeValues);
-	}*/
-
     // Brands
     if (filtersObj.brands?.length > 0) {
         whereConditions.push(`b.id IN (?)`);
@@ -1368,7 +1363,25 @@ app.get('/api/search', async (req, res) => {
 
     // Build final SQL query
     let sql = `
-        SELECT p.*, AVG(r.rating) as rating 
+        SELECT p.*, AVG(r.rating) as rating, 
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', pr.id,
+            'name', pr.name,
+            'type', pr.type,
+            'value', pr.value,
+            'start_date', pr.start_date,
+            'end_date', pr.end_date
+          )
+        ) AS promotion_array,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', v.id,
+            'name', v.name,
+            'type', v.type,
+            'value', v.value
+          )
+        ) AS voucher_array
         FROM product p
         LEFT JOIN product_promotion pp ON pp.product_id = p.id
         LEFT JOIN promotion pr ON pp.promotion_id = pr.id
@@ -1379,6 +1392,8 @@ app.get('/api/search', async (req, res) => {
         LEFT JOIN product_attribute pa ON pa.product_id=p.id
         LEFT JOIN attribute a ON a.id=pa.attribute_id
         LEFT JOIN product_attribute_value pav ON pav.product_id=p.id
+        LEFT JOIN product_voucher pv ON pv.product_id=p.id
+        LEFT JOIN voucher v ON v.id=pv.voucher_id
     `;
 
     if (whereConditions.length > 0) {
@@ -1397,16 +1412,53 @@ app.get('/api/search', async (req, res) => {
     console.log(finalValues);
 
     try {
-        const [rows] = await db.query(sql, finalValues);
-        res.json(rows);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
-    }
+	    const [rows] = await db.query(sql, finalValues);
+
+	    const deduplicatedRows = rows.map(row => {
+	        const cleanRow = { ...row };
+
+	        // Parse JSON arrays if needed (some drivers return them as strings)
+	        const promoArray = typeof row.promotion_array === 'string'
+	            ? JSON.parse(row.promotion_array)
+	            : row.promotion_array || [];
+
+	        const voucherArray = typeof row.voucher_array === 'string'
+	            ? JSON.parse(row.voucher_array)
+	            : row.voucher_array || [];
+
+	        // Remove null entries and deduplicate by ID
+	        cleanRow.promotion_array = Array.isArray(promoArray)
+	            ? Object.values(
+	                promoArray
+	                  .filter(p => p?.id != null)
+	                  .reduce((acc, curr) => {
+	                      acc[curr.id] = curr;
+	                      return acc;
+	                  }, {})
+	              )
+	            : [];
+
+	        cleanRow.voucher_array = Array.isArray(voucherArray)
+	            ? Object.values(
+	                voucherArray
+	                  .filter(v => v?.id != null)
+	                  .reduce((acc, curr) => {
+	                      acc[curr.id] = curr;
+	                      return acc;
+	                  }, {})
+	              )
+	            : [];
+
+	        return cleanRow;
+	    });
+
+	    res.json(deduplicatedRows);
+	} catch (error) {
+	    console.error(error);
+	    res.status(500).send('Server error');
+	}
+
 });
-
-
-
 
 app.get('/api/search2', async (req, res) => {
   const { query, filters } = req.query;

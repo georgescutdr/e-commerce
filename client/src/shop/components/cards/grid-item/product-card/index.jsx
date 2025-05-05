@@ -11,6 +11,7 @@ import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, make
 import './product-card.css';
 
 export const ProductCard = ({ item, table }) => {
+ 
     return (
         <div className="grid-item">
             <AddToWishlistButton item={item} iconOnly={true} userId={1} />
@@ -42,7 +43,7 @@ export const ProductCard = ({ item, table }) => {
                 </Link>
                   <div className="product-rating">
                     <Rating
-                      value={getAverageRating(item.review_array)}
+                      value={item.rating || getAverageRating(item.review_array)}
                       readOnly
                       cancel={false}
                       stars={5}
@@ -60,7 +61,7 @@ export const ProductCard = ({ item, table }) => {
                       newPrice={
                         item.promotion_array?.[0]
                           ? applyPromotions(item.promotion_array, item.price)
-                          : 0
+                          : undefined
                       }
                       price={item.price}
                     />
