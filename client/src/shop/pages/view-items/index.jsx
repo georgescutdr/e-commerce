@@ -16,7 +16,7 @@ const ViewItems = ({ props }) => {
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [viewLoading, setViewLoading] = useState(false)
-
+ 
     // Initialize view mode from cookie or default to 'grid'
     const [viewMode, setViewModeState] = useState(() => Cookies.get('viewMode') || 'grid')
 

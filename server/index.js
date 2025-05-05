@@ -1292,6 +1292,123 @@ app.get('/api/search-autocomplete', async (req, res) => {
 
 // SEARCH
 app.get('/api/search', async (req, res) => {
+    const { query, filters, categoryId } = req.query;
+
+    let parsedFilters = [];
+
+    if (typeof filters === 'string') {
+        parsedFilters = JSON.parse(filters);
+    }
+
+    const filtersObj = {};
+    for (const filter of parsedFilters) {
+        filtersObj[filter.name] = filter.values;
+    }
+
+    const whereConditions = [];
+    const havingConditions = [];
+    const whereValues = [];
+    const havingValues = [];
+
+    // Price Range
+    if (filtersObj.priceRange?.length > 0) {
+        const priceConditions = [];
+        for (const rangeString of filtersObj.priceRange) {
+            const [minPrice, maxPrice] = rangeString.split('-').map(Number);
+            if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+                priceConditions.push(`(p.price BETWEEN ? AND ?)`);
+                whereValues.push(minPrice, maxPrice);
+            }
+        }
+        if (priceConditions.length > 0) {
+            whereConditions.push(`(${priceConditions.join(' OR ')})`);
+        }
+    }
+
+    const defaultFilters = ['brands', 'options', 'promotions', 'minRating', 'priceRange'];
+    const combinedAttributeValues = [];
+
+	for (const key of Object.keys(filtersObj)) {
+	    if (!defaultFilters.includes(key)) {
+	        const attributeValues = filtersObj[key].map(Number);
+	       // combinedAttributeValues.push(...attributeValues);
+	        whereConditions.push(`pav.attribute_value_id IN (?)`);
+	        whereValues.push(attributeValues);
+	    }
+	}
+
+/*	if (combinedAttributeValues.length > 0) {
+	    whereConditions.push(`pav.attribute_value_id IN (?)`);
+	    whereValues.push(combinedAttributeValues);
+	}*/
+
+    // Brands
+    if (filtersObj.brands?.length > 0) {
+        whereConditions.push(`b.id IN (?)`);
+        whereValues.push(filtersObj.brands);
+    }
+
+    // Options
+    if (filtersObj.options?.length > 0) {
+        whereConditions.push(`o.id IN (?)`);
+        whereValues.push(filtersObj.options);
+    }
+
+    // Promotions
+    if (filtersObj.promotions?.length > 0) {
+        whereConditions.push(`pr.id IN (?)`);
+        whereValues.push(filtersObj.promotions);
+    }
+
+    // Rating (use HAVING, not WHERE)
+    if (filtersObj.minRating?.length > 0) {
+        havingConditions.push(`rating >= ?`);
+        havingValues.push(Math.min(...filtersObj.minRating));
+    }
+
+    // Build final SQL query
+    let sql = `
+        SELECT p.*, AVG(r.rating) as rating 
+        FROM product p
+        LEFT JOIN product_promotion pp ON pp.product_id = p.id
+        LEFT JOIN promotion pr ON pp.promotion_id = pr.id
+        LEFT JOIN brand b ON p.brand_id = b.id
+        LEFT JOIN product_option po ON po.product_id = p.id
+        LEFT JOIN \`option\` o ON po.option_id = o.id
+        LEFT JOIN review r ON r.product_id = p.id
+        LEFT JOIN product_attribute pa ON pa.product_id=p.id
+        LEFT JOIN attribute a ON a.id=pa.attribute_id
+        LEFT JOIN product_attribute_value pav ON pav.product_id=p.id
+    `;
+
+    if (whereConditions.length > 0) {
+        sql += ` WHERE ${whereConditions.join(' AND ')}`;
+    }
+
+    sql += ` GROUP BY p.id`;
+
+    if (havingConditions.length > 0) {
+        sql += ` HAVING ${havingConditions.join(' AND ')}`;
+    }
+
+    const finalValues = [...whereValues, ...havingValues];
+
+    console.log(sql);
+    console.log(finalValues);
+
+    try {
+        const [rows] = await db.query(sql, finalValues);
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
+
+
+
+
+app.get('/api/search2', async (req, res) => {
   const { query, filters } = req.query;
 
   let parsedFilters = {};
@@ -1313,22 +1430,18 @@ app.get('/api/search', async (req, res) => {
     .split(/\s+/)
     .filter(Boolean);
 
-  if (words.length === 0) {
-    return res.status(400).json({ error: 'No valid search terms provided.' });
-  }
-
   try {
     const likeConditions = words.map(() => `(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)`).join(' OR ');
     const likeValues = words.flatMap(word => [`%${word}%`, `%${word}%`]);
 
     const categoryConditions = words.map(() => `LOWER(name) LIKE ?`).join(' OR ');
     const categoryValues = words.map(word => `%${word}%`);
-    const [categories] = await db.query(`SELECT id FROM category WHERE ${categoryConditions}`, categoryValues);
+ //   const [categories] = await db.query(`SELECT id FROM category WHERE ${categoryConditions}`, categoryValues);
     const categoryIds = categories.map(cat => cat.id);
 
     const brandConditions = words.map(() => `(LOWER(name) LIKE ? OR LOWER(description) LIKE ?)`).join(' OR ');
     const brandValues = words.flatMap(word => [`%${word}%`, `%${word}%`]);
-    const [brands] = await db.query(`SELECT id FROM brand WHERE ${brandConditions}`, brandValues);
+ //   const [brands] = await db.query(`SELECT id FROM brand WHERE ${brandConditions}`, brandValues);
     const brandIds = brands.map(b => b.id);
 
     let productQuery = `
@@ -1348,30 +1461,30 @@ app.get('/api/search', async (req, res) => {
 	const filterValues = [];
 
 	// Promotions
-	if (filters.promotions?.length > 0) {
-	  const placeholders = filters.promotions.map(() => '?').join(',');
+	if (filtersObj.promotions?.length > 0) {
+	  const placeholders = filtersObj.promotions.map(() => '?').join(',');
 	  filterConditions.push(`p.id IN (SELECT product_id FROM product_promotion WHERE promotion_id IN (${placeholders}))`);
-	  filterValues.push(...filters.promotions);
+	  filterValues.push(...filtersObj.promotions);
 	}
 
 	// Options
-	if (filters.options?.length > 0) {
-	  const placeholders = filters.options.map(() => '?').join(',');
+	if (filtersObj.options?.length > 0) {
+	  const placeholders = filtersObj.options.map(() => '?').join(',');
 	  filterConditions.push(`p.id IN (SELECT product_id FROM product_option WHERE option_id IN (${placeholders}))`);
-	  filterValues.push(...filters.options);
+	  filterValues.push(...filtersObj.options);
 	}
 
 	// Brands
-	if (filters.brands?.length > 0) {
-	  const placeholders = filters.brands.map(() => '?').join(',');
+	if (filtersObj.brands?.length > 0) {
+	  const placeholders = filtersObj.brands.map(() => '?').join(',');
 	  filterConditions.push(`p.brand_id IN (${placeholders})`);
-	  filterValues.push(...filters.brands);
+	  filterValues.push(...filtersObj.brands);
 	}
 
 	// Price Range
-	if (filters.priceRange?.length > 0) {
+	if (filtersObj.priceRange?.length > 0) {
 	  const priceConditions = [];
-	  for (const rangeString of filters.priceRange) {
+	  for (const rangeString of filtersObj.priceRange) {
 	    const [minPrice, maxPrice] = rangeString.split('-').map(Number);
 	    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
 	      priceConditions.push(`(p.price BETWEEN ? AND ?)`);
@@ -1382,11 +1495,11 @@ app.get('/api/search', async (req, res) => {
 	    filterConditions.push(`(${priceConditions.join(' OR ')})`);
 	  }
 	}
-
+console.log('Filter conditions: ',filterConditions)
 	// Min Rating
-	if (filters.minRating?.length > 0) {
+	if (filtersObj.minRating?.length > 0) {
 	  const ratingConditions = [];
-	  for (const minRating of filters.minRating) {
+	  for (const minRating of filtersObj.minRating) {
 	    ratingConditions.push(`p.id IN (SELECT product_id FROM review WHERE rating >= ? GROUP BY product_id)`);
 	    filterValues.push(minRating);
 	  }

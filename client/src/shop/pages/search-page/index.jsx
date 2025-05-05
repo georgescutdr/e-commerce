@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import Axios from 'axios';
+import { ViewToggleButtons } from '../../components/view-toggle-buttons'
 import { shopConfig } from '../../../config';
 import { ItemGrid } from '../../components/item-grid';
 import { SearchPanel } from '../../components/search-panel';
 import { ChipsBar } from '../../components/search/chips-bar';
+import Cookies from 'js-cookie'
 import './search-page.css';
 
 const SearchPage = () => {
@@ -14,7 +16,10 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState({});
+  const [viewLoading, setViewLoading] = useState(false)
   const navigate = useNavigate();
+
+  const [viewMode, setViewModeState] = useState(() => Cookies.get('viewMode') || 'grid')
 
   // Update selected from URL (only set state inside useEffect!)
   useEffect(() => {
@@ -74,7 +79,7 @@ const SearchPage = () => {
         });
         const data = res?.data;
         console.log(data);
-        setResults(Array.isArray(data.products) ? data.products : []);
+        setResults(data);
       } catch (err) {
         console.error('Search error:', err);
         setError('Failed to fetch search results. Please try again later.');
@@ -113,16 +118,29 @@ const SearchPage = () => {
     setSearchParams(newParams);
   };
 
+  const setViewMode = (mode) => {
+        setViewLoading(true)
+        Cookies.set('viewMode', mode, { expires: 7 })
+        setTimeout(() => {
+            setViewModeState(mode)
+            setViewLoading(false)
+        }, 300) // 300ms delay for smooth transition
+    }
+
   return (
-    <div className="search-page">
-      <div className="search-panel-col">
+    <div className="items-page">
+    <div className="items-header">
+        <div className="items-header-text">
+            <h1>Search Results for: <span className="highlight">{search}</span></h1>
+        </div>
+        <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
+    </div>
+    <div className="items-content-wrapper">
+
+      <div className="search-panel-container">
         <SearchPanel categoryId={categoryId} selected={selected} setSelected={setSelected} />
       </div>
-      <div className="item-list-col">
-        <h2>
-          Search Results for: <span className="highlight">{search}</span>
-        </h2>
-
+      <div className={`item-grid-container ${viewMode} ${viewLoading ? 'loading-overlay' : ''}`}>
         <ChipsBar selected={selected} onRemove={handleRemoveChip} onClearAll={clearAllFilters} />
 
         {loading && <p>Loading...</p>}
@@ -142,6 +160,7 @@ const SearchPage = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

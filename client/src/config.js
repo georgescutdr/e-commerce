@@ -210,6 +210,7 @@ export const shopConfig = {
 			'path': '/search/pd/:categoryId/',
 			'submitApi': siteConfig.serverUrl + '/api/shop/search/', 
 			'label': '',
+			'table': 'product',
 			'joinTables': [],
 			'listType': 'multiple',
 			'component': 'search-page'
