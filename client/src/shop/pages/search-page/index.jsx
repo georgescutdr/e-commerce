@@ -144,8 +144,7 @@ const SearchPage = ({props}) => {
         <SearchPanel categoryId={categoryId} selected={selected} setSelected={setSelected} />
       </div>
       <div className={`item-grid-container ${viewMode} ${viewLoading ? 'loading-overlay' : ''}`}>
-        <ChipsBar selected={selected} onRemove={handleRemoveChip} onClearAll={clearAllFilters} />
-
+            <ChipsBar selected={selected} onRemove={handleRemoveChip} onClearAll={clearAllFilters} />
         {loading ? (
                         viewMode === 'grid'
                             ? <ItemGridSkeleton count={8} />

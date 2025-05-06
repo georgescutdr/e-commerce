@@ -13,6 +13,7 @@ import { ProductGallery } from '../../components/product-gallery'
 import { PromotionsList } from '../../components/promotions-list'
 import { VoucherLabel } from '../../components/voucher-label'
 import { makeItemTitle, getAverageRating, applyPromotions } from '../../../utils'
+import { getUser, isLoggedIn } from '../../../utils/auth-helpers';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -23,7 +24,8 @@ export const ProductView = ({ item, props }) => {
     const [reviews, setReviews] = useState(0);
     const params = useParams();
 
-    const title = makeItemTitle(item)
+    const title = makeItemTitle(item);
+    const user = getUser();
 
     return (
         <div className="product-page">
@@ -63,7 +65,7 @@ export const ProductView = ({ item, props }) => {
                     <PromotionsList promotions={item.promotion_array} />
                     <VoucherLabel vouchers={item.voucher_array} />
                     <AddToCartButton item={item} className="add-to-cart-btn" />
-                    <AddToWishlistButton item={item} userId={1} />
+                    {isLoggedIn() && (<AddToWishlistButton item={item} userId={user.id} />)}
                 </div>
             </div>
 

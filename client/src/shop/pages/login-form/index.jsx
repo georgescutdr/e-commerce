@@ -7,6 +7,8 @@ import Axios from 'axios';
 import { AuthContext } from '../../context/auth-context'; // update path as needed
 import { useNavigate } from 'react-router-dom';
 import { shopConfig } from '../../../config'
+import { useWishlist } from '../../context/wishlist-context'
+
 
 const LoginForm = () => {
 	const [email, setEmail] = useState('');

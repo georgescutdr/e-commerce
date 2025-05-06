@@ -6,10 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../context/wishlist-context';
 import { ProductCard } from '../cards/dropdown/wishlist/product-card';
 import { shopConfig } from '../../../config';
+import { getUser, isLoggedIn } from '../../../utils/auth-helpers';
 import './wishlist-button.css';
 
 export const WishlistButton = ({ loading = false }) => {
-  const userId = 1;
+  const user = getUser();
 
   const op = useRef(null);
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export const WishlistButton = ({ loading = false }) => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await Axios.get(shopConfig.api.getWishlistUrl, { params: { userId } });
+        const response = await Axios.get(shopConfig.api.getWishlistUrl, { params: { userId: user?.id } });
         loadWishlist(response.data); // will update context (and indirectly update our items below)
       } catch (error) {
         console.error('Failed to fetch items:', error);
@@ -28,7 +29,7 @@ export const WishlistButton = ({ loading = false }) => {
     };
 
     fetchItems();
-  }, [userId, loadWishlist]);
+  }, [user, loadWishlist]);
 
   // No need for separate local items state, use context's array
   const items = wishlistArray;

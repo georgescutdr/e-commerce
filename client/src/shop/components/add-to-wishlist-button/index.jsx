@@ -7,12 +7,15 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import Axios from 'axios';
 import { shopConfig } from '../../../config.js';
 import { useWishlist } from '../../context/wishlist-context';
+import { getUser } from '../../../utils/auth-helpers';
 
-export const AddToWishlistButton = ({ item, userId, iconOnly = false }) => {
+export const AddToWishlistButton = ({ item, iconOnly = false }) => {
     const toast = useRef(null);
     const [loading, setLoading] = useState(false);
     const { toggleWishlist, isInWishlist } = useWishlist();
     const [localInWishlist, setLocalInWishlist] = useState(isInWishlist(item.id));
+
+    const user = getUser();
 
     // Keep local state in sync when item or global state changes
     useEffect(() => {
@@ -21,6 +24,8 @@ export const AddToWishlistButton = ({ item, userId, iconOnly = false }) => {
 
     const handleWishListToggle = () => {
         if (loading) return;
+        if(!user?.id) return;
+
         setLoading(true);
 
         // Optimistic toggle in local UI
@@ -29,7 +34,7 @@ export const AddToWishlistButton = ({ item, userId, iconOnly = false }) => {
 
         // Sync with backend
         Axios.post(shopConfig.api.wishlistToggleUrl, {
-            userId,
+            userId: user.id,
             productId: item.id,
         })
         .then((res) => {

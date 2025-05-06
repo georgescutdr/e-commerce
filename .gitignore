@@ -1,0 +1,42 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*  # Optional: ignore all .env files like .env.production
+
+# Logs
+logs/
+*.log
+
+# Build
+dist/
+build/
+
+# Dependency directories (if using monorepo tools)
+.bun/
+.pnpm/
+.cache/
+.output/
+
+# Coverage reports
+coverage/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# React
+*.local

@@ -6,10 +6,11 @@ import { Card } from 'primereact/card';
 import { Toast } from 'primereact/toast';
 import { ProductCard } from '../../components/cards/wishlist/product-card';
 import { useWishlist } from '../../context/wishlist-context';
+import { getUser, isLoggedIn } from '../../../utils/auth-helpers';
 import './wishlist.css';
 
 const Wishlist = ({ props }) => {
-    const userId = 1;
+    const user = getUser();
     const [loading, setLoading] = useState(true);
     const toast = useRef(null);
 
@@ -21,7 +22,7 @@ const Wishlist = ({ props }) => {
 
     useEffect(() => {
         Axios.get(shopConfig.api.getWishlistUrl, {
-            params: { userId }
+            params: { userId: user?.id }
         })
             .then((res) => {
                 const wishlist = res.data || [];
@@ -36,7 +37,7 @@ const Wishlist = ({ props }) => {
     const handleRemove = async (productId) => {
         try {
             await Axios.post(shopConfig.api.wishlistToggleUrl, {
-                userId,
+                userId: user?.id,
                 productId,
             });
 

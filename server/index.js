@@ -3,6 +3,7 @@ import { createRequire } from 'module'
 import { fileURLToPath } from 'url';
 import path2 from 'path'
 import qs from 'qs'
+import isAuthenticated from './middleware/isAuthenticated.js';
 
 // __dirname equivalent in ES modules
 const __dirname = path2.dirname(fileURLToPath(import.meta.url));
@@ -1004,7 +1005,7 @@ app.post('/api/delete-item', (req, res) => {
 
 
  // REGISTER
-const JWT_SECRET = process.env.JWT_SECRET || 'jwt_secret' // Put in .env for real use
+const JWT_SECRET = process.env.JWT_SECRET || 'jwt_secret' 
 
 app.post('/api/register', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
@@ -1048,7 +1049,6 @@ app.post('/api/register', async (req, res) => {
 
 
 // LOGIN
-
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -1090,7 +1090,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Save Order
-app.post('/api/shop/save-order', async (req, res) => {
+app.post('/api/shop/save-order', isAuthenticated, async (req, res) => {
     const {
         user_id,
         total,
@@ -1395,6 +1395,10 @@ app.get('/api/search', async (req, res) => {
         LEFT JOIN product_voucher pv ON pv.product_id=p.id
         LEFT JOIN voucher v ON v.id=pv.voucher_id
     `;
+
+    // TODO
+    //get unexpired promotions and vouchers only
+    //combine with keyword search in product & category
 
     if (whereConditions.length > 0) {
         sql += ` WHERE ${whereConditions.join(' AND ')}`;

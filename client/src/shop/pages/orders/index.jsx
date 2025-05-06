@@ -8,19 +8,21 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { useAuth } from '../../context/auth-context';
 import { shopConfig } from '../../../config';
 import { capitalize } from '../../../utils'
+import { getUser } from '../../../utils/auth-helpers';
 import './orders.css';
 
 const Orders = () => {
-	const { user } = useAuth();
 	const [orders, setOrders] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const navigate = useNavigate();
+
+	const user = getUser();
 
 	useEffect(() => {
 		const fetchOrders = async () => {
 			try {
 				const response = await Axios.post(shopConfig.getItemsUrl, 
-					{ table: 'order', user_id: 1, joinTables: [
+					{ table: 'order', user_id: user.id, joinTables: [
 						{'table': 'shipping_status', fields: ['id', 'name', 'description', 'color'], pivot: true}
 					] },
 				);
@@ -86,10 +88,10 @@ const Orders = () => {
 									<strong>Status:</strong>{' '}
 									{order.shipping_status_array && order.shipping_status_array.length > 0 && (
 									  <Tag
-									    value={capitalize(order.shipping_status_array[order.shipping_status_array.length - 1].name)}
+									    value={capitalize(order.shipping_status_array[order.shipping_status_array.length - 1]?.name)}
 									    className="order-status-tag"
 									    style={{
-									      backgroundColor: order.shipping_status_array[order.shipping_status_array.length - 1].color || '#fff',
+									      backgroundColor: order.shipping_status_array[order.shipping_status_array.length - 1]?.color || '#fff',
 									      color: '#fff', 
 									      border: 'none',
 									    }}

@@ -6,11 +6,13 @@ import { WishlistContext } from '../../../../../context/wishlist-context';
 import Axios from 'axios';
 import { shopConfig } from '../../../../../../config';
 import { Toast } from 'primereact/toast';
+import { getUser, isLoggedIn } from '../../../../../../utils/auth-helpers';
 import './product-card.css';
 
 export const ProductCard = ({ item }) => {
     const { toggleWishlist } = useContext(WishlistContext);
     const toast = useRef(null);
+    const user = getUser();
 
     if (!item) return null;
 
@@ -24,25 +26,29 @@ export const ProductCard = ({ item }) => {
 
         // Call API to update DB
         Axios.post(shopConfig.api.wishlistToggleUrl, {
-            userId: 1, 
+            userId: user?.id, 
             productId: item.id,
         })
         .then((res) => {
             const msg = res.data.message;
-            toast.current.show({
-                severity: msg.includes('removed') ? 'warn' : 'success',
-                summary: 'Wishlist Updated',
-                detail: msg,
-                life: 3000,
-            });
+            if (toast.current) {
+                toast.current.show({
+                    severity: msg.includes('removed') ? 'warn' : 'success',
+                    summary: 'Wishlist Updated',
+                    detail: msg,
+                    life: 3000,
+                });
+            }
         })
         .catch(() => {
-            toast.current.show({
-                severity: 'error',
-                summary: 'Wishlist Error',
-                detail: 'Failed to update wishlist',
-                life: 3000,
-            });
+            if (toast.current) {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Wishlist Error',
+                    detail: 'Failed to update wishlist',
+                    life: 3000,
+                });
+            }
         });
     };
 

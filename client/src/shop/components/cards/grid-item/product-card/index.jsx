@@ -8,13 +8,16 @@ import { StockStatus } from '../../../stock-status';
 import { VoucherLabel } from '../../../voucher-label';
 import { Price } from '../../../price';
 import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, makeItemTitle } from '../../../../../utils';
+import { getUser, isLoggedIn } from '../../../../../utils/auth-helpers';
 import './product-card.css';
 
 export const ProductCard = ({ item, table }) => {
+
+  const user = getUser();
  
     return (
         <div className="grid-item">
-            <AddToWishlistButton item={item} iconOnly={true} userId={1} />
+            {isLoggedIn() && (<AddToWishlistButton item={item} iconOnly={true} />)}
             <Link
                 to={`/${makeItemUrl(item)}/pd/${item.id}/${table}`}
                 className="grid-item-link"

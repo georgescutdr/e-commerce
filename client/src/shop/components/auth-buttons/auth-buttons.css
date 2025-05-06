@@ -1,0 +1,31 @@
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.auth-buttons .link-button {
+  background: white;
+  border: 1px solid #085db2; 
+  box-shadow: none;
+  color: #085db2;
+  padding: 0.7rem 1rem; 
+  font-weight: 500;
+  border-radius: 8px; 
+}
+
+.auth-buttons .link-button:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.auth-buttons .separator {
+  color: #999;
+  font-weight: 400;
+}
+
+.auth-buttons .p-button .pi {
+  margin-right: 0.5rem; 
+}
+ 

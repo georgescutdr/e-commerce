@@ -98,7 +98,6 @@
   z-index: 10;
 }
 
-
 /* On medium screens and up, go horizontal */
 @media (min-width: 768px) {
   .shop-navbar {

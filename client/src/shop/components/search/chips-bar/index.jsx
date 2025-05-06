@@ -6,6 +6,8 @@ import './chips-bar.css';
 export const ChipsBar = ({ selected, onRemove, onClearAll }) => {
   const hasFilters = Object.keys(selected).length > 0;
 
+  if (!hasFilters) return null; // Do not render anything if no filters are selected
+
   return (
     <div className="chips-bar">
       <div className="chips-container">
@@ -22,11 +24,9 @@ export const ChipsBar = ({ selected, onRemove, onClearAll }) => {
         )}
       </div>
 
-      {hasFilters && (
-        <button className="clear-filters-btn" onClick={onClearAll}>
-          Clear All
-        </button>
-      )}
+      <button className="clear-filters-btn" onClick={onClearAll}>
+        Clear All
+      </button>
     </div>
   );
 };

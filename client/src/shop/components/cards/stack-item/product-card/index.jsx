@@ -8,10 +8,13 @@ import { VoucherLabel } from '../../../voucher-label';
 import { StockStatus } from '../../../stock-status';
 import { Price } from '../../../price';
 import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, makeItemTitle } from '../../../../../utils';
+import { getUser, isLoggedIn } from '../../../../../utils/auth-helpers';
 import './product-card.css';
 
 export const ProductCard = ({ item, table, onRemove }) => {
-    console.log(item)
+   
+   const user = getUser();
+
     return (
         <div className="stack-card">
             <div className="stack-card-image">
@@ -48,9 +51,11 @@ export const ProductCard = ({ item, table, onRemove }) => {
                 )}
             </div>
             <div className="stack-card-actions">
-                <div className="add-to-wishlish-btn">
-                    <AddToWishlistButton item={item} iconOnly={true} userId={1} />
-                </div>
+                {isLoggedIn() && (
+                    <div className="add-to-wishlish-btn">
+                        <AddToWishlistButton item={item} iconOnly={true} userId={user.id} />
+                    </div>
+                )}
                 <Price
                     newPrice={
                         item.promotion_array?.[0]
