@@ -28,12 +28,12 @@ export const shopConfig = {
 	items: [
 		{
 			'path': '/',
-			'table': 'user',
+			'table': '',
 			'joinTables': [],
 			'listType': 'multiple',
 			'label': '',
 			'protectedRoute': false,
-			'component': 'view-items'
+			'component': 'home-page'
 		},
 		{
 			'path': '/product-reviews/:productId',

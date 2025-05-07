@@ -1007,6 +1007,34 @@ app.post('/api/delete-item', (req, res) => {
  // REGISTER
 const JWT_SECRET = process.env.JWT_SECRET || 'jwt_secret' 
 
+const loginUser = async (email, password) => {
+    // Find user by email
+    const [rows] = await db.query('SELECT * FROM user WHERE email = ?', [email]);
+
+    if (rows.length === 0) {
+        throw new Error('Invalid email or password');
+    }
+
+    const user = rows[0];
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        throw new Error('Invalid email or password');
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
+
+    return {
+        token,
+        user: {
+            id: user.id,
+            name: user.name || `${user.first_name} ${user.last_name}`,
+            email: user.email,
+            avatar: user.avatar || null
+        }
+    };
+};
+
 app.post('/api/register', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
@@ -1015,40 +1043,34 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
-        // Check if user already exists
         const [existingUser] = await db.query('SELECT id FROM user WHERE email = ?', [email]);
-
         if (existingUser.length > 0) {
             return res.status(409).json({ message: 'Email already registered' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert new user
         const [result] = await db.query(
             'INSERT INTO user (first_name, last_name, email, password, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
             [firstName, lastName, email, hashedPassword]
         );
 
-        const newUserId = result.insertId;
+        // Now login the user using raw email + original password
+        const { token, user } = await loginUser(email, password);
 
         res.status(201).json({
-            message: 'User registered successfully',
-            user: {
-                id: newUserId,
-                firstName,
-                lastName,
-                email
-            }
+            message: 'User registered and logged in successfully',
+            token,
+            user
         });
     } catch (error) {
-        console.error('Register Error:', error);
+        console.error('Register Error:', error.message);
         res.status(500).json({ message: 'Something went wrong during registration' });
     }
 });
 
-
 // LOGIN
+
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -1057,35 +1079,16 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // Find user by email using raw SQL
-        const [rows] = await db.query('SELECT * FROM user WHERE email = ?', [email]);
-
-        if (rows.length === 0) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        const user = rows[0];
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
+        const { token, user } = await loginUser(email, password);
 
         res.json({
             message: 'Login successful',
             token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                avatar: user.avatar || null, // optional if avatar is stored
-            }
+            user
         });
     } catch (error) {
-        console.error('Login Error:', error);
-        res.status(500).json({ message: 'Something went wrong during login' });
+        console.error('Login Error:', error.message);
+        res.status(401).json({ message: error.message });
     }
 });
 

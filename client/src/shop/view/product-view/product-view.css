@@ -65,6 +65,59 @@
   margin-top: 50px;
 }
 
+/* Full-width wrapper for background and layout */
+.product-carousels-wrapper {
+  width: 100%;
+  margin: 4rem 0;
+  background-color: #ffffff;
+  padding: 2rem 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Centered inner container only limits content inside */
+.product-carousels-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Optional title styling */
+.product-carousels-inner .carousels-section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #1f2937;
+}
+
+/* Each carousel */
+.product-carousels {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.product-carousels .product-carousel-wrapper {
+  padding-bottom: 2rem;
+}
+
+
+@media screen and (max-width: 768px) {
+  .product-carousels-wrapper {
+    padding: 1.5rem 1rem;
+  }
+
+  .product-carousels-wrapper .carousels-section-title {
+    font-size: 1.5rem;
+  }
+
+  .product-carousels .carousel-title {
+    font-size: 1.2rem;
+  }
+}
+
+
+
 @media screen and (max-width: 1024px) {
   .product-columns {
     grid-template-columns: 1fr;

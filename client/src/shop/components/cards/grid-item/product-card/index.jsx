@@ -19,7 +19,7 @@ export const ProductCard = ({ item, table }) => {
         <div className="grid-item">
             {isLoggedIn() && (<AddToWishlistButton item={item} iconOnly={true} />)}
             <Link
-                to={`/${makeItemUrl(item)}/pd/${item.id}/${table}`}
+                to={`/${makeItemUrl(item)}/pd/${item.id}/view_product`}
                 className="grid-item-link"
             >
                 <img
@@ -39,7 +39,7 @@ export const ProductCard = ({ item, table }) => {
                 </Link>
                 <div className="grid-item-content">
                 <Link
-                    to={`/${makeItemUrl(item)}/pd/${item.id}/${table}`}
+                    to={`/${makeItemUrl(item)}/pd/${item.id}/view_product`}
                     className="grid-item-link"
                 >
                   <h3 className="item-title">{makeItemTitle(item)}</h3>

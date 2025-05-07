@@ -37,7 +37,7 @@ export const WishlistProvider = ({ children }) => {
     });
   }, []);
 
-  const isInWishlist = useCallback((id) => !!wishlistItems[id], [wishlistItems]);
+  const isInWishlist = (id) => Boolean(wishlistItems[id]);
 
   return (
     <WishlistContext.Provider

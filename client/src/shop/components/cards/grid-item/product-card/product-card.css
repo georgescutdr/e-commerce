@@ -3,7 +3,6 @@
 .grid-item {
   position: relative;
   background: white;
-  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -11,6 +10,8 @@
   flex-direction: column;
   height: 100%;
   text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
 .grid-item-link {
@@ -85,17 +86,7 @@
 }
 
 .grid-item {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
 
-.grid-item {
-  position: relative;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 .grid-item .wishlist-icon-button {

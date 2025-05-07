@@ -5,6 +5,8 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import Axios from 'axios'; 
 import { shopConfig } from '../../../config';
+import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../context/auth-context'; 
 
 const RegisterForm = () => {
 	const [formData, setFormData] = useState({
@@ -18,6 +20,10 @@ const RegisterForm = () => {
 	const [loading, setLoading] = useState(false); // To show loading state
 	const [success, setSuccess] = useState('');
 
+	const navigate = useNavigate();
+
+	const { login } = useContext(AuthContext);
+
 	const handleChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
@@ -26,6 +32,7 @@ const RegisterForm = () => {
 		e.preventDefault();
 		setError('');
 		setSuccess('');
+
 		if (formData.password !== formData.confirmPassword) {
 			setError('Passwords do not match.');
 			return;
@@ -34,14 +41,21 @@ const RegisterForm = () => {
 		setLoading(true);
 
 		try {
-			// Send registration request
 			const res = await Axios.post(shopConfig.api.registerApiUrl, formData);
-			setSuccess(res.data.message); // Set success message on successful registration
-			setLoading(false); // Stop loading when registration is successful
+
+			const { token, user, message } = res.data;
+
+			login(user, token); // saves to context + localStorage
+
+			setSuccess(message);
+			setLoading(false);
+
+			navigate('/')
+
 		} catch (err) {
-			setLoading(false); // Stop loading if an error occurs
+			setLoading(false);
 			if (err.response && err.response.data) {
-				setError(err.response.data.message); // Show error message from server response
+				setError(err.response.data.message);
 			} else {
 				setError('Something went wrong, please try again later.');
 			}

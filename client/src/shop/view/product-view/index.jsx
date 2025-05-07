@@ -12,6 +12,7 @@ import { Options } from '../../components/options'
 import { ProductGallery } from '../../components/product-gallery'
 import { PromotionsList } from '../../components/promotions-list'
 import { VoucherLabel } from '../../components/voucher-label'
+import { ProductCarousel } from '../../components/product-carousel';
 import { makeItemTitle, getAverageRating, applyPromotions } from '../../../utils'
 import { getUser, isLoggedIn } from '../../../utils/auth-helpers';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
@@ -71,6 +72,15 @@ export const ProductView = ({ item, props }) => {
 
             <div className="product-attributes">
                 <Attributes item={item} />
+            </div>
+            <div className="product-carousels-wrapper">
+              <div className="product-carousels-inner">
+                <div className="product-carousels">
+                  <ProductCarousel title="Most Liked" />
+                  <ProductCarousel title="Best Sellers" />
+                  <ProductCarousel title="Featured Products" />
+                </div>
+              </div>
             </div>
             <div className="product-reviews">
                 <Reviews itemId={item.id} />
