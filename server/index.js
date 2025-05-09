@@ -792,10 +792,10 @@ function removeDirectoryIfEmpty(directoryPath) {
 app.post('/api/save-item', uploadFiles.array('files', 10), (req, res) => {
     const id = req.body.id;
     const table = req.body.table;
-    const columns = JSON.parse(req.body.columns);
-    const deletedFiles = JSON.parse(req.body.deletedFiles)
+    const columns = req.body.columns ? JSON.parse(req.body.columns) : [];
+    const deletedFiles = req.body.deletedFiles ? JSON.parse(req.body.deletedFiles) : [];
 
-console.log('deleted files:', deletedFiles)
+    console.log('deleted files:', deletedFiles)
     console.log("Received body:", req.body);
     console.log("Received files:", req.files); // Debugging
 

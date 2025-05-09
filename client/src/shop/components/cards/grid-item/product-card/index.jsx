@@ -36,7 +36,7 @@ export const ProductCard = ({ item, table }) => {
                         {getPromotionLabel(item.promotion_array)}
                     </div>
                 )}
-                </Link>
+            </Link>
                 <div className="grid-item-content">
                 <Link
                     to={`/${makeItemUrl(item)}/pd/${item.id}/view_product`}
@@ -71,8 +71,6 @@ export const ProductCard = ({ item, table }) => {
                     <AddToCartButton item={item} className="add-to-cart-btn" />
                   </div>
                 </div>
-
-            
         </div>
     );
 };

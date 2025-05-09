@@ -10,105 +10,81 @@ import { useWishlist } from '../../context/wishlist-context';
 import { getUser } from '../../../utils/auth-helpers';
 
 export const AddToWishlistButton = ({ item, iconOnly = false }) => {
-    const toast = useRef(null);
-    const [loading, setLoading] = useState(false);
-    const { toggleWishlist, isInWishlist } = useWishlist();
-    const [localInWishlist, setLocalInWishlist] = useState(isInWishlist(item.id));
+  const toast = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
-    const user = getUser();
+  const user = getUser();
+  const itemId = String(item?.id);
+  const inWishlist = isInWishlist(itemId);
 
-    // Keep local state in sync when item or global state changes
-    useEffect(() => {
-        setLocalInWishlist(isInWishlist(item.id));
-    }, [item.id, isInWishlist]);
+  const handleWishListToggle = () => {
+    if (loading || !user?.id) return;
 
-    const handleWishListToggle = () => {
-        if (loading) return;
-        if(!user?.id) return;
+    setLoading(true);
 
-        setLoading(true);
+    console.log('[toggleWishlist] Triggered for:', itemId); 
 
-        // Optimistic toggle in local UI
-        setLocalInWishlist(prev => !prev);
+    Axios.post(shopConfig.api.wishlistToggleUrl, {
+      userId: user.id,
+      productId: itemId,
+    })
+      .then((res) => {
         toggleWishlist(item);
-
-        // Sync with backend
-        Axios.post(shopConfig.api.wishlistToggleUrl, {
-            userId: user.id,
-            productId: item.id,
-        })
-        .then((res) => {
-            if (res.data.message.includes('added')) {
-                toast.current.show({
-                    severity: 'success',
-                    summary: 'Wishlist Updated',
-                    detail: 'Item added to wishlist',
-                    life: 3000,
-                });
-            } else if (res.data.message.includes('removed')) {
-                toast.current.show({
-                    severity: 'warn',
-                    summary: 'Wishlist Updated',
-                    detail: 'Item removed from wishlist',
-                    life: 3000,
-                });
-            }
-        })
-        .catch(() => {
-            // Revert optimistic toggle on failure
-            setLocalInWishlist(prev => !prev);
-            toggleWishlist(item); // revert context
-            toast.current.show({
-                severity: 'error',
-                summary: 'Wishlist Error',
-                detail: 'Failed to update wishlist',
-                life: 3000,
-            });
-        })
-        .finally(() => {
-            setLoading(false);
+        const message = res.data.message || '';
+        toast.current.show({
+          severity: message.includes('added') ? 'success' : 'warn',
+          summary: 'Wishlist Updated',
+          detail: message.includes('added') ? 'Item added to wishlist' : 'Item removed from wishlist',
+          life: 3000,
         });
-    };
+      })
+      .catch(() => {
+        toast.current.show({
+          severity: 'error',
+          summary: 'Wishlist Error',
+          detail: 'Failed to update wishlist',
+          life: 3000,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
-    return (
-        <>
-            <Toast ref={toast} />
-            {iconOnly ? (
-                <Button
-                    icon={loading ? null : (localInWishlist ? 'pi pi-heart-fill' : 'pi pi-heart')}
-                    className={`wishlist-icon-button ${localInWishlist ? 'p-button-danger' : ''}`}
-                    onClick={handleWishListToggle}
-                    aria-label="Toggle Wishlist"
-                    disabled={loading}
-                    label={
-                        loading ? (
-                            <ProgressSpinner
-                                className="progress-spinner"
-                            />
-                        ) : null
-                    }
-                />
-            ) : (
-                <Button
-                    label={
-                        loading ? (
-                            <span className="wishlist-spinner-wrapper">
-                                <ProgressSpinner
-                                    style={{ width: '14px', height: '14px' }}
-                                />
-                            </span>
-                        ) : (
-                            localInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'
-                        )
-                    }
-                    icon={loading ? null : (localInWishlist ? PrimeIcons.TIMES : PrimeIcons.HEART)}
-                    className={`add-to-wishlist-btn ${
-                        localInWishlist ? 'p-button-danger' : 'p-button-info'
-                    }`}
-                    onClick={handleWishListToggle}
-                    disabled={loading}
-                />
-            )}
-        </>
-    );
+  return (
+    <>
+      <Toast ref={toast} />
+      {iconOnly ? (
+        <Button
+          icon="pi"
+          className={`wishlist-icon-button ${inWishlist ? 'p-button-danger' : ''}`}
+          onClick={(e) => {
+            console.log('Button clicked');
+            handleWishListToggle();
+          }}
+          disabled={loading}
+        >
+          <span
+            className={`pi ${loading ? 'pi-spin pi-spinner' : inWishlist ? 'pi-heart-fill' : 'pi-heart'}`}
+            style={{ fontSize: '1rem' }}
+          />
+        </Button>
+      ) : (
+        <Button
+          label={
+            loading ? (
+              <span className="wishlist-spinner-wrapper">
+                <ProgressSpinner style={{ width: '10px', height: '10px' }} strokeWidth="4" />
+              </span>
+            ) : inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'
+          }
+          icon={loading ? null : inWishlist ? PrimeIcons.TIMES : PrimeIcons.HEART}
+          className={`add-to-wishlist-btn ${inWishlist ? 'p-button-danger' : 'p-button-info'}`}
+          onClick={handleWishListToggle}
+          disabled={loading}
+        />
+      )}
+    </>
+  );
 };

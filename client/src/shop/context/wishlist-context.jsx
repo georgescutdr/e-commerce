@@ -6,11 +6,16 @@ export const WishlistContext = createContext();
 export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState(() => {
     const stored = localStorage.getItem('wishlistItems') || Cookies.get('wishlistItems');
-    return stored ? JSON.parse(stored) : {};
+    const parsed = stored ? JSON.parse(stored) : {};
+    const normalized = {};
+    for (const key in parsed) {
+      normalized[String(key)] = parsed[key]; // Normalize keys as strings
+    }
+    return normalized;
   });
+
   const wishlistArray = Object.values(wishlistItems);
 
-  // Sync to localStorage and cookies
   useEffect(() => {
     localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
     Cookies.set('wishlistItems', JSON.stringify(wishlistItems), { expires: 7 });
@@ -19,25 +24,27 @@ export const WishlistProvider = ({ children }) => {
   const loadWishlist = useCallback((itemsArray) => {
     const wishlistMap = {};
     itemsArray.forEach(item => {
-      wishlistMap[item.id] = item;
+      wishlistMap[String(item.id)] = item;
     });
     setWishlistItems(wishlistMap);
   }, []);
 
   const toggleWishlist = useCallback((product) => {
+    const id = String(product.id);
     setWishlistItems(prev => {
-      const exists = !!prev[product.id];
       const updated = { ...prev };
-      if (exists) {
-        delete updated[product.id];
+      if (updated[id]) {
+        delete updated[id];
       } else {
-        updated[product.id] = product;
+        updated[id] = product;
       }
       return updated;
     });
   }, []);
 
-  const isInWishlist = (id) => Boolean(wishlistItems[id]);
+  const isInWishlist = useCallback((id) => {
+    return Boolean(wishlistItems[String(id)]);
+  }, [wishlistItems]);
 
   return (
     <WishlistContext.Provider

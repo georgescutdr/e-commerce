@@ -66,7 +66,7 @@ export const ProductView = ({ item, props }) => {
                     <PromotionsList promotions={item.promotion_array} />
                     <VoucherLabel vouchers={item.voucher_array} />
                     <AddToCartButton item={item} className="add-to-cart-btn" />
-                    {isLoggedIn() && (<AddToWishlistButton item={item} userId={user.id} />)}
+                    {isLoggedIn() && (<AddToWishlistButton item={item} />)}
                 </div>
             </div>
 
@@ -76,9 +76,7 @@ export const ProductView = ({ item, props }) => {
             <div className="product-carousels-wrapper">
               <div className="product-carousels-inner">
                 <div className="product-carousels">
-                  <ProductCarousel title="Most Liked" />
-                  <ProductCarousel title="Best Sellers" />
-                  <ProductCarousel title="Featured Products" />
+                  <ProductCarousel title="You may also like" />
                 </div>
               </div>
             </div>

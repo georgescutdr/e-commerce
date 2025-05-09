@@ -78,12 +78,12 @@ export const shopConfig = {
 			'listType': 'multiple',
 			'label': 'My account',
 			'sections': [
-				{'name': 'Account Info', 'fields': ['firstName', 'lastName', 'email']},
+				{'name': 'Account Info', 'fields': ['first_name', 'last_name', 'email']},
 				{'name': 'Contact Info', 'fields': ['phone', 'address']},
 			],
 			'fields': [
-			  { name: 'firstName', label: 'First Name', type: 'text' },
-			  { name: 'lastName', label: 'Last Name', type: 'text' },
+			  { name: 'first_name', label: 'First Name', type: 'text' },
+			  { name: 'last_name', label: 'Last Name', type: 'text' },
 			  { name: 'email', label: 'Email', type: 'email' },
 			  { name: 'phone', label: 'Phone', type: 'tel' },
 			  { name: 'address', label: 'Address', type: 'text' },

@@ -44,3 +44,7 @@
   align-items: center;
   min-height: 100vh; 
 }
+
+.p-toast .p-toast-message-content {
+  padding: 20px!important;
+}

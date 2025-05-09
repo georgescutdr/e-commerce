@@ -85,15 +85,11 @@
   gap: 8px;
 }
 
-.grid-item {
-
-}
-
 .grid-item .wishlist-icon-button {
   position: absolute;
   top: 7px;
   right: 7px;
-  z-index: 10;
+  z-index: 99999;
 }
 
 .card-bottom .add-to-cart-btn {

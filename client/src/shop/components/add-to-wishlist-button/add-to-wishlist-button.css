@@ -4,6 +4,7 @@
   background-color: #ffffff!important;
   justify-content: center !important; /* Center label and icon as one unit */
   position: relative;
+  z-index: 9999!important;
 }
 
 /* Shift icon to the far left while keeping label centered */
@@ -25,10 +26,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 1rem; /* adjust to match text height */
-  min-height: 1rem;
-  line-height: 1rem;
+  height: 100%;
+  width: 100%;
+  padding: 2px!important;
 }
+
 
 /* Optional: fix button height to ensure no layout shift */
 .add-to-wishlist-btn {
@@ -67,16 +69,25 @@
 .wishlist-icon-button {
   background-color: rgba(255, 255, 255, 0.9) !important;
   border: none !important;
-  padding: 2px !important;
+  padding: 0 !important;
   border-radius: 50% !important;
   height: 30px;
   width: 30px;
-  color: #000!important;
-  box-shadow: none !important;
-  font-size: 1.5rem;
-  color: var(--primary-color);
-  transition: background-color 0.2s ease;
+  color: #000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 💡 center content horizontally */
+  font-size: 1.25rem;
+  position: relative;
 }
+
+.wishlist-icon-button span.pi {
+  position: static;       /* ← Remove absolute positioning */
+  margin: 0;              /* ← Remove side margins */
+  font-size: 1.25rem;     /* Adjust as needed */
+  line-height: 1;         /* Ensure vertical centering */
+}
+
 
 .wishlist-icon-button.p-button-danger {
   color: #e74c3c;
@@ -93,3 +104,8 @@
   height: 22px!important;
 }
 
+.add-to-wishlist-btn,
+.wishlist-icon-button {
+  position: relative;
+  z-index: 9999;
+}

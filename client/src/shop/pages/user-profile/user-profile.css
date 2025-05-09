@@ -1,12 +1,15 @@
 .user-profile-form {
-  width: 90%;
-  max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #f9f9f9;
+  background-color: #f9f9f9 !important;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
+}
+
+.user-profile-form .p-tabview {
+  width: 50%;
+  margin: 0 auto;
 }
 
 .avatar-upload {
@@ -122,7 +125,7 @@ input[type="file"] {
   background: #fff;
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
@@ -152,11 +155,20 @@ input[type="file"] {
 }
 
 .save-btn {
-  width: 30% !important;
+  width: 15% !important;
 }
 
-
 /* --- Responsive Breakpoints --- */
+@media (max-width: 1024px) {
+  .user-profile-form .p-tabview {
+    width: 70%;
+  }
+
+  .save-btn {
+    width: 50% !important;
+  }
+}
+
 @media (max-width: 768px) {
   .user-profile-form {
     padding: 1.5rem;
@@ -176,6 +188,10 @@ input[type="file"] {
     padding: 1.5rem;
   }
 
+  .user-profile-form .p-tabview {
+    width: 100%;
+  }
+
   .save-btn {
     width: 100% !important;
   }
@@ -184,10 +200,6 @@ input[type="file"] {
 @media (max-width: 480px) {
   .form-field label {
     font-size: 0.95rem;
-  }
-
-  .save-btn {
-    width: 100% !important;
   }
 
   .p-tabview .p-tabview-nav {
@@ -206,5 +218,13 @@ input[type="file"] {
 
   .p-button {
     width: 100%;
+  }
+
+  .user-profile-form .p-tabview {
+    width: 100%;
+  }
+
+  .save-btn {
+    width: 100% !important;
   }
 }
