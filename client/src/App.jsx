@@ -1,10 +1,6 @@
 import React, { useState, Suspense, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
-import { useParams } from "react-router"
+import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom'
 import Axios from 'axios'
-
-import { ShopNavbar } from './shop/components/navbar/shop-navbar'
-import { AdminNavbar } from './admin/components/navbar/admin-navbar'
 
 import { Dashboard } from './admin/pages/dashboard'
 
@@ -110,13 +106,11 @@ function App() {
 
     return (
         <>
+        <Router>
         <AuthProvider>
         <WishlistProvider>
         <ShopContextProvider>
         <PrimeReactProvider>
-        <Router>
-            {isAdmin && <AdminNavbar />}
-            {!isAdmin && <ShopNavbar />}
             <Routes>
             <>
             {shopConfig.items.map((item, index) => {
@@ -158,12 +152,13 @@ function App() {
                 )
             })}
             </Routes>
-        </Router>
+        
         </PrimeReactProvider>
         <Footer />
         </ShopContextProvider>
         </WishlistProvider>
         </AuthProvider>
+        </Router>
         </>
     )
 }

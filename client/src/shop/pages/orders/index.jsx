@@ -9,6 +9,7 @@ import { useAuth } from '../../context/auth-context';
 import { shopConfig } from '../../../config';
 import { capitalize } from '../../../utils'
 import { getUser } from '../../../utils/auth-helpers';
+import { Header } from '../../components/header';
 import './orders.css';
 
 const Orders = () => {
@@ -56,6 +57,8 @@ const Orders = () => {
 	}
 
 	return (
+		<>
+		<Header />
 		<div className="orders-container">
 			<h2 className="orders-title">My Orders</h2>
 
@@ -110,6 +113,7 @@ const Orders = () => {
 				</div>
 			)}
 		</div>
+		</>
 	);
 };
 

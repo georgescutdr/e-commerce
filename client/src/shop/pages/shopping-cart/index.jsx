@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../context/shop-context';
 import { Button } from 'primereact/button';
 import { Link } from 'react-router-dom';
+import { Header } from '../../components/header';
 import './shopping-cart.css';
 
 const ShoppingCart = () => {
@@ -59,6 +60,8 @@ const ShoppingCart = () => {
   });
 
   return (
+    <>
+    <Header />
     <div className="shopping-cart-container">
       <h2>Shopping Cart</h2>
       {items.length === 0 ? (
@@ -198,6 +201,7 @@ const ShoppingCart = () => {
         </>
       )}
     </div>
+    </>
   );
 };
 

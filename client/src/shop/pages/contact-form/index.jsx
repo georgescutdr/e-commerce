@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import ReCAPTCHA from 'react-google-recaptcha';
 import Axios from 'axios';
+import { Header } from '../../components/header';
 import './contact-form.css';
 
 const ContactForm = ({ props }) => {
@@ -57,6 +58,8 @@ const ContactForm = ({ props }) => {
 	);
 
 	return (
+		<>
+		<Header />
 		<div className="page-container">
 		<div className="contact-form-wrapper">
 			<Toast ref={toast} />
@@ -114,6 +117,7 @@ const ContactForm = ({ props }) => {
 			</form>
 		</div>
 		</div>
+		</>
 	);
 };
 

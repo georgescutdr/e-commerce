@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import Axios from 'axios'; 
 import { shopConfig } from '../../../config';
 import { useNavigate } from 'react-router-dom'
+import { Header } from '../../components/header';
 import { AuthContext } from '../../context/auth-context'; 
 
 const RegisterForm = () => {
@@ -63,6 +64,8 @@ const RegisterForm = () => {
 	};
 
 	return (
+		<>
+		<Header />
 		<div className="register-page">
 			<div className="register-card">
 				<h2 className="register-title">Create Your Account</h2>
@@ -136,6 +139,7 @@ const RegisterForm = () => {
 				</form>
 			</div>
 		</div>
+		</>
 	);
 };
 

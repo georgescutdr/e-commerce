@@ -10,6 +10,7 @@ import { config, shopConfig } from '../../../config';
 import { Toast } from 'primereact/toast';
 import { FiEdit } from 'react-icons/fi';
 import { getUser } from '../../../utils/auth-helpers';
+import { Header } from '../../components/header';
 import './user-profile.css';
 
 const UserProfile = ({ props }) => {
@@ -120,6 +121,8 @@ const UserProfile = ({ props }) => {
 	}));
 
 	return (
+		<>
+		<Header />
 		<div>
 			<Toast ref={toast} />
 			<form className="user-profile-form" onSubmit={handleSubmit(onSubmit)}>
@@ -178,6 +181,7 @@ const UserProfile = ({ props }) => {
 				</div>
 			</form>
 		</div>
+		</>
 	);
 };
 

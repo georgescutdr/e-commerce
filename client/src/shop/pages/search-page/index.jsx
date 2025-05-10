@@ -8,6 +8,7 @@ import { shopConfig } from '../../../config';
 import { ItemGrid } from '../../components/item-grid';
 import { SearchPanel } from '../../components/search-panel';
 import { ChipsBar } from '../../components/search/chips-bar';
+import { Header } from '../../components/header';
 import { ItemStack } from '../../components/item-stack'
 import Cookies from 'js-cookie'
 import './search-page.css';
@@ -85,7 +86,7 @@ const SearchPage = ({props}) => {
         setResults(data);
       } catch (err) {
         console.error('Search error:', err);
-        setError('Failed to fetch search results. Please try again later.');
+        
       } finally {
         setLoading(false);
       }
@@ -131,6 +132,8 @@ const SearchPage = ({props}) => {
     }
 
   return (
+    <>
+    <Header categoryId={categoryId} searchWords={search} />
     <div className="items-page">
     <div className="items-header">
         <div className="items-header-text">
@@ -141,7 +144,12 @@ const SearchPage = ({props}) => {
     <div className="items-content-wrapper">
 
       <div className="search-panel-container">
-        <SearchPanel categoryId={categoryId} selected={selected} setSelected={setSelected} />
+        <SearchPanel 
+          categoryId={categoryId} 
+          selected={selected} 
+          setSelected={setSelected} 
+          searchWords={search}
+        />
       </div>
       <div className={`item-grid-container ${viewMode} ${viewLoading ? 'loading-overlay' : ''}`}>
             <ChipsBar selected={selected} onRemove={handleRemoveChip} onClearAll={clearAllFilters} />
@@ -162,11 +170,10 @@ const SearchPage = ({props}) => {
             <button onClick={() => window.location.reload()}>Retry</button>
           </div>
         )}
-
-        {!loading && !error && results.length === 0 && <p>No results found.</p>}
       </div>
     </div>
     </div>
+    </>
   );
 };
 

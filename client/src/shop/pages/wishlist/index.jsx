@@ -7,6 +7,7 @@ import { Toast } from 'primereact/toast';
 import { ProductCard } from '../../components/cards/wishlist/product-card';
 import { useWishlist } from '../../context/wishlist-context';
 import { getUser, isLoggedIn } from '../../../utils/auth-helpers';
+import { Header } from '../../components/header';
 import './wishlist.css';
 
 const Wishlist = ({ props }) => {
@@ -64,6 +65,8 @@ const Wishlist = ({ props }) => {
     };
 
     return (
+        <>
+        <Header />
         <div className="wishlist-container">
             <Toast ref={toast} />
             <h2>Your Wishlist</h2>
@@ -94,6 +97,7 @@ const Wishlist = ({ props }) => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

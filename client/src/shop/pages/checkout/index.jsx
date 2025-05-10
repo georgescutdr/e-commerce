@@ -11,16 +11,16 @@ import { shopConfig } from '../../../config'
 import { Toast } from 'primereact/toast';
 import { CheckoutForm } from '../../components/checkout-form'
 import { VoucherForm } from '../../components/voucher-form'
+import { Header } from '../../components/header';
 import './checkout.css';
 import 'primereact/resources/themes/lara-light-indigo/theme.css'; 
 import 'primereact/resources/primereact.min.css';
 
 const Checkout = ({props}) => {
-  
-
 
     return (
         <>
+            <Header />
             <div className="card flex justify-content-center">
                 <div className="stepper-voucher-container">
                     <div className="stepper-col">

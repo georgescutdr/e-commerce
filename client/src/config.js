@@ -199,7 +199,7 @@ export const shopConfig = {
 			'component': 'contact-form'
 		},
 		{
-			'path': '/search/:search',
+			'path': '/search/pd/:categoryId/:search',
 			'submitApi': siteConfig.serverUrl + '/api/shop/search/', 
 			'label': '',
 			'joinTables': [],

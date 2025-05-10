@@ -5,6 +5,7 @@ import Axios from 'axios'
 import { shopConfig } from '../../../config' 
 import './view-item.css'
 import { ProductView } from '../../view/product-view'
+import { Header } from '../../components/header';
 import { ProductSkeleton } from '../../components/skeleton/product-skeleton';
 
 const ViewItem = ({props}) => {
@@ -50,11 +51,14 @@ const ViewItem = ({props}) => {
 	}
 
 	return (
+		<>
+		<Header />
 		<div className="item-view-page">
 			<div className="item-view-container">
 				{ view }
 			</div>
 		</div>
+		</>
 	)
 }
 

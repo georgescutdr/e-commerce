@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form'
 import { useParams } from "react-router"
 import Axios from 'axios'
 import { Rating } from 'primereact/rating'
+import { Header } from '../../components/header';
 import * as moment from 'moment'
 
 const CreateReview = ({props}) => {
@@ -33,6 +34,8 @@ const CreateReview = ({props}) => {
     }
 
     return (
+        <>
+        <Header />
         <Stack gap={3}>
           
           <div className="p-2">
@@ -55,6 +58,7 @@ const CreateReview = ({props}) => {
               <Button onClick={ submitReview } variant="light">Submit</Button>
           </div>
         </Stack>
+        </>
     )
 }
 

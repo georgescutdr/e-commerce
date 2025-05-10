@@ -4,12 +4,18 @@ import Axios from 'axios';
 import { shopConfig } from '../../../config';
 import './search-bar.css';
 
-export const SearchBar = () => {
+export const SearchBar = ({categoryId = 0, searchWords = ''}) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    if (searchWords && typeof searchWords === 'string' && searchWords.trim()) {
+      setQuery(searchWords);
+    }
+  }, [searchWords]);
 
   const handleChange = async (e) => {
     const searchQuery = e.target.value;
@@ -34,13 +40,13 @@ export const SearchBar = () => {
   const handleSelect = (word) => {
     setQuery(word);
     setSuggestions([]);
-    navigate(`/search/${encodeURIComponent(word)}`);
+    navigate(`/search/pd/${categoryId}/${encodeURIComponent(word)}`);
   };
 
   const handleSearch = () => {
     if (query.trim()) {
       setSuggestions([]);
-      navigate(`/search/${encodeURIComponent(query.trim())}`);
+      navigate(`/search/pd/${categoryId}/${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -74,8 +80,19 @@ export const SearchBar = () => {
         onKeyDown={handleKeyPress}
         placeholder="Search..."
       />
-      <button className="search-button" onClick={handleSearch}>
-        <i className="pi pi-search" />
+      <button
+        className="search-button"
+        onClick={query.trim() ? () => {
+          setQuery('')
+          navigate(`/search/pd/${categoryId}/`)
+        } : 
+        handleSearch
+      }>
+        {query.trim() ? (
+          <i className="pi pi-times" />
+        ) : (
+          <i className="pi pi-search" />
+        )}
       </button>
 
       {suggestions.length > 0 && (

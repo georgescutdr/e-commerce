@@ -7,7 +7,7 @@ import { capitalize } from '../../../utils';
 import { SearchPanelSkeleton } from '../skeleton/search-panel-skeleton';
 import './search-panel.css';
 
-export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=false }) => {
+export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=false, searchWords='' }) => {
   const [attributes, setAttributes] = useState({});
   const [options, setOptions] = useState([]);
   const [promotions, setPromotions] = useState([]);
@@ -90,8 +90,16 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
   if (displayOnly) {
     const params = new URLSearchParams();
     params.set(attrName, `${valueId}:${encodeURIComponent(label)}`);
-    navigate(`/search/pd/${categoryId}/?${params.toString()}`, { replace: true });
-    return;
+
+    const trimmedSearch = searchWords?.trim();
+    const basePath = trimmedSearch
+      ? `/search/pd/${categoryId}/${encodeURIComponent(trimmedSearch)}`
+      : `/search/pd/${categoryId}`;
+    const queryString = params.toString();
+    const url = queryString ? `${basePath}/?${queryString}` : `${basePath}/`;
+
+    navigate(url, { replace: true });
+ 
   }
 
   // Normal interactive mode
@@ -113,7 +121,15 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
       params.set(key, encoded);
     });
 
-    navigate(`/search/pd/${categoryId}/?${params.toString()}`, { replace: true });
+    const trimmedSearch = searchWords?.trim();
+    const basePath = trimmedSearch
+      ? `/search/pd/${categoryId}/${encodeURIComponent(trimmedSearch)}`
+      : `/search/pd/${categoryId}`;
+    const queryString = params.toString();
+    const url = queryString ? `${basePath}/?${queryString}` : `${basePath}/`;
+
+    navigate(url, { replace: true });
+
     return updated;
   });
 };

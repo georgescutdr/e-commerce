@@ -1364,6 +1364,20 @@ app.get('/api/search', async (req, res) => {
         havingValues.push(Math.min(...filtersObj.minRating));
     }
 
+    // Search keyword in product or category name
+	if (query && query.trim() !== '') {
+	    whereConditions.push(`(p.name LIKE ? OR c.name LIKE ? OR b.name LIKE ?)`);
+	    const keyword = `%${query.trim()}%`;
+	    whereValues.push(keyword, keyword, keyword);
+	}
+
+	// Filter by categoryId
+	if (categoryId && categoryId > 0) {
+	    whereConditions.push(`p.category_id = ?`);
+	    whereValues.push(categoryId);
+	}
+
+
     // Build final SQL query
     let sql = `
         SELECT p.*, AVG(r.rating) as rating, 
@@ -1397,6 +1411,7 @@ app.get('/api/search', async (req, res) => {
         LEFT JOIN product_attribute_value pav ON pav.product_id=p.id
         LEFT JOIN product_voucher pv ON pv.product_id=p.id
         LEFT JOIN voucher v ON v.id=pv.voucher_id
+        LEFT JOIN category c ON p.category_id = c.id
     `;
 
     // TODO

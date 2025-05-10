@@ -9,6 +9,7 @@ import { ViewToggleButtons } from '../../components/view-toggle-buttons'
 import { ItemGridSkeleton } from '../../components/skeleton/item-grid-skeleton'
 import { ItemStackSkeleton } from '../../components/skeleton/item-stack-skeleton'
 import { useParams, useLocation } from 'react-router-dom'
+import { Header } from '../../components/header';
 import { shopConfig } from '../../../config'
 import { capitalize } from '../../../utils'
 
@@ -65,6 +66,8 @@ const ViewItems = ({ props }) => {
     const title = props.label ? props.label : (paramValues.length > 0 ? capitalize(paramValues[paramValues.length - 2]) : 'Shop')
 
     return (
+        <>
+        <Header categoryId={params.id} />
         <div className="items-page">
             <div className="items-header">
                 <div className="items-header-text">
@@ -92,6 +95,7 @@ const ViewItems = ({ props }) => {
                 </div>
             </div>
         </div>
+        </>
     )
 }
 

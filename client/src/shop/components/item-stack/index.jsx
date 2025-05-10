@@ -28,7 +28,7 @@ export const ItemStack = ({ items, props }) => {
                 </div>
             ) : (
                 <div className="no-items-container">
-                    <p className="no-items">No items found! Try another category.</p>
+                    <p className="no-items">No items found.</p>
                 </div>
             )}
         </>

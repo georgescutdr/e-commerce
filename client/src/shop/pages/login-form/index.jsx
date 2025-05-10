@@ -3,6 +3,7 @@ import './login-form.css';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
+import { Header } from '../../components/header';
 import Axios from 'axios';
 import { AuthContext } from '../../context/auth-context'; 
 import { useNavigate } from 'react-router-dom';
@@ -38,6 +39,8 @@ const LoginForm = () => {
 	};
 
 	return (
+		<>
+		<Header />
 		<div className="login-wrapper">
 			<div className="login-card">
 				<h2 className="login-title">Welcome Back</h2>
@@ -71,6 +74,7 @@ const LoginForm = () => {
 				</form>
 			</div>
 		</div>
+		</>
 	);
 };
 

@@ -8,6 +8,7 @@ import { Skeleton } from 'primereact/skeleton';
 import { shopConfig } from '../../../config';
 import { capitalize, formatDateTime } from '../../../utils'
 import { Timeline } from 'primereact/timeline';
+import { Header } from '../../components/header';
 import { OrderDetailsSkeleton } from '../../components/skeleton/order-details-skeleton'
 import './order-details.css';
 
@@ -81,6 +82,8 @@ const OrderDetails = () => {
     }
 
     return (
+        <>
+        <Header />
         <div className="order-details-container p-6">
             <div className="order-summary-tracking-grid">
                 <Card title={`Order Summary #${orderDetails.code}`} className="mb-4 shadow-2 order-details-card">
@@ -183,6 +186,7 @@ const OrderDetails = () => {
             </Card>
 
         </div>
+        </>
     );
 };
 

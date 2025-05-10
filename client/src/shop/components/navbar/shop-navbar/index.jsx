@@ -14,7 +14,7 @@ import { AuthButtons } from '../../auth-buttons';
 import { UserMenu } from '../user-menu'; 
 import { isLoggedIn } from '../../../../utils/auth-helpers';
 
-export const ShopNavbar = () => {
+export const ShopNavbar = ({categoryId = 0, searchWords = ''}) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -32,14 +32,14 @@ export const ShopNavbar = () => {
     ? Object.values(wishlistItems).slice(0, 5).map((item) => ({
         label: item.name, // Assuming `item.name` exists
         icon: 'pi pi-heart',
-        command: () => navigate(`/wishlist/${item.id}`),
+        command: () => navigate(`/wishlist/${item.id}`, { replace: true }),
       }))
     : [];
 
   const cartMenuItems = Object.values(cartItems).slice(0, 5).map((item) => ({
     label: item.name, // Assuming `item.name` exists
     icon: 'pi pi-shopping-cart',
-    command: () => navigate(`/cart/${item.id}`),
+    command: () => navigate(`/cart/${item.id}`, { replace: true }),
   }));
 
   return (
@@ -52,7 +52,7 @@ export const ShopNavbar = () => {
 
         {/* Middle: Search Bar */}
         <div className="shop-navbar-searchbar p-input-icon-left">
-          <SearchBar />
+          <SearchBar categoryId={categoryId} searchWords={searchWords} />
         </div>
 
         {/* Right: Buttons */}
