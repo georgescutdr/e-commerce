@@ -1,60 +1,80 @@
 .product-gallery-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
   padding: 1rem;
-  width: 481px;
-  margin: 0 auto;
-  box-sizing: border-box;
 }
 
-
-.product-main-image {
-  border-radius: 8px;
+.product-gallery-wrapper .thumbnail-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
-.product-thumbnail {
+.product-gallery-wrapper .thumbnail-item {
+  width: 60px;
+  height: 60px;
+  border: 2px solid transparent;
   border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border 0.2s;
+}
+
+.product-gallery-wrapper .thumbnail-item.active {
+  border-color: #2196f3;
+}
+
+.product-gallery-wrapper .thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
   transition: transform 0.2s;
 }
 
-.product-thumbnail:hover {
+.product-gallery-wrapper .thumbnail:hover {
   transform: scale(1.05);
 }
 
-.product-gallery-wrapper button {
-	width: 46px;
+.product-gallery-wrapper .image-preview {
+  flex-grow: 1;
+  max-width: 600px;
+  min-width: 200px;
+  position: relative;
 }
 
-.product-main-image {
+.product-gallery-wrapper .main-image {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
   border-radius: 8px;
-}
-
-.product-thumbnail {
-  border-radius: 4px;
-  transition: transform 0.2s;
   display: block;
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  overflow: hidden;
-  margin: auto;
 }
 
-/* Wrap the thumbnail in a container with fixed dimensions to avoid overflow */
-.p-galleria-thumbnail-item {
-  width: 60px !important;
-  height: 60px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.product-gallery-wrapper .loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-/* Limit hover transform so it doesn't trigger scrollbars */
-.product-thumbnail:hover {
-  transform: scale(1.03);
-}
-
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .product-gallery-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .product-gallery-wrapper .image-preview {
     width: 100%;
+    text-align: center;
+  }
+
+  .product-gallery-wrapper .main-image {
+    max-height: 300px;
   }
 }

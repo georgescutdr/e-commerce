@@ -8,12 +8,12 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 498px!important;
   text-decoration: none;
   border: 1px solid #ddd;
   border-radius: 8px;
 }
-
+ 
 .grid-item-link {
   text-decoration: none;
 }
@@ -96,3 +96,8 @@
   width: 100%!important;
 }
 
+@media (max-width: 768px) {
+  .grid-item {
+    height: 521px!important;
+  } 
+}

@@ -18,7 +18,7 @@
 
 .product-columns {
   display: grid;
-  grid-template-columns: 1fr 1.2fr 0.8fr;
+  grid-template-columns: 57% 34%;
   gap: 2rem;
 }
 
@@ -47,13 +47,13 @@
 .product-side-info {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.7rem;
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1.5rem;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+ /* box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);*/
   font-family: 'Inter', sans-serif;
 }
 

@@ -30,7 +30,7 @@ export const ProductView = ({ item, props }) => {
 
     return (
         <div className="product-page">
-            <h1 className="product-title">{title}</h1>
+            
 
             <div className="product-columns">
                 {/* Left: Image Gallery */}
@@ -38,20 +38,10 @@ export const ProductView = ({ item, props }) => {
                     <ProductGallery images={item.image_array} productId={item.id} />
                 </div>
 
-                {/* Middle: Description + Rating */}
-                <div className="product-description">
-                    <div className="product-rating">
-                        <Rating value={getAverageRating(item.review_array)} readOnly cancel={false} stars={5} />
-                        <span className="rating-text">{item.rating}</span>
-                    </div>
-                    <p>{item.description}</p>
-                    <div className="product-options">
-                        <Options items={item.option} />
-                    </div>
-                </div>
-
                 {/* Right: Price + Add to Cart */}
                 <div className="product-side-info">
+                    <div className="product-title">{title}</div>
+                    <Rating value={getAverageRating(item.review_array)} readOnly cancel={false} stars={5} />
                     <div className="product-price">
                         <Price
                             newPrice={
@@ -62,14 +52,18 @@ export const ProductView = ({ item, props }) => {
                             price={item.price}
                         />
                     </div>
+
                     <StockStatus quantity={item.quantity} />
+                    <Options items={item.option} />
                     <PromotionsList promotions={item.promotion_array} />
                     <VoucherLabel vouchers={item.voucher_array} />
                     <AddToCartButton item={item} className="add-to-cart-btn" />
                     {isLoggedIn() && (<AddToWishlistButton item={item} />)}
                 </div>
             </div>
-
+            <div className="product-description">
+                <p>{item.description}</p>
+            </div>
             <div className="product-attributes">
                 <Attributes item={item} />
             </div>

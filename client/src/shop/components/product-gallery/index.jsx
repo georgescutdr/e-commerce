@@ -1,61 +1,70 @@
-import React from 'react';
-import { Galleria } from 'primereact/galleria';
+import React, { useState } from 'react';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import './product-gallery.css';
 
 export const ProductGallery = ({ images = [], productId }) => {
   const isValidArray = Array.isArray(images) && images.length > 0 && images[0] !== null;
 
-  // Fallback default image
   const defaultImage = {
     id: 'default',
-    image_name: 'default.png', // This should exist in `/public/uploads/default.png`
+    image_name: 'default.png', // Ensure this exists in /public/uploads/
   };
 
   const fallbackImages = [defaultImage];
 
-  // Remove duplicates based on `id`
   const uniqueImages = isValidArray
     ? Array.from(new Map(images.map((img) => [img.id, img])).values())
     : fallbackImages;
 
   const getImageUrl = (image) => {
     if (image.id === 'default') {
-      return `/public/uploads/default-image.jpg`;
+      return `/uploads/default.png`;
     }
-    return `/public/uploads/product/${productId}/${image.image_name}`;
+    return `/uploads/product/${productId}/${image.image_name}`;
   };
 
-  const itemTemplate = (item) => (
-    <img
-      src={getImageUrl(item)}
-      alt={item.image_name}
-      className="product-main-image"
-      style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
-    />
-  );
+  const [selectedImage, setSelectedImage] = useState(uniqueImages[0]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const thumbnailTemplate = (item) => (
-    <img
-      src={getImageUrl(item)}
-      alt={item.image_name}
-      className="product-thumbnail"
-      style={{ width: 60, height: 60, objectFit: 'cover' }}
-    />
-  );
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setIsLoading(true);
+  };
 
   return (
     <div className="product-gallery-wrapper">
-      <Galleria
-        value={uniqueImages}
-        numVisible={5}
-        circular
-        showThumbnails
-        showIndicators={false}
-        showItemNavigators
-        item={itemTemplate}
-        thumbnail={thumbnailTemplate}
-        style={{ margin: '0 auto' }}
-      />
+      <div className="thumbnail-column">
+        {uniqueImages.map((image) => (
+          <div
+            key={image.id}
+            className={`thumbnail-item ${
+              selectedImage.id === image.id ? 'active' : ''
+            }`}
+            onClick={() => handleImageClick(image)}
+          >
+            <img
+              src={getImageUrl(image)}
+              alt={image.image_name}
+              className="thumbnail"
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="image-preview">
+        {isLoading && (
+          <div className="loader">
+            <ProgressSpinner style={{ width: '40px', height: '40px' }} strokeWidth="4" />
+          </div>
+        )}
+        <img
+          src={getImageUrl(selectedImage)}
+          alt={selectedImage.image_name}
+          className="main-image"
+          onLoad={() => setIsLoading(false)}
+          style={{ display: isLoading ? 'none' : 'block' }}
+        />
+      </div>
     </div>
   );
 };

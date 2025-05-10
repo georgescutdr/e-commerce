@@ -12,7 +12,7 @@ import { getUser, isLoggedIn } from '../../../../../utils/auth-helpers';
 import './product-card.css';
 
 export const ProductCard = ({ item, table }) => {
-
+ 
   const user = getUser();
  
     return (
