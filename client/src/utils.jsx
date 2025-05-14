@@ -73,9 +73,9 @@ export const applyPromotions = (promotions = [], originalPrice) => {
         const isActive = now >= startDate && now <= endDate;
 
         if (isActive) {
-            if (promotion.type === 'percent') {
+            if (promotion.type === 'percentage') {
                 finalPrice -= originalPrice * (promotion.value / 100);
-            } else if (promotion.type === 'value') {
+            } else if (promotion.type === 'fixed') {
                 finalPrice -= promotion.value;
             }
         }
@@ -115,9 +115,9 @@ export const getPromotionLabel = (promotions = []) => {
                          (!promo.end_date || endDate >= now);
 
         if (isActive) {
-            if (promo.type === 'percent') {
+            if (promo.type === 'percentage') {
                 percentTotal += Number(promo.value);
-            } else if (promo.type === 'value') {
+            } else if (promo.type === 'fixed') {
                 valueTotal += Number(promo.value);
             }
         }
@@ -155,7 +155,7 @@ export const makeItemUrl = (item) => {
 export const makeItemTitle = (item) => {
     if (!item) return '';
 
-    const brand = item.brand_array?.[0]?.name || '';
+    const brand = item.brand_name || '';
     const productName = item.name || '';
 
     const toTitleCase = (str) =>

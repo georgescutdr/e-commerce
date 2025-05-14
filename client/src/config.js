@@ -23,7 +23,11 @@ export const shopConfig = {
 		submitVoucherUrl: siteConfig.serverUrl + '/api/shop/submit-voucher',
 		getProductAttributesUrl: siteConfig.serverUrl + '/api/shop/get-product-attributes',
 		getPriceBoundsUrl: siteConfig.serverUrl + '/api/shop/get-price-bounds',
-		getCategoryBrandsUrl: siteConfig.serverUrl + '/api/shop/get-category-brands'
+		getCategoryBrandsUrl: siteConfig.serverUrl + '/api/shop/get-category-brands',
+		getCategoryOptionsUrl: siteConfig.serverUrl + '/api/shop/get-category-options',
+		getCategoryPromotionsUrl: siteConfig.serverUrl + '/api/shop/get-category-promotions',
+		countMinimumRatingProductsUrl: siteConfig.serverUrl + '/api/shop/count-minimum-rating-products',
+		getProductsUrl: siteConfig.serverUrl + '/api/shop/get-products',
 	},
 	items: [
 		{

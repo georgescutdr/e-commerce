@@ -18,7 +18,7 @@ export const ProductGallery = ({ images = [], productId }) => {
 
   const getImageUrl = (image) => {
     if (image.id === 'default') {
-      return `/uploads/default.png`;
+      return `/uploads/product/default/default.png`;
     }
     return `/uploads/product/${productId}/${image.image_name}`;
   };

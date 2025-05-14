@@ -142,7 +142,6 @@ app.get('/api/delete-review', (req, res) => {
 
 	const sql = "delete from review where id=?;"
 	db.query(sql, id, (err, result) => {
-		console.log(err)
 		res.send(result)
 	})
 })
@@ -1377,7 +1376,6 @@ app.get('/api/search', async (req, res) => {
 	    whereValues.push(categoryId);
 	}
 
-
     // Build final SQL query
     let sql = `
         SELECT p.*, AVG(r.rating) as rating, 
@@ -1416,7 +1414,6 @@ app.get('/api/search', async (req, res) => {
 
     // TODO
     //get unexpired promotions and vouchers only
-    //combine with keyword search in product & category
 
     if (whereConditions.length > 0) {
         sql += ` WHERE ${whereConditions.join(' AND ')}`;
@@ -1482,214 +1479,93 @@ app.get('/api/search', async (req, res) => {
 
 });
 
-app.get('/api/search2', async (req, res) => {
-  const { query, filters } = req.query;
 
-  let parsedFilters = {};
+// PRODUCTS
 
-	// Parse filters if it's a JSON string
-  if (typeof filters === 'string') {
-    parsedFilters = JSON.parse(filters);
-  }
-
-  const filtersObj = {};
-  for (const filter of parsedFilters) {
-    filtersObj[filter.name] = filter.values;
-  }
-
-  console.log(filtersObj);
-
-  const words = query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean);
+app.get('/api/shop/get-products', async (req, res) => {
+  const { categoryId, productId } = req.query;
 
   try {
-    const likeConditions = words.map(() => `(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)`).join(' OR ');
-    const likeValues = words.flatMap(word => [`%${word}%`, `%${word}%`]);
-
-    const categoryConditions = words.map(() => `LOWER(name) LIKE ?`).join(' OR ');
-    const categoryValues = words.map(word => `%${word}%`);
- //   const [categories] = await db.query(`SELECT id FROM category WHERE ${categoryConditions}`, categoryValues);
-    const categoryIds = categories.map(cat => cat.id);
-
-    const brandConditions = words.map(() => `(LOWER(name) LIKE ? OR LOWER(description) LIKE ?)`).join(' OR ');
-    const brandValues = words.flatMap(word => [`%${word}%`, `%${word}%`]);
- //   const [brands] = await db.query(`SELECT id FROM brand WHERE ${brandConditions}`, brandValues);
-    const brandIds = brands.map(b => b.id);
-
-    let productQuery = `
+    const query = `
       SELECT 
-        p.id, p.name, p.description, p.price, p.quantity,
-        p.category_id, c.name AS category_name,
-        p.brand_id, b.id AS brand_id, b.name AS brand_name, b.description AS brand_description
+        p.id,
+        p.name,
+        p.description,
+        p.price,
+        p.quantity,
+        p.category_id,
+        p.brand_id,
+        AVG(r.rating) AS rating,
+        b.name AS brand_name,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', pr.id,
+            'name', pr.name,
+            'type', pr.type,
+            'value', pr.value,
+            'start_date', pr.start_date,
+            'end_date', pr.end_date
+          )
+        ) AS promotion_array,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', v.id,
+            'name', v.name,
+            'type', v.type,
+            'value', v.value
+          )
+        ) AS voucher_array,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', o.id,
+            'name', o.name
+          )
+        ) AS option_array
       FROM product p
-      LEFT JOIN category c ON p.category_id = c.id
+      LEFT JOIN product_promotion pp ON pp.product_id = p.id
+      LEFT JOIN promotion pr ON pp.promotion_id = pr.id
       LEFT JOIN brand b ON p.brand_id = b.id
-      WHERE ${likeConditions}
+      LEFT JOIN review r ON r.product_id = p.id
+      LEFT JOIN product_voucher pv ON pv.product_id = p.id
+      LEFT JOIN voucher v ON v.id = pv.voucher_id
+      LEFT JOIN product_option po ON po.product_id = p.id
+      LEFT JOIN \`option\` o ON po.option_id = o.id
+      WHERE p.category_id = ?
+      GROUP BY p.id
     `;
 
-    const queryValues = [...likeValues];
+    const [rows] = await db.query(query, [categoryId]);
 
-    const filterConditions = [];
-	const filterValues = [];
+    // Remove duplicates from the JSON arrays
+    const uniqueRows = rows.map(row => {
+      return {
+        ...row,
+        promotion_array: removeDuplicates(row.promotion_array),
+        voucher_array: removeDuplicates(row.voucher_array),
+        option_array: removeDuplicates(row.option_array)
+      };
+    });
 
-	// Promotions
-	if (filtersObj.promotions?.length > 0) {
-	  const placeholders = filtersObj.promotions.map(() => '?').join(',');
-	  filterConditions.push(`p.id IN (SELECT product_id FROM product_promotion WHERE promotion_id IN (${placeholders}))`);
-	  filterValues.push(...filtersObj.promotions);
-	}
-
-	// Options
-	if (filtersObj.options?.length > 0) {
-	  const placeholders = filtersObj.options.map(() => '?').join(',');
-	  filterConditions.push(`p.id IN (SELECT product_id FROM product_option WHERE option_id IN (${placeholders}))`);
-	  filterValues.push(...filtersObj.options);
-	}
-
-	// Brands
-	if (filtersObj.brands?.length > 0) {
-	  const placeholders = filtersObj.brands.map(() => '?').join(',');
-	  filterConditions.push(`p.brand_id IN (${placeholders})`);
-	  filterValues.push(...filtersObj.brands);
-	}
-
-	// Price Range
-	if (filtersObj.priceRange?.length > 0) {
-	  const priceConditions = [];
-	  for (const rangeString of filtersObj.priceRange) {
-	    const [minPrice, maxPrice] = rangeString.split('-').map(Number);
-	    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
-	      priceConditions.push(`(p.price BETWEEN ? AND ?)`);
-	      filterValues.push(minPrice, maxPrice);
-	    }
-	  }
-	  if (priceConditions.length > 0) {
-	    filterConditions.push(`(${priceConditions.join(' OR ')})`);
-	  }
-	}
-console.log('Filter conditions: ',filterConditions)
-	// Min Rating
-	if (filtersObj.minRating?.length > 0) {
-	  const ratingConditions = [];
-	  for (const minRating of filtersObj.minRating) {
-	    ratingConditions.push(`p.id IN (SELECT product_id FROM review WHERE rating >= ? GROUP BY product_id)`);
-	    filterValues.push(minRating);
-	  }
-	  if (ratingConditions.length > 0) {
-	    filterConditions.push(`(${ratingConditions.join(' OR ')})`);
-	  }
-	}
-
-
-
-    // Execute the query
-    const [products] = await db.query(productQuery, queryValues);
-
-    if (products.length === 0) {
-      return res.json({ products: [] });
-    }
-
-    const productIds = products.map(p => p.id);
-    const placeholders = productIds.map(() => '?').join(',');
-
-    const [promotions] = await db.query(`
-      SELECT 
-        pp.product_id,
-        pr.id, pr.name, pr.description, pr.type, pr.value,
-        pr.start_date, pr.end_date, pr.home
-      FROM product_promotion pp
-      JOIN promotion pr ON pp.promotion_id = pr.id
-      WHERE pp.product_id IN (${placeholders})
-        AND pr.start_date <= NOW()
-        AND pr.end_date >= NOW()
-    `, productIds);
-
-    const [vouchers] = await db.query(`
-      SELECT 
-        pv.product_id,
-        v.id, v.name, v.description, v.type, v.value,
-        v.expires_at, v.num, v.code
-      FROM product_voucher pv
-      JOIN voucher v ON pv.voucher_id = v.id
-      WHERE pv.product_id IN (${placeholders})
-        AND v.expires_at >= NOW()
-    `, productIds);
-
-    const [ratings] = await db.query(`
-      SELECT 
-        product_id, id, rating
-      FROM review
-      WHERE product_id IN (${placeholders})
-    `, productIds);
-
-    // Map promotions, vouchers, ratings by product_id
-    const promoMap = {};
-    const voucherMap = {};
-    const ratingMap = {};
-
-    for (const promo of promotions) {
-      const productId = promo.product_id;
-      if (!promoMap[productId]) promoMap[productId] = [];
-      promoMap[productId].push({
-        id: promo.id,
-        name: promo.name,
-        description: promo.description,
-        type: promo.type,
-        value: promo.value,
-        start_date: promo.start_date,
-        end_date: promo.end_date,
-        home: promo.home
-      });
-    }
-
-    for (const voucher of vouchers) {
-      const productId = voucher.product_id;
-      if (!voucherMap[productId]) voucherMap[productId] = [];
-      voucherMap[productId].push({
-        id: voucher.id,
-        name: voucher.name,
-        description: voucher.description,
-        type: voucher.type,
-        value: voucher.value,
-        expires_at: voucher.expires_at,
-        num: voucher.num,
-        code: voucher.code
-      });
-    }
-
-    for (const rating of ratings) {
-      const productId = rating.product_id;
-      if (!ratingMap[productId]) ratingMap[productId] = [];
-      ratingMap[productId].push({
-        id: rating.id,
-        rating: rating.rating
-      });
-    }
-
-    const enrichedProducts = products.map(product => ({
-      ...product,
-      brand_array: product.brand_id
-        ? [{
-            id: product.brand_id,
-            name: product.brand_name,
-            description: product.brand_description
-          }]
-        : [],
-      promotion_array: promoMap[product.id] || [],
-      voucher_array: voucherMap[product.id] || [],
-      review_array: ratingMap[product.id] || []
-    }));
-
-    res.json({ products: enrichedProducts });
-
+    res.json(uniqueRows);
   } catch (err) {
-    console.error('Search error:', err);
+    console.error('Error fetching products:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+// Helper function to remove duplicates from JSON array
+function removeDuplicates(array) {
+  const seen = new Set();
+  return array.filter(item => {
+    const identifier = JSON.stringify(item); // Using JSON stringify to compare the object
+    if (seen.has(identifier)) {
+      return false;
+    } else {
+      seen.add(identifier);
+      return true;
+    }
+  });
+}
 
 
 // VOUCHER
@@ -1817,19 +1693,24 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
       // Fetch attributes for categoryId (no values)
       [attributes] = await db.query(`
         SELECT 
-          a.id AS attribute_id,
-          a.name AS attribute_name,
-          av.id AS value_id,
-          av.numeric_value,
-          av.text_value,
-          u.symbol AS unit_symbol
-        FROM attribute_category ac
-        JOIN attribute a ON ac.attribute_id = a.id
-        LEFT JOIN attribute_value av ON av.attribute_id = a.id
-        LEFT JOIN attribute_unit au ON a.id = au.attribute_id
-        LEFT JOIN unit u ON au.unit_id = u.id
-        WHERE ac.category_id = ?
-        ORDER BY a.name, av.numeric_value, av.text_value
+		    a.id AS attribute_id,
+		    a.name AS attribute_name,
+		    av.id AS value_id,
+		    av.numeric_value,
+		    av.text_value,
+		    u.symbol AS unit_symbol,
+		    COUNT(pav.product_id) AS total_rows
+		FROM attribute_category ac
+		JOIN attribute a ON ac.attribute_id = a.id
+		LEFT JOIN attribute_value av ON av.attribute_id = a.id
+		LEFT JOIN attribute_unit au ON a.id = au.attribute_id
+		LEFT JOIN unit u ON au.unit_id = u.id
+		LEFT JOIN product_attribute_value pav ON pav.attribute_value_id = av.id
+		WHERE ac.category_id = ?
+		AND a.search_panel = 1
+		GROUP BY a.id, av.id, av.numeric_value, av.text_value, u.symbol
+		ORDER BY a.name, av.numeric_value, av.text_value;
+
       `, [categoryId]);
     }
 
@@ -1840,6 +1721,7 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
       const name = row.attribute_name;
       const textVal = row.text_value?.trim();
       const numVal = row.numeric_value;
+      const total_rows = row.total_rows;
 
       if (!name) continue; // Skip if attribute name is missing
 
@@ -1854,6 +1736,8 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
           display: "No value", // Placeholder text for category attributes
           value: null, // No value for category attributes
           unit: row.unit_symbol ?? "N/A", // Show unit if available, otherwise "N/A"
+          total_rows: total_rows, //Number of products having the attribute
+
         });
         continue;
       }
@@ -1876,7 +1760,8 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
         id: row.value_id,
         display,
         value: hasText ? textVal : numVal,
-        unit: row.unit_symbol ?? null
+        unit: row.unit_symbol ?? null,
+        total_rows: total_rows,
       });
     }
 
@@ -1896,25 +1781,102 @@ app.get('/api/shop/get-price-bounds', async (req, res) => {
   }
 
   try {
+    // First get max price
+    const [[{ maxPrice }]] = await db.execute(
+      `SELECT MAX(p.price) AS maxPrice FROM product p WHERE p.category_id = ?`,
+      [categoryId]
+    );
+
+    const stepSize = maxPrice ? maxPrice / 5 : 1;
+
+    // Query to count products in each range
     const query = `
-      SELECT MAX(price) AS maxPrice
-      FROM product
-      WHERE category_id = ?
+      SELECT 
+        CASE 
+          WHEN p.price >= 0 AND p.price < ? THEN 1
+          WHEN p.price >= ? AND p.price < ? THEN 2
+          WHEN p.price >= ? AND p.price < ? THEN 3
+          WHEN p.price >= ? AND p.price < ? THEN 4
+          WHEN p.price >= ? THEN 5
+        END AS price_range,
+        COUNT(*) AS count
+      FROM product p
+      WHERE p.category_id = ?
+      GROUP BY price_range
+      ORDER BY price_range;
     `;
-    const [rows] = await db.execute(query, [categoryId]);
 
-    const maxPrice = rows[0]?.maxPrice ?? 0;
+    const values = [
+      stepSize,
+      stepSize, stepSize * 2,
+      stepSize * 2, stepSize * 3,
+      stepSize * 3, stepSize * 4,
+      stepSize * 4,
+      categoryId
+    ];
 
-    res.json({ maxPrice });
+    const [rows] = await db.execute(query, values);
+
+    // Create a result object with all 5 buckets initialized
+    const result = {
+      stepRanges: [
+        { range: [0, stepSize], count: 0 },
+        { range: [stepSize, stepSize * 2], count: 0 },
+        { range: [stepSize * 2, stepSize * 3], count: 0 },
+        { range: [stepSize * 3, stepSize * 4], count: 0 },
+        { range: [stepSize * 4, maxPrice], count: 0 },
+      ]
+    };
+
+    rows.forEach(row => {
+      if (row.price_range >= 1 && row.price_range <= 5) {
+        result.stepRanges[row.price_range - 1].count = row.count;
+      }
+    });
+
+    res.json(result);
   } catch (err) {
-    console.error('Error fetching max price:', err);
+    console.error('Error fetching price bounds:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 
+// MINIMUM RATING PRODUCTS
+
+app.get('/api/shop/count-minimum-rating-products', async (req, res) => {
+  const { categoryId } = req.query;
+
+  if (!categoryId) return res.status(400).json({ error: 'categoryId is required' });
+
+  try {
+    const query = `
+      SELECT
+        FLOOR(AVG(r.rating)) AS avg_rating,
+        COUNT(DISTINCT p.id) AS product_count
+      FROM product p
+      JOIN review r ON p.id = r.product_id
+      WHERE p.category_id = ?
+    `;
+
+    const [rows] = await db.query(query, [categoryId]);
+
+    // Create a response object with counts for each star rating (1–5)
+    const ratingCounts = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+    rows.forEach(row => {
+      const rating = Math.max(1, Math.min(5, row.avg_rating)); // ensure within 1-5
+      ratingCounts[rating] = row.product_count;
+    });
+
+    res.json(ratingCounts);
+  } catch (err) {
+    console.error('Error fetching rating counts:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // CATEGORY BRANDS
-// routes/shop.js or similar
+
 app.get('/api/shop/get-category-brands', async (req, res) => {
   const { categoryId } = req.query;
 
@@ -1922,11 +1884,15 @@ app.get('/api/shop/get-category-brands', async (req, res) => {
 
   try {
     const query = `
-      SELECT DISTINCT b.id, b.name 
-      FROM product p
-      LEFT JOIN brand b ON p.brand_id = b.id
-      WHERE p.category_id = ?
-      ORDER BY b.name
+     SELECT 
+	  b.id, 
+	  b.name, 
+	  COUNT(p.id) AS num_rows
+	FROM product p
+	LEFT JOIN brand b ON p.brand_id = b.id
+	WHERE p.category_id = ?
+	GROUP BY b.id, b.name
+	ORDER BY b.name;
     `;
 
     const [rows] = await db.query(query, [categoryId]);
@@ -1934,6 +1900,96 @@ app.get('/api/shop/get-category-brands', async (req, res) => {
   } catch (err) {
     console.error('Error fetching brands:', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// CATEGORY PROMOTIONS
+
+app.get('/api/shop/get-category-promotions', async (req, res) => {
+  const { categoryId } = req.query;
+
+  if (!categoryId) return res.status(400).json({ error: 'categoryId is required' });
+
+  try {
+    const query = `
+     SELECT 
+	  pr.id, 
+	  pr.name, 
+	  COUNT(p.id) AS num_rows
+	FROM product p
+	JOIN product_promotion pp ON p.id = pp.product_id
+	JOIN promotion pr ON pr.id = pp.promotion_id
+	WHERE p.category_id = ?
+	GROUP BY pr.id, pr.name
+	ORDER BY pr.name;
+    `;
+
+    const [rows] = await db.query(query, [categoryId]);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching promotions:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// CATEGORY OPTIONS
+
+app.get('/api/shop/get-category-options', async (req, res) => {
+  const { categoryId } = req.query;
+
+  if (!categoryId) return res.status(400).json({ error: 'categoryId is required' });
+
+  try {
+    const query = `
+   SELECT 
+	  o.id, 
+	  o.name, 
+	  COUNT(p.id) AS num_rows
+	FROM product p
+	JOIN product_option po ON p.id = po.product_id
+	JOIN \`option\` o ON o.id = po.option_id
+	WHERE p.category_id = ?
+	GROUP BY o.id, o.name
+	ORDER BY o.name;
+    `;
+
+    const [rows] = await db.query(query, [categoryId]);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching brands:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//////////////////////////
+
+// Helper function to create folders
+function createFolders() {
+  // Define the number ranges
+  const ranges = [
+    { start: 28, end: 73 },
+    { start: 134, end: 183 }
+  ];
+
+  // Loop through the ranges and create folders
+  ranges.forEach(range => {
+    for (let i = range.start; i <= range.end; i++) {
+      const folderPath = path.join(__dirname, 'folders', String(i));
+      // Create the folder
+      fs.mkdirSync(folderPath, { recursive: true });
+      console.log(`Folder created: ${folderPath}`);
+    }
+  });
+}
+
+// Route to trigger the folder creation
+app.get('/create-folders', (req, res) => {
+  try {
+    createFolders();
+    res.send('Folders created successfully!');
+  } catch (error) {
+    console.error('Error creating folders:', error);
+    res.status(500).send('Failed to create folders.');
   }
 });
 

@@ -55,6 +55,8 @@ export const ShopContextProvider = ({ children }) => {
         const newItem = {
           ...product,
           product_id: product.id,
+          category_id: product.category_id,
+          brand_name: product.brand_name,
           quantity: prevQuantity + 1,
           vouchers: existing.vouchers || [],
           promotions: parsePromotions(product.promotion_array),

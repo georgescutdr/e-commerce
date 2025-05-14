@@ -21,14 +21,14 @@ export const ProductCard = ({ item, table, onRemove }) => {
                 <img 
                     src={
                         item.files && item.files.length > 0
-                            ? `/public/uploads/${table}/${item.id}/${item.files[0].file_name}`
-                            : '/public/uploads/default-image.jpg'
+                            ? `/public/uploads/product/${item.id}/${item.files[0].file_name}`
+                            : `/public/uploads/product/default/${item.category_id}/default-image.jpg`
                     } 
                     alt={item.name} 
                 />
             </div>
             <div className="stack-card-details">
-                {item.promotion_array?.[0] && (
+                {item.promotion_array?.[0]?.id && (
                     <div className="promotion-label">
                         {getPromotionLabel(item.promotion_array)}
                     </div>

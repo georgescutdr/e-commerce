@@ -4,6 +4,7 @@ import { ShopContext } from '../../context/shop-context';
 import { Button } from 'primereact/button';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/header';
+import { slugify } from '../../../utils';
 import './shopping-cart.css';
 
 const ShoppingCart = () => {
@@ -93,15 +94,15 @@ const ShoppingCart = () => {
                         <img
                             src={item.image
                                 ? `/public/uploads/product/${item.id}/${item.files[0].file_name}`
-                                : '/public/uploads/default-image.jpg'}
+                                : `/public/uploads/product/default/${item.category_id}/default-image.jpg`}
                             alt={item.name}
                             className="cart-item-img"
                         />
                     </td>
                     <td>
                       <div className="product-title">
-                          <Link to={`/${item.name}/pd/${item.id}/view_product`}>
-                              <span className="product-title-link">{`${item.brand} ${item.name}`}</span>
+                          <Link to={`/${slugify(item.brand_name +' '+ item.name)}/pd/${item.id}/view_product`}>
+                              <span className="product-title-link">{`${item.brand_name} ${item.name}`}</span>
                            </Link>
                       </div>
                       {item.promotions?.length > 0 && (

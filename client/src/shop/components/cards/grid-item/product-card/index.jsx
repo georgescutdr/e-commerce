@@ -25,13 +25,13 @@ export const ProductCard = ({ item, table }) => {
                 <img
                     src={
                         item.files?.[0]
-                            ? `/public/uploads/${table}/${item.id}/${item.files[0].file_name}`
-                            : '/public/uploads/default-image.jpg'
+                            ? `/public/uploads/product/${item.id}/${item.files[0].file_name}`
+                            : `/public/uploads/product/default/${item.category_id}/default-image.jpg`
                     }
                     alt={item.name}
                     className="item-image"
                 />
-                {item.promotion_array?.[0] && (
+                {item.promotion_array?.[0]?.id && (
                     <div className="promotion-label">
                         {getPromotionLabel(item.promotion_array)}
                     </div>
@@ -62,7 +62,7 @@ export const ProductCard = ({ item, table }) => {
                   <div className="card-bottom">
                     <Price
                       newPrice={
-                        item.promotion_array?.[0]
+                        item.promotion_array?.[0]?.id
                           ? applyPromotions(item.promotion_array, item.price)
                           : undefined
                       }

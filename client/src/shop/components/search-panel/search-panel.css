@@ -131,4 +131,9 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
+}
 
+.total-rows {
+  color: #a8a8a8;
+  font-weight: normal;
+}

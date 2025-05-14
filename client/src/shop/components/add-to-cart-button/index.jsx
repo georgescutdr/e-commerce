@@ -12,9 +12,10 @@ export const AddToCartButton = ({item, props = {}}) => {
       addToCart({
         id: item.id,
         product_id: item.id,
+        category_id: item.category_id,
         name: item.name,
         price: item.price,
-        brand: item.brand_name || item.brand_array?.[0]?.name,
+        brand_name: item.brand_name,
         promotion_array: item.promotion_array 
       });
     };

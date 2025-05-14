@@ -1,5 +1,6 @@
 .cart-button-wrapper {
   position: relative;
+  z-index: 1000; /* One less than the triangle */
 }
 
 .item-count-badge {
@@ -19,6 +20,7 @@
   max-height: 400px;
   overflow-y: auto;
   padding: 8px;
+  z-index: 10;
 }
 
 .cart-dropdown-footer {
@@ -51,8 +53,9 @@
 }
 
 .cart-button-hover-container {
-  position: relative;
+   position: relative;
   display: inline-block;
+  z-index: 0; /* Establish stacking context */
 }
 
 .cart-dropdown-panel .p-button-sm {
@@ -69,3 +72,42 @@
 .cart-dropdown-panel .cart-button:hover {
   color: #fff;
 }
+
+
+.cart-button-hover-container {
+  position: relative;
+  display: inline-block;
+  z-index: 0;
+}
+
+.cart-button-wrapper {
+  position: relative;
+  z-index: 1; /* Button should sit *below* the dropdown */
+}
+
+.cart-dropdown-panel {
+  position: absolute; /* Required for positioning the triangle */
+  top: 100%; /* Place below the button */
+  right: 0;
+  background-color: #fff;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+  z-index: 10; /* Dropdown above button */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cart-dropdown-panel::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  right: 20px; /* Adjust to align with your cart button */
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #333; /* Same color as dropdown */
+  z-index: 999999999999999999999999991!important;
+}
+
+
+

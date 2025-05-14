@@ -10,6 +10,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { shopConfig } from '../../../config';
 import { Toast } from 'primereact/toast';
 import { Link } from 'react-router-dom';
+import { slugify } from '../../../utils';
 import './checkout-form.css';
 import 'primereact/resources/themes/lara-light-indigo/theme.css'; 
 import 'primereact/resources/primereact.min.css';
@@ -124,6 +125,7 @@ export const CheckoutForm = () => {
                 shippingData: shippingData,
                 cartItemsArr: cartItemsArr.map(item => ({
                     product_id: item.product_id,
+                    category_id: item.category_id,
                     quantity: item.quantity,
                     price: item.price
                 }))
@@ -329,15 +331,15 @@ export const CheckoutForm = () => {
                                               <img
                                                 src={item.image
                                                   ? `/public/uploads/product/${item.id}/${item.files[0].file_name}`
-                                                  : '/public/uploads/default-image.jpg'}
+                                                  : `/public/uploads/product/default/${item.category_id}/default-image.jpg`}
                                                 alt={item.name}
                                                 className="cart-item-img"
                                               />
 
                                               <div className="cart-item-content">
                                                 <div className="product-title">
-                                                  <Link to={`/${item.name}/pd/${item.id}/view_product`}>
-                                                    <span className="product-title-link">{`${item.brand} ${item.name}`}</span>
+                                                  <Link to={`/${slugify(item.brand_name + ' ' + item.name)}/pd/${item.id}/view_product`}>
+                                                    <span className="product-title-link">{`${item.brand_name} ${item.name}`}</span>
                                                   </Link>
                                                 </div>
 

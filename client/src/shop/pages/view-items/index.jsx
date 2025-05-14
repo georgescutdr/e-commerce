@@ -17,6 +17,7 @@ const ViewItems = ({ props }) => {
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [viewLoading, setViewLoading] = useState(false)
+    const [category, setCategory] = useState(null)
  
     // Initialize view mode from cookie or default to 'grid'
     const [viewMode, setViewModeState] = useState(() => Cookies.get('viewMode') || 'grid')
@@ -26,28 +27,26 @@ const ViewItems = ({ props }) => {
     const searchParams = new URLSearchParams(location.search)
 
     useEffect(() => {
-        let queryParams = {
-            table: props.table,
-        }
-
-        if (props.table === 'product') {
-            queryParams.category_id = params.id
-            queryParams.joinTables = [
-                { table: 'promotion', fields: ['id', 'name', 'type', 'value', 'start_date', 'end_date'], pivot: true },
-                { table: 'brand', fields: ['id', 'name'], pivot: true },
-                { table: 'review', fields: ['rating'], pivot: true },
-                { table: 'voucher', fields: ['id', 'expires_at'], pivot: true },
-            ]
-        }
-
-        Axios.post(shopConfig.getItemsUrl, queryParams)
+        Axios.get(shopConfig.api.getProductsUrl, {params: {categoryId: params.id}})
             .then((res) => {
+                console.log(res.data)
                 setItems(res.data)
                 setLoading(false)
             })
             .catch((err) => {
                 console.error('Error loading items:', err)
                 setLoading(false)
+            })
+    }, [])
+
+    useEffect(() => {
+        Axios.post(shopConfig.getItemsUrl, {table: 'category', id: params.id})
+            .then((res) => {
+                console.log(res.data[0])
+                setCategory(res.data[0])
+            })
+            .catch((err) => {
+                console.error('Error loading items:', err)
             })
     }, [])
 
@@ -72,7 +71,7 @@ const ViewItems = ({ props }) => {
             <div className="items-header">
                 <div className="items-header-text">
                     <h1>{title}</h1>
-                    <p>Browse our categories, brands, and products</p>
+                    <p>{category?.description}</p>
                 </div>
                 <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
             </div>

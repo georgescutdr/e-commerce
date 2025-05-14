@@ -42,19 +42,19 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
-        const [brandsRes, optionsRes, promotionsRes, attributesRes, priceBoundsRes] = await Promise.all([
+        const [brandsRes, optionsRes, promotionsRes, attributesRes, priceBoundsRes, minimumRatingRes] = await Promise.all([
           Axios.get(shopConfig.api.getCategoryBrandsUrl, { params: { categoryId } }),
-          Axios.post(shopConfig.getItemsUrl, { table: 'option' }),
-          Axios.post(shopConfig.getItemsUrl, { table: 'promotion' }),
+          Axios.get(shopConfig.api.getCategoryOptionsUrl, { params: { categoryId } }),
+          Axios.get(shopConfig.api.getCategoryPromotionsUrl, { params: { categoryId } }),
           Axios.get(shopConfig.api.getProductAttributesUrl, { params: { categoryId } }),
           Axios.get(shopConfig.api.getPriceBoundsUrl, { params: { categoryId } }),
+          Axios.get(shopConfig.api.countMinimumRatingProductsUrl, { params: { categoryId } }),
         ]);
-
+console.log('SEARCH PANEL: ', minimumRatingRes.data)
         setBrands(brandsRes.data);
         setOptions(optionsRes.data);
         setPromotions(promotionsRes.data);
         setAttributes(attributesRes.data);
-
         const { minPrice = 0, maxPrice } = priceBoundsRes.data;
         if (maxPrice > minPrice) {
           const step = (maxPrice - minPrice) / 5;
@@ -151,7 +151,7 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
               checked={displayOnly ? false : selected[attrName]?.some((v) => v.id === item.id) || false}
               onChange={() => toggleCheckbox(attrName, item.id, item.display || item.name)}
             />
-            {item.display || item.name}
+            {item.display || item.name} <span className="total-rows">({item.total_rows || 0})</span> 
           </label>
         ))}
       </div>
@@ -206,7 +206,7 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
                 checked={displayOnly ? false : selected[attrName]?.some((v) => v.id === starCount) || false}
                 onChange={() => toggleCheckbox(attrName, starCount, `${starCount} stars`)}
               />
-              <Rating value={starCount} readOnly cancel={false} stars={5} />
+              <Rating value={starCount} readOnly cancel={false} stars={5} /> <span className="total-rows">({0})</span>
             </label>
           ))}
         </div>
@@ -236,7 +236,7 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
                       checked={displayOnly ? false : selected[attrName]?.some((v) => v.id === val.id) || false}
                       onChange={() => toggleCheckbox(attrName, val.id, val.display || val.name)}
                     />
-                    {val.display}
+                    {val.display} <span className="total-rows">({val.total_rows || 0})</span> 
                   </label>
                 ))}
               </div>
