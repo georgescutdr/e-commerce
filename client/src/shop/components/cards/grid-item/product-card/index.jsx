@@ -1,7 +1,7 @@
 // src/components/item-grid/GridItemProductCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Rating } from 'primereact/rating';
+import { Rating } from '../../../rating';
 import { AddToCartButton } from '../../../add-to-cart-button';
 import { AddToWishlistButton } from '../../../add-to-wishlist-button';
 import { StockStatus } from '../../../stock-status';
@@ -46,11 +46,8 @@ export const ProductCard = ({ item, table }) => {
                 </Link>
                   <div className="product-rating">
                     <Rating
-                      value={item.rating || getAverageRating(item.review_array)}
-                      readOnly
-                      cancel={false}
-                      stars={5}
-                      className="mb-2"
+                      value={item.rating}
+                      ratingCount={item.rating_count}
                     />
                   </div>
                   <div className="stock-status">

@@ -1,53 +1,67 @@
-.attributes-style {
-  /*background: linear-gradient(135deg, #243c54, #0066cc);*/
-  padding: 20px 30px;
-  border-radius: 10px;
-  color: white;
-  /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
+.attribute-list-wrapper.two-columns {
+  display: flex;
+  gap: 40px; /* increased gap for better spacing */
+  justify-content: flex-start;
 }
 
-.attributes-title {
-  color: white;
-  font-size: 1.2rem;
-  margin-bottom: 15px;
-  text-align: center;
+.attribute-list {
+  padding: 0;
+  margin: 0;
+  width: 40%; /* adjust this value as needed */
+  /* or use flex-basis instead: */
+  /* flex: 0 0 200px; */
+}
+
+.attribute-item {
+  margin-bottom: 8px;
+}
+
+.attribute-name-small {
+  margin-right: 4px;
+}
+
+.attribute-list {
+  flex: 1;
+  min-width: 200px;
 }
 
 .attributes-table {
   width: 100%;
   border-collapse: collapse;
-  color: black;
-  background-color: white;
-  border-radius: 6px;
+  margin-top: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
   overflow: hidden;
 }
 
-.attributes-table tr:nth-child(odd) {
-  background-color: #f9fbfc;
+.attributes-table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
 }
 
-.attributes-table tr:nth-child(even) {
-  background-color: #e9f1f7;
+.attributes-table tbody tr:nth-child(even) {
+  background-color: #fff;
 }
 
 .attributes-table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
+  padding: 12px 16px;
   font-size: 0.95rem;
+  color: #333;
+  vertical-align: top;
+  transition: background-color 0.2s ease;
 }
 
-.attribute-name {
+.attributes-table td.attribute-name {
   font-weight: 600;
+  color: #222;
   width: 40%;
 }
 
-.attribute-value {
-  font-weight: 400;
+.attributes-table td.attribute-value {
+  color: #555;
 }
 
-.attributes-empty {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-style: italic;
-  padding: 10px;
+.attributes-table tbody tr:hover {
+  background-color: #f0f8ff;
 }

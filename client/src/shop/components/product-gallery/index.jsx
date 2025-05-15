@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import './product-gallery.css';
 
-export const ProductGallery = ({ images = [], productId }) => {
+export const ProductGallery = ({ images = [], productId, categoryId }) => {
   const isValidArray = Array.isArray(images) && images.length > 0 && images[0] !== null;
 
-  const defaultImage = {
-    id: 'default',
-    image_name: 'default.png', // Ensure this exists in /public/uploads/
-  };
+  
 
-  const fallbackImages = [defaultImage];
+  const fallbackImages = [
+    {id: 1, image_name: `/uploads/product/default/${categoryId}/1.jpg`},
+    {id: 2, image_name: `/uploads/product/default/${categoryId}/2.jpg`},
+    {id: 3, image_name: `/uploads/product/default/${categoryId}/3.jpg`},
+  ];
 
   const uniqueImages = isValidArray
     ? Array.from(new Map(images.map((img) => [img.id, img])).values())
@@ -20,7 +21,7 @@ export const ProductGallery = ({ images = [], productId }) => {
     if (image.id === 'default') {
       return `/uploads/product/default/default.png`;
     }
-    return `/uploads/product/${productId}/${image.image_name}`;
+    return `${image.image_name}`;
   };
 
   const [selectedImage, setSelectedImage] = useState(uniqueImages[0]);

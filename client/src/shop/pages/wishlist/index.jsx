@@ -33,7 +33,7 @@ const Wishlist = ({ props }) => {
                 console.error('Error fetching wishlist from DB:', err);
             })
             .finally(() => setLoading(false));
-    }, [props, loadWishlist]);
+    }, []);
 
     const handleRemove = async (productId) => {
         try {

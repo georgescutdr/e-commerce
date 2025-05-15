@@ -254,6 +254,7 @@ app.get('/api/shop/wishlist/', async (req, res) => {
         p.*, 
         b.name AS brand_name,
         AVG(r.rating) AS rating,
+        COUNT(r.rating) AS rating_count,
 
         -- Aggregate valid promotions
         JSON_ARRAYAGG(
@@ -1379,6 +1380,8 @@ app.get('/api/search', async (req, res) => {
     // Build final SQL query
     let sql = `
         SELECT p.*, AVG(r.rating) as rating, 
+        COUNT(r.rating) AS rating_count,
+        b.name as brand_name,
         JSON_ARRAYAGG(
           JSON_OBJECT(
             'id', pr.id,
@@ -1479,6 +1482,29 @@ app.get('/api/search', async (req, res) => {
 
 });
 
+// CATEGORY
+app.get('/api/shop/get-categories', async (req, res) => {
+  const { categoryId, subOnly } = req.query;
+
+  try {
+    let query = 'SELECT * FROM category';
+    const params = [];
+
+    if (categoryId) {
+      query += ' WHERE id = ?';
+      params.push(categoryId);
+    } else if (subOnly) {
+      query += ' WHERE parent_id > 0';
+    }
+
+    const [rows] = await db.execute(query, params);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // PRODUCTS
 
@@ -1486,72 +1512,117 @@ app.get('/api/shop/get-products', async (req, res) => {
   const { categoryId, productId } = req.query;
 
   try {
-    const query = `
+    // Base query
+    let query = `
       SELECT 
-        p.id,
-        p.name,
-        p.description,
-        p.price,
-        p.quantity,
-        p.category_id,
-        p.brand_id,
-        AVG(r.rating) AS rating,
-        b.name AS brand_name,
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'id', pr.id,
-            'name', pr.name,
-            'type', pr.type,
-            'value', pr.value,
-            'start_date', pr.start_date,
-            'end_date', pr.end_date
-          )
-        ) AS promotion_array,
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'id', v.id,
-            'name', v.name,
-            'type', v.type,
-            'value', v.value
-          )
-        ) AS voucher_array,
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'id', o.id,
-            'name', o.name
-          )
-        ) AS option_array
-      FROM product p
-      LEFT JOIN product_promotion pp ON pp.product_id = p.id
-      LEFT JOIN promotion pr ON pp.promotion_id = pr.id
-      LEFT JOIN brand b ON p.brand_id = b.id
-      LEFT JOIN review r ON r.product_id = p.id
-      LEFT JOIN product_voucher pv ON pv.product_id = p.id
-      LEFT JOIN voucher v ON v.id = pv.voucher_id
-      LEFT JOIN product_option po ON po.product_id = p.id
-      LEFT JOIN \`option\` o ON po.option_id = o.id
-      WHERE p.category_id = ?
-      GROUP BY p.id
-    `;
+		  p.id,
+		  p.name,
+		  p.description,
+		  p.price,
+		  p.quantity,
+		  p.category_id,
+		  p.brand_id,
+		  AVG(r.rating) AS rating,
+		  COUNT(r.rating) AS rating_count,
+		  b.name AS brand_name,
+		  JSON_ARRAYAGG(
+		    JSON_OBJECT(
+		      'id', pr.id,
+		      'name', pr.name,
+		      'type', pr.type,
+		      'value', pr.value,
+		      'start_date', pr.start_date,
+		      'end_date', pr.end_date
+		    )
+		  ) AS promotion_array,
+		  JSON_ARRAYAGG(
+		    JSON_OBJECT(
+		      'id', v.id,
+		      'name', v.name,
+		      'type', v.type,
+		      'value', v.value
+		    )
+		  ) AS voucher_array,
+		  JSON_ARRAYAGG(
+		    JSON_OBJECT(
+		      'id', o.id,
+		      'name', o.name
+		    )
+		  ) AS option_array,
+		  JSON_ARRAYAGG(
+			  JSON_OBJECT(
+			    'name', a.name,
+			    'value', IFNULL(av.text_value, av.numeric_value),
+			    'unit', u.name
+			  )
+			) AS attribute_array
+		FROM product p
+		LEFT JOIN product_promotion pp ON pp.product_id = p.id
+		LEFT JOIN promotion pr ON pp.promotion_id = pr.id
+		LEFT JOIN brand b ON p.brand_id = b.id
+		LEFT JOIN review r ON r.product_id = p.id
+		LEFT JOIN product_voucher pv ON pv.product_id = p.id
+		LEFT JOIN voucher v ON v.id = pv.voucher_id
+		LEFT JOIN product_option po ON po.product_id = p.id
+		LEFT JOIN \`option\` o ON po.option_id = o.id
+		LEFT JOIN product_attribute_value pav ON pav.product_id = p.id
+		LEFT JOIN attribute_value av ON av.id = pav.attribute_value_id
+		LEFT JOIN attribute a ON a.id = av.attribute_id
+		LEFT JOIN attribute_unit au ON au.attribute_id = a.id
+		LEFT JOIN unit u ON u.id = au.unit_id
+		    `;
 
-    const [rows] = await db.query(query, [categoryId]);
+    let conditions = [];
+    let values = [];
 
-    // Remove duplicates from the JSON arrays
+    if (categoryId) {
+      conditions.push('p.category_id = ?');
+      values.push(categoryId);
+    }
+
+    if (productId) {
+      conditions.push('p.id = ?');
+      values.push(productId);
+    }
+
+    // Append WHERE clause if any conditions exist
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    query += ' GROUP BY p.id';
+
+    // Execute the query
+    const [rows] = await db.query(query, values);
+
+    // Function to remove duplicates from JSON arrays
+    const removeDuplicates = (array) => {
+      const seen = new Set();
+      return array.filter(item => {
+        const identifier = JSON.stringify(item); // Use JSON string as unique identifier
+        return seen.has(identifier) ? false : seen.add(identifier);
+      });
+    };
+
+    // Remove duplicates from the JSON arrays in the rows
     const uniqueRows = rows.map(row => {
       return {
         ...row,
         promotion_array: removeDuplicates(row.promotion_array),
         voucher_array: removeDuplicates(row.voucher_array),
-        option_array: removeDuplicates(row.option_array)
+        option_array: removeDuplicates(row.option_array),
+        attribute_array: removeDuplicates(row.attribute_array)
       };
     });
 
+    // Send the response
     res.json(uniqueRows);
   } catch (err) {
     console.error('Error fetching products:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Helper function to remove duplicates from JSON array
 function removeDuplicates(array) {
@@ -1709,8 +1780,8 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
 		WHERE ac.category_id = ?
 		AND a.search_panel = 1
 		GROUP BY a.id, av.id, av.numeric_value, av.text_value, u.symbol
+		HAVING COUNT(pav.product_id) > 0
 		ORDER BY a.name, av.numeric_value, av.text_value;
-
       `, [categoryId]);
     }
 
@@ -1851,21 +1922,25 @@ app.get('/api/shop/count-minimum-rating-products', async (req, res) => {
 
   try {
     const query = `
-      SELECT
-        FLOOR(AVG(r.rating)) AS avg_rating,
-        COUNT(DISTINCT p.id) AS product_count
-      FROM product p
-      JOIN review r ON p.id = r.product_id
-      WHERE p.category_id = ?
+      SELECT star_bucket, COUNT(*) AS count
+      FROM (
+        SELECT
+          FLOOR(AVG(r.rating)) AS star_bucket
+        FROM product p
+        JOIN review r ON p.id = r.product_id
+        WHERE p.category_id = ?
+        GROUP BY p.id
+      ) AS rated_products
+      GROUP BY star_bucket
     `;
 
     const [rows] = await db.query(query, [categoryId]);
 
-    // Create a response object with counts for each star rating (1–5)
+    // Fill counts from query
     const ratingCounts = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
     rows.forEach(row => {
-      const rating = Math.max(1, Math.min(5, row.avg_rating)); // ensure within 1-5
-      ratingCounts[rating] = row.product_count;
+      const rating = Math.max(1, Math.min(5, row.star_bucket));
+      ratingCounts[rating] = row.count;
     });
 
     res.json(ratingCounts);
@@ -1874,6 +1949,7 @@ app.get('/api/shop/count-minimum-rating-products', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // CATEGORY BRANDS
 
@@ -1887,7 +1963,7 @@ app.get('/api/shop/get-category-brands', async (req, res) => {
      SELECT 
 	  b.id, 
 	  b.name, 
-	  COUNT(p.id) AS num_rows
+	  COUNT(p.id) AS total_rows
 	FROM product p
 	LEFT JOIN brand b ON p.brand_id = b.id
 	WHERE p.category_id = ?
@@ -1915,7 +1991,7 @@ app.get('/api/shop/get-category-promotions', async (req, res) => {
      SELECT 
 	  pr.id, 
 	  pr.name, 
-	  COUNT(p.id) AS num_rows
+	  COUNT(p.id) AS total_rows
 	FROM product p
 	JOIN product_promotion pp ON p.id = pp.product_id
 	JOIN promotion pr ON pr.id = pp.promotion_id

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Galleria } from 'primereact/galleria';
-import { Rating } from 'primereact/rating';
+import { Rating } from '../../components/rating';
 import { useParams } from 'react-router-dom';
 import { AddToCartButton } from '../../components/add-to-cart-button';
 import { AddToWishlistButton } from '../../components/add-to-wishlist-button';
@@ -35,17 +35,17 @@ export const ProductView = ({ item, props }) => {
             <div className="product-columns">
                 {/* Left: Image Gallery */}
                 <div className="product-gallery">
-                    <ProductGallery images={item.image_array} productId={item.id} />
+                    <ProductGallery images={[]} productId={item.id} categoryId={item.category_id} />
                 </div>
 
                 {/* Right: Price + Add to Cart */}
                 <div className="product-side-info">
                     <div className="product-title">{title}</div>
-                    <Rating value={getAverageRating(item.review_array)} readOnly cancel={false} stars={5} />
+                    <Rating value={item.rating} ratingCount={item.rating_count} />
                     <div className="product-price">
                         <Price
                             newPrice={
-                                item.promotion_array?.[0]
+                                item.promotion_array?.[0]?.id
                                     ? applyPromotions(item.promotion_array, item.price)
                                     : 0
                             }
@@ -64,13 +64,16 @@ export const ProductView = ({ item, props }) => {
             <div className="product-description">
                 <p>{item.description}</p>
             </div>
-            <div className="product-attributes">
-                <Attributes item={item} />
-            </div>
+            {item.attribute_array?.[0]?.name && (
+                <div className="product-attributes">
+                    <Attributes items={item.attribute_array} />
+                 </div>
+            )}
+            
             <div className="product-carousels-wrapper">
               <div className="product-carousels-inner">
                 <div className="product-carousels">
-                  <ProductCarousel title="You may also like" />
+                  <ProductCarousel title="You may also like" categoryId={item.category_id} />
                 </div>
               </div>
             </div>

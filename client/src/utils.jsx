@@ -146,7 +146,7 @@ export const makeItemUrl = (item) => {
 
     if(item.slug) return item.slug;
 
-    const brand = item.brand_array?.[0]?.name || '';
+    const brand = item.brand_name || '';
     const productName = item.name || '';
 
     return `${slugify(brand)}-${slugify(productName)}`;

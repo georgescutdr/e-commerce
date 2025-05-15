@@ -15,13 +15,7 @@ const ViewItem = ({props}) => {
 	
 
 	useEffect(() => {
-        let queryParams = {
-        	id: params.id, 
-            table: props.table,
-            joinTables: props.joinTables,
-        }
-
-        Axios.post(shopConfig.getItemsUrl, queryParams)
+        Axios.get(shopConfig.api.getProductsUrl, {params: {productId: params.id}})
             .then((res) => {
             	console.log(res.data)
             	setItem(res.data[0])

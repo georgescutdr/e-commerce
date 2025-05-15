@@ -28,6 +28,7 @@ export const shopConfig = {
 		getCategoryPromotionsUrl: siteConfig.serverUrl + '/api/shop/get-category-promotions',
 		countMinimumRatingProductsUrl: siteConfig.serverUrl + '/api/shop/count-minimum-rating-products',
 		getProductsUrl: siteConfig.serverUrl + '/api/shop/get-products',
+		getCategoriesUrl: siteConfig.serverUrl + '/api/shop/get-categories',
 	},
 	items: [
 		{

@@ -1,10 +1,11 @@
 import React from 'react';
-import { Rating } from 'primereact/rating';
+import { Rating } from '../../../rating';
 import { Button } from 'primereact/button';
 import { AddToCartButton } from '../../../add-to-cart-button';
 import { AddToWishlistButton } from '../../../add-to-wishlist-button';
 import { Link } from 'react-router-dom';
 import { VoucherLabel } from '../../../voucher-label';
+import { Attributes } from '../../../attributes';
 import { StockStatus } from '../../../stock-status';
 import { Price } from '../../../price';
 import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, makeItemTitle } from '../../../../../utils';
@@ -18,14 +19,16 @@ export const ProductCard = ({ item, table, onRemove }) => {
     return (
         <div className="stack-card">
             <div className="stack-card-image">
-                <img 
-                    src={
-                        item.files && item.files.length > 0
-                            ? `/public/uploads/product/${item.id}/${item.files[0].file_name}`
-                            : `/public/uploads/product/default/${item.category_id}/default-image.jpg`
-                    } 
-                    alt={item.name} 
-                />
+                <Link to={`/${item.name}/pd/${item.id}/view_product`}>
+                    <img 
+                        src={
+                            item.files && item.files.length > 0
+                                ? `/public/uploads/product/${item.id}/${item.files[0].file_name}`
+                                : `/public/uploads/product/default/${item.category_id}/default-image.jpg`
+                        } 
+                        alt={item.name} 
+                    />
+                </Link>
             </div>
             <div className="stack-card-details">
                 {item.promotion_array?.[0]?.id && (
@@ -39,14 +42,11 @@ export const ProductCard = ({ item, table, onRemove }) => {
                     </Link>
                 </div>
                 <div className="stack-rating">
-                    <Rating value={item.rating || 0} readOnly cancel={false} stars={5} />
+                    <Rating value={item.rating} ratingCount={item.rating_count} />
                 </div>
-                <div className="stock-status">
-                      <StockStatus quantity={item.quantity} />
-                </div>
-                {item.voucher_array?.[0]?.id && (
-                    <div className="voucher-label">
-                        <VoucherLabel vouchers={item.voucher_array} />
+                {item.attribute_array?.[0]?.name && (
+                    <div className="product-attributes">
+                         <Attributes items={item.attribute_array} small={true} /> 
                     </div>
                 )}
             </div>
@@ -54,6 +54,14 @@ export const ProductCard = ({ item, table, onRemove }) => {
                 {isLoggedIn() && (
                     <div className="add-to-wishlish-btn">
                         <AddToWishlistButton item={item} iconOnly={true} userId={user.id} />
+                    </div>
+                )}
+                <div className="stock-status">
+                      <StockStatus quantity={item.quantity} />
+                </div>
+                {item.voucher_array?.[0]?.id && (
+                    <div className="voucher-label">
+                        <VoucherLabel vouchers={item.voucher_array} />
                     </div>
                 )}
                 <Price

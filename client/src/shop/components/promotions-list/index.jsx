@@ -26,12 +26,12 @@ export const PromotionsList = ({ promotions = [] }) => {
                         <div className="promotion-info">
                             {promotion.name}
                         </div>
-                        <Link
+                     {/*   <Link
                             to={`/${slugify(promotion.name)}/pd/${promotion.id}/?type=view_promotion`}
                             className="promotion-link"
                         >
                             See the offer
-                        </Link>
+                        </Link> */}
                     </div>
                 </div>
             ))}

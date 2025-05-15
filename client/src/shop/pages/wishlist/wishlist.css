@@ -40,7 +40,7 @@
 
 /* Details (Middle Column) */
 .wishlist-card-details {
-    flex: 0 0 75%; /* 60% width for the middle column */
+    flex: 0 0 70%; /* 60% width for the middle column */
     padding-right: 15px;
 }
 

@@ -6,24 +6,14 @@ import { ProductCard } from '../cards/grid-item/product-card';
 import { shopConfig } from '../../../config';
 import './product-carousel.css';
 
-export const ProductCarousel = ({ title = 'Featured Products' }) => {
+export const ProductCarousel = ({ title = 'Featured Products', categoryId }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                let queryParams = {
-                    table: 'product',
-                    joinTables: [
-                        { table: 'promotion', fields: ['id', 'name', 'type', 'value', 'start_date', 'end_date'], pivot: true },
-                        { table: 'brand', fields: ['id', 'name'], pivot: true },
-                        { table: 'review', fields: ['rating'], pivot: true },
-                        { table: 'voucher', fields: ['id', 'expires_at'], pivot: true },
-                    ]
-                };
-
-                const res = await Axios.post(shopConfig.getItemsUrl, queryParams);
+                const res = await Axios.get(shopConfig.api.getProductsUrl, {params: {categoryId: categoryId}});
 
                 if (Array.isArray(res.data) && res.data.length > 0) {
                     setItems(res.data);

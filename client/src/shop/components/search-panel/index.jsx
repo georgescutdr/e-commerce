@@ -15,6 +15,7 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ratingNum, setRatingNum] = useState([]);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,29 +43,43 @@ export const SearchPanel = ({ categoryId, selected, setSelected, displayOnly=fal
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
-        const [brandsRes, optionsRes, promotionsRes, attributesRes, priceBoundsRes, minimumRatingRes] = await Promise.all([
+        const [
+          brandsRes,
+          optionsRes,
+          promotionsRes,
+          attributesRes,
+          priceBoundsRes,
+          minimumRatingRes
+        ] = await Promise.all([
           Axios.get(shopConfig.api.getCategoryBrandsUrl, { params: { categoryId } }),
           Axios.get(shopConfig.api.getCategoryOptionsUrl, { params: { categoryId } }),
           Axios.get(shopConfig.api.getCategoryPromotionsUrl, { params: { categoryId } }),
           Axios.get(shopConfig.api.getProductAttributesUrl, { params: { categoryId } }),
           Axios.get(shopConfig.api.getPriceBoundsUrl, { params: { categoryId } }),
-          Axios.get(shopConfig.api.countMinimumRatingProductsUrl, { params: { categoryId } }),
+          Axios.get(shopConfig.api.countMinimumRatingProductsUrl, { params: { categoryId } })
         ]);
-console.log('SEARCH PANEL: ', minimumRatingRes.data)
+
+        console.log('SEARCH PANEL: ', priceBoundsRes.data);
+
+        // Transform priceBounds response
+        const transformedRanges = priceBoundsRes.data.stepRanges.map((r) => {
+          const from = Math.floor(r.range[0]);
+          const to = Math.floor(r.range[1]);
+          return {
+            from,
+            to,
+            label: `$${from} - $${to}`,
+            count: r.count,
+            id: `${from}-${to}`
+          };
+        });
+
         setBrands(brandsRes.data);
         setOptions(optionsRes.data);
         setPromotions(promotionsRes.data);
         setAttributes(attributesRes.data);
-        const { minPrice = 0, maxPrice } = priceBoundsRes.data;
-        if (maxPrice > minPrice) {
-          const step = (maxPrice - minPrice) / 5;
-          const ranges = Array.from({ length: 5 }, (_, i) => ({
-            label: `${Math.round(minPrice + i * step)} - ${Math.round(minPrice + (i + 1) * step)}`,
-            from: Math.round(minPrice + i * step),
-            to: Math.round(minPrice + (i + 1) * step),
-          }));
-          setPriceRanges(ranges);
-        }
+        setRatingNum(minimumRatingRes.data);
+        setPriceRanges(transformedRanges); 
       } catch (err) {
         console.error('Error fetching filter data:', err);
       } finally {
@@ -170,23 +185,24 @@ console.log('SEARCH PANEL: ', minimumRatingRes.data)
           </span>
         </div>
         <div className={`attribute-group ${collapsedGroups[attrName] ? 'collapsed' : ''}`}>
-          {priceRanges.map((range, idx) => {
-            const rangeKey = `${range.from}-${range.to}`;
-            return (
-              <label key={idx} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={displayOnly ? false : selected[attrName]?.some((v) => v.id === rangeKey) || false}
-                  onChange={() => toggleCheckbox(attrName, rangeKey, range.label)}
-                />
-                {range.label}
-              </label>
-            );
-          })}
+          {priceRanges.map((range, idx) => (
+            <label key={idx} className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={
+                  displayOnly ? false : selected[attrName]?.some((v) => v.id === range.id) || false
+                }
+                onChange={() => toggleCheckbox(attrName, range.id, range.label)}
+                disabled={range.count === 0}
+              />
+              {range.label} <span className="total-rows">({range.count})</span>
+            </label>
+          ))}
         </div>
       </div>
     );
   };
+
 
   const renderMinimumRatingCard = () => {
     const attrName = 'minRating';
@@ -206,7 +222,7 @@ console.log('SEARCH PANEL: ', minimumRatingRes.data)
                 checked={displayOnly ? false : selected[attrName]?.some((v) => v.id === starCount) || false}
                 onChange={() => toggleCheckbox(attrName, starCount, `${starCount} stars`)}
               />
-              <Rating value={starCount} readOnly cancel={false} stars={5} /> <span className="total-rows">({0})</span>
+              <Rating value={starCount} readOnly cancel={false} stars={5} /> <span className="total-rows">({ratingNum?.[starCount]})</span>
             </label>
           ))}
         </div>

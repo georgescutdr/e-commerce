@@ -6,15 +6,28 @@ import { shopConfig } from '../../../config';
 import './home-page.css';
 
 export const HomePage = () => {
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        Axios.get(shopConfig.api.getCategoriesUrl, {
+            params: { subOnly: true }
+        }).then((result) => {
+            setCategories(result.data);
+        });
+    }, []);
 
     return (
-    	<>
-    	<Header categoryId={0}/>
-        <div className="home-page">
-            <ProductCarousel title="Featured Products" />
-            <ProductCarousel title="New Arrivals" />
-            <ProductCarousel title="Best Sellers" />
-        </div>
+        <>
+            <Header categoryId={0} />
+            <div className="home-page">
+                {categories.map((item) =>
+                    <ProductCarousel
+                        key={item.id}
+                        title={item.name}
+                        categoryId={item.id}
+                    />
+                )}
+            </div>
         </>
     );
 };
