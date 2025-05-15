@@ -26,6 +26,7 @@ import { Items } from './admin/pages/items'
 import { Footer } from './components/footer'
 
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { NavbarSkeleton } from './shop/components/skeleton/navbar-skeleton'
 
 import 'primereact/resources/themes/lara-light-blue/theme.css'; // or any other theme
 import 'primereact/resources/primereact.min.css';
@@ -95,7 +96,7 @@ function App() {
     if (!componentMap) {
         return (
             <div className="spinner-container">
-                <ProgressSpinner />
+                <NavbarSkeleton />
             </div>
         );
     }
@@ -117,7 +118,7 @@ function App() {
                 const Component = componentMap[item.component];
 
                 if (!Component) {
-                    console.warn(`❌ Component not found for: ${item.component}`);
+                    console.warn(`Component not found for: ${item.component}`);
                     return null;
                 }
 

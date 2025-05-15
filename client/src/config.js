@@ -157,7 +157,7 @@ export const shopConfig = {
 			'component': 'view-item'
 		},
 		{
-			'path': '/:category/pd/:id/&type=product',
+			'path': '/s/:category/pd/:id',
 			'table': 'product',
 			'joinTables': [],
 			'listType': 'multiple',
@@ -171,7 +171,7 @@ export const shopConfig = {
 			'component': 'view-items'
 		},
 		{
-			'path': '/:product/pd/:id/view_product',
+			'path': '/:product/pd/:productCode/',
 			'table': 'product',
 			'joinTables': [
 			//	{table: 'attribute_value', fields: ['id', 'attribute_id', 'value']},

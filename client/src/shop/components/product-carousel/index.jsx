@@ -60,10 +60,12 @@ export const ProductCarousel = ({ title = 'Featured Products', categoryId }) => 
                         responsiveOptions={responsiveOptions}
                         itemTemplate={itemTemplate}
                         circular
-                        autoplayInterval={5000}
+                        autoplayInterval={3000}
                     />
                 </>
             )}
         </div>
     );
 };
+
+export default ProductCarousel;

@@ -20,15 +20,11 @@ export const ItemStack = ({ items, props }) => {
 
     return (
         <>
-            {Array.isArray(items) && items.length > 0 ? (
+            {Array.isArray(items) && items.length > 0 && (
                 <div className="stack-container">
                     {items.map((item) => (
-                        <ProductCard key={item.id} item={item} table={table} />
+                        <ProductCard key={item.product_code} item={item} table={table} />
                     ))}
-                </div>
-            ) : (
-                <div className="no-items-container">
-                    <p className="no-items">No items found.</p>
                 </div>
             )}
         </>

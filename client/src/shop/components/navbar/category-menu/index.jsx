@@ -44,7 +44,7 @@ export const CategoryMenu = () => {
             .filter(sub => sub.parent_id === cat.id)
             .map(sub => ({
                 label: sub.name,
-                command: () => navigate(`/${sub.name}/pd/${sub.id}/&type=product`, { replace: true }),
+                command: () => navigate(`/s/${encodeURIComponent(sub.name)}/pd/${sub.id}`, { replace: true }),
             })),
         }));
 

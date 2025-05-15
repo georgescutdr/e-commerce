@@ -182,7 +182,14 @@ export const getStockLabel = (quantity) => {
     }
 };
 
-//display products in stack or grid
-//add has voucher label on product card
+export const generateProductCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let psin = '';
+    for (let i = 0; i < 10; i++) {
+        psin += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return psin;
+}
+
 //pagination for items
 

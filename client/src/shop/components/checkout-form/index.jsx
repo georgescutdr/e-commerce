@@ -338,7 +338,7 @@ export const CheckoutForm = () => {
 
                                               <div className="cart-item-content">
                                                 <div className="product-title">
-                                                  <Link to={`/${slugify(item.brand_name + ' ' + item.name)}/pd/${item.id}/view_product`}>
+                                                  <Link to={`/${slugify(item.brand_name + ' ' + item.name)}/pd/${item.product_code}`}>
                                                     <span className="product-title-link">{`${item.brand_name} ${item.name}`}</span>
                                                   </Link>
                                                 </div>

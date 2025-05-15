@@ -1,0 +1,73 @@
+.skeleton-navbar {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding: 0.75rem 3rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Each row of the skeleton layout */
+.skeleton-navbar .skeleton-row {
+  display: flex;
+  align-items: left;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* First row specific: logo, search, actions */
+.skeleton-navbar .skeleton-row:first-child {
+  justify-content: space-between;
+}
+
+/* Skeleton box elements that pulse */
+.skeleton-navbar .skeleton-box {
+  background-color: #e0e0e0;
+  border-radius: 6px;
+  animation: pulse 1.5s ease-in-out infinite;
+  height: 45px;
+}
+
+/* Logo skeleton */
+.skeleton-navbar .skeleton-navbar-logo {
+  width: 120px;
+  height: 46px;
+}
+
+/* Search bar skeleton */
+.skeleton-navbar-searchbar {
+  flex: 1;
+  height: 38px;
+  width: 30%!important;
+}
+
+/* Buttons container */
+.skeleton-navbar-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Generic button skeleton */
+.skeleton-navbar .skeleton-button {
+  height: 46px;
+  width: 112px!important;
+  border-radius: 6px;
+  margin-top: 0px;
+}
+
+/* Second row: menu buttons */
+.skeleton-navbar .skeleton-menu-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+
+/* Pulse animation only on .skeleton-box elements */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}

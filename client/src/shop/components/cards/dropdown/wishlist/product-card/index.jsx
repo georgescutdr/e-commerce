@@ -58,7 +58,7 @@ export const ProductCard = ({ item }) => {
             <img className="product-image" src={image} alt={item.name} />
             <div className="product-info">
                 <Link
-                    to={`/${slugify(item.brand_name + ' ' + item.name)}/pd/${item.id}/view_product`}
+                    to={`/${slugify(item.brand_name + ' ' + item.name)}/pd/${item.product_code}`}
                     className="product-title-link"
                 >
                     <span className="product-title">{`${item.brand_name} ${item.name}`}</span>

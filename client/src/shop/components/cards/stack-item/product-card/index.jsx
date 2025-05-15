@@ -19,7 +19,7 @@ export const ProductCard = ({ item, table, onRemove }) => {
     return (
         <div className="stack-card">
             <div className="stack-card-image">
-                <Link to={`/${item.name}/pd/${item.id}/view_product`}>
+                <Link to={`/${item.name}/pd/${item.product_code}`}>
                     <img 
                         src={
                             item.files && item.files.length > 0
@@ -37,7 +37,7 @@ export const ProductCard = ({ item, table, onRemove }) => {
                     </div>
                 )}
                 <div className="product-title">
-                    <Link to={`/${item.name}/pd/${item.id}/view_product`}>
+                    <Link to={`/${item.name}/pd/${item.product_code}`}>
                         <span className="product-title-link">{`${item.brand_name} ${item.name}`}</span>
                     </Link>
                 </div>

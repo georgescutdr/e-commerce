@@ -13,6 +13,7 @@ import { SearchBar } from '../../../pages/search-bar';
 import { AuthButtons } from '../../auth-buttons';
 import { UserMenu } from '../user-menu'; 
 import { isLoggedIn } from '../../../../utils/auth-helpers';
+import { NavbarSkeleton } from '../../skeleton/navbar-skeleton';
 
 export const ShopNavbar = ({categoryId = 0, searchWords = ''}) => {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ export const ShopNavbar = ({categoryId = 0, searchWords = ''}) => {
 
   return (
     <>
+      
       <nav className="shop-navbar">
         {/* Left: Logo */}
         <div className="shop-navbar-logo" onClick={() => navigate('/')}>

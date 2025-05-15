@@ -64,6 +64,34 @@
     backdrop-filter: blur(2px);
 }
 
+.no-items-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 999000;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.back-to-top:hover {
+  background-color: #555;
+}
+
 /* Hide the left column on smaller screens */
 @media (max-width: 768px) {
   .search-panel-container {

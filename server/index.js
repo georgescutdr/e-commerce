@@ -1295,7 +1295,7 @@ app.get('/api/search-autocomplete', async (req, res) => {
 
 // SEARCH
 app.get('/api/search', async (req, res) => {
-    const { query, filters, categoryId } = req.query;
+    const { query, filters, categoryId, page = 1 } = req.query;
 
     let parsedFilters = [];
 
@@ -1312,7 +1312,7 @@ app.get('/api/search', async (req, res) => {
     const havingConditions = [];
     const whereValues = [];
     const havingValues = [];
-
+console.log(parsedFilters)  
     // Price Range
     if (filtersObj.priceRange?.length > 0) {
         const priceConditions = [];
@@ -1329,16 +1329,14 @@ app.get('/api/search', async (req, res) => {
     }
 
     const defaultFilters = ['brands', 'options', 'promotions', 'minRating', 'priceRange'];
-    const combinedAttributeValues = [];
 
-	for (const key of Object.keys(filtersObj)) {
-	    if (!defaultFilters.includes(key)) {
-	        const attributeValues = filtersObj[key].map(Number);
-	       // combinedAttributeValues.push(...attributeValues);
-	        whereConditions.push(`pav.attribute_value_id IN (?)`);
-	        whereValues.push(attributeValues);
-	    }
-	}
+    for (const key of Object.keys(filtersObj)) {
+        if (!defaultFilters.includes(key)) {
+            const attributeValues = filtersObj[key].map(Number);
+            whereConditions.push(`pav.attribute_value_id IN (?)`);
+            whereValues.push(attributeValues);
+        }
+    }
 
     // Brands
     if (filtersObj.brands?.length > 0) {
@@ -1358,26 +1356,27 @@ app.get('/api/search', async (req, res) => {
         whereValues.push(filtersObj.promotions);
     }
 
-    // Rating (use HAVING, not WHERE)
+    // Rating
     if (filtersObj.minRating?.length > 0) {
         havingConditions.push(`rating >= ?`);
         havingValues.push(Math.min(...filtersObj.minRating));
     }
 
-    // Search keyword in product or category name
-	if (query && query.trim() !== '') {
-	    whereConditions.push(`(p.name LIKE ? OR c.name LIKE ? OR b.name LIKE ?)`);
-	    const keyword = `%${query.trim()}%`;
-	    whereValues.push(keyword, keyword, keyword);
-	}
+    if (query && query.trim() !== '') {
+        whereConditions.push(`(p.name LIKE ? OR c.name LIKE ? OR b.name LIKE ?)`);
+        const keyword = `%${query.trim()}%`;
+        whereValues.push(keyword, keyword, keyword);
+    }
 
-	// Filter by categoryId
-	if (categoryId && categoryId > 0) {
-	    whereConditions.push(`p.category_id = ?`);
-	    whereValues.push(categoryId);
-	}
+    if (categoryId && categoryId > 0) {
+        whereConditions.push(`p.category_id = ?`);
+        whereValues.push(categoryId);
+    }
 
-    // Build final SQL query
+    // Pagination
+    const itemsPerPage = 12; // You can adjust this
+    const offset = (parseInt(page) - 1) * itemsPerPage;
+
     let sql = `
         SELECT p.*, AVG(r.rating) as rating, 
         COUNT(r.rating) AS rating_count,
@@ -1415,9 +1414,6 @@ app.get('/api/search', async (req, res) => {
         LEFT JOIN category c ON p.category_id = c.id
     `;
 
-    // TODO
-    //get unexpired promotions and vouchers only
-
     if (whereConditions.length > 0) {
         sql += ` WHERE ${whereConditions.join(' AND ')}`;
     }
@@ -1428,59 +1424,58 @@ app.get('/api/search', async (req, res) => {
         sql += ` HAVING ${havingConditions.join(' AND ')}`;
     }
 
-    const finalValues = [...whereValues, ...havingValues];
+    sql += ` LIMIT ? OFFSET ?`;
+    const finalValues = [...whereValues, ...havingValues, itemsPerPage, offset];
 
-    console.log(sql);
-    console.log(finalValues);
+  //  console.log(sql);
+  //  console.log(finalValues);
 
     try {
-	    const [rows] = await db.query(sql, finalValues);
+        const [rows] = await db.query(sql, finalValues);
 
-	    const deduplicatedRows = rows.map(row => {
-	        const cleanRow = { ...row };
+        const deduplicatedRows = rows.map(row => {
+            const cleanRow = { ...row };
 
-	        // Parse JSON arrays if needed (some drivers return them as strings)
-	        const promoArray = typeof row.promotion_array === 'string'
-	            ? JSON.parse(row.promotion_array)
-	            : row.promotion_array || [];
+            const promoArray = typeof row.promotion_array === 'string'
+                ? JSON.parse(row.promotion_array)
+                : row.promotion_array || [];
 
-	        const voucherArray = typeof row.voucher_array === 'string'
-	            ? JSON.parse(row.voucher_array)
-	            : row.voucher_array || [];
+            const voucherArray = typeof row.voucher_array === 'string'
+                ? JSON.parse(row.voucher_array)
+                : row.voucher_array || [];
 
-	        // Remove null entries and deduplicate by ID
-	        cleanRow.promotion_array = Array.isArray(promoArray)
-	            ? Object.values(
-	                promoArray
-	                  .filter(p => p?.id != null)
-	                  .reduce((acc, curr) => {
-	                      acc[curr.id] = curr;
-	                      return acc;
-	                  }, {})
-	              )
-	            : [];
+            cleanRow.promotion_array = Array.isArray(promoArray)
+                ? Object.values(
+                    promoArray
+                        .filter(p => p?.id != null)
+                        .reduce((acc, curr) => {
+                            acc[curr.id] = curr;
+                            return acc;
+                        }, {})
+                  )
+                : [];
 
-	        cleanRow.voucher_array = Array.isArray(voucherArray)
-	            ? Object.values(
-	                voucherArray
-	                  .filter(v => v?.id != null)
-	                  .reduce((acc, curr) => {
-	                      acc[curr.id] = curr;
-	                      return acc;
-	                  }, {})
-	              )
-	            : [];
+            cleanRow.voucher_array = Array.isArray(voucherArray)
+                ? Object.values(
+                    voucherArray
+                        .filter(v => v?.id != null)
+                        .reduce((acc, curr) => {
+                            acc[curr.id] = curr;
+                            return acc;
+                        }, {})
+                  )
+                : [];
 
-	        return cleanRow;
-	    });
+            return cleanRow;
+        });
 
-	    res.json(deduplicatedRows);
-	} catch (error) {
-	    console.error(error);
-	    res.status(500).send('Server error');
-	}
-
+        res.json(deduplicatedRows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
 });
+
 
 // CATEGORY
 app.get('/api/shop/get-categories', async (req, res) => {
@@ -1509,68 +1504,68 @@ app.get('/api/shop/get-categories', async (req, res) => {
 // PRODUCTS
 
 app.get('/api/shop/get-products', async (req, res) => {
-  const { categoryId, productId } = req.query;
+  const { categoryId, productId, productCode, page = 1, limit = 20 } = req.query;
 
   try {
-    // Base query
     let query = `
       SELECT 
-		  p.id,
-		  p.name,
-		  p.description,
-		  p.price,
-		  p.quantity,
-		  p.category_id,
-		  p.brand_id,
-		  AVG(r.rating) AS rating,
-		  COUNT(r.rating) AS rating_count,
-		  b.name AS brand_name,
-		  JSON_ARRAYAGG(
-		    JSON_OBJECT(
-		      'id', pr.id,
-		      'name', pr.name,
-		      'type', pr.type,
-		      'value', pr.value,
-		      'start_date', pr.start_date,
-		      'end_date', pr.end_date
-		    )
-		  ) AS promotion_array,
-		  JSON_ARRAYAGG(
-		    JSON_OBJECT(
-		      'id', v.id,
-		      'name', v.name,
-		      'type', v.type,
-		      'value', v.value
-		    )
-		  ) AS voucher_array,
-		  JSON_ARRAYAGG(
-		    JSON_OBJECT(
-		      'id', o.id,
-		      'name', o.name
-		    )
-		  ) AS option_array,
-		  JSON_ARRAYAGG(
-			  JSON_OBJECT(
-			    'name', a.name,
-			    'value', IFNULL(av.text_value, av.numeric_value),
-			    'unit', u.name
-			  )
-			) AS attribute_array
-		FROM product p
-		LEFT JOIN product_promotion pp ON pp.product_id = p.id
-		LEFT JOIN promotion pr ON pp.promotion_id = pr.id
-		LEFT JOIN brand b ON p.brand_id = b.id
-		LEFT JOIN review r ON r.product_id = p.id
-		LEFT JOIN product_voucher pv ON pv.product_id = p.id
-		LEFT JOIN voucher v ON v.id = pv.voucher_id
-		LEFT JOIN product_option po ON po.product_id = p.id
-		LEFT JOIN \`option\` o ON po.option_id = o.id
-		LEFT JOIN product_attribute_value pav ON pav.product_id = p.id
-		LEFT JOIN attribute_value av ON av.id = pav.attribute_value_id
-		LEFT JOIN attribute a ON a.id = av.attribute_id
-		LEFT JOIN attribute_unit au ON au.attribute_id = a.id
-		LEFT JOIN unit u ON u.id = au.unit_id
-		    `;
+        p.id,
+        p.name,
+        p.description,
+        p.price,
+        p.quantity,
+        p.product_code,
+        p.category_id,
+        p.brand_id,
+        AVG(r.rating) AS rating,
+        COUNT(r.rating) AS rating_count,
+        b.name AS brand_name,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', pr.id,
+            'name', pr.name,
+            'type', pr.type,
+            'value', pr.value,
+            'start_date', pr.start_date,
+            'end_date', pr.end_date
+          )
+        ) AS promotion_array,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', v.id,
+            'name', v.name,
+            'type', v.type,
+            'value', v.value
+          )
+        ) AS voucher_array,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'id', o.id,
+            'name', o.name
+          )
+        ) AS option_array,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'name', a.name,
+            'value', IFNULL(av.text_value, av.numeric_value),
+            'unit', u.name
+          )
+        ) AS attribute_array
+      FROM product p
+      LEFT JOIN product_promotion pp ON pp.product_id = p.id
+      LEFT JOIN promotion pr ON pp.promotion_id = pr.id
+      LEFT JOIN brand b ON p.brand_id = b.id
+      LEFT JOIN review r ON r.product_id = p.id
+      LEFT JOIN product_voucher pv ON pv.product_id = p.id
+      LEFT JOIN voucher v ON v.id = pv.voucher_id
+      LEFT JOIN product_option po ON po.product_id = p.id
+      LEFT JOIN \`option\` o ON po.option_id = o.id
+      LEFT JOIN product_attribute_value pav ON pav.product_id = p.id
+      LEFT JOIN attribute_value av ON av.id = pav.attribute_value_id
+      LEFT JOIN attribute a ON a.id = av.attribute_id
+      LEFT JOIN attribute_unit au ON au.attribute_id = a.id
+      LEFT JOIN unit u ON u.id = au.unit_id
+    `;
 
     let conditions = [];
     let values = [];
@@ -1579,49 +1574,55 @@ app.get('/api/shop/get-products', async (req, res) => {
       conditions.push('p.category_id = ?');
       values.push(categoryId);
     }
-
     if (productId) {
       conditions.push('p.id = ?');
       values.push(productId);
     }
+    if (productCode) {
+      conditions.push('p.product_code = ?');
+      values.push(productCode);
+    }
 
-    // Append WHERE clause if any conditions exist
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     query += ' GROUP BY p.id';
 
-    // Execute the query
+    // Calculate OFFSET and LIMIT for pagination
+    const pageInt = parseInt(page, 10) || 1;
+    const limitInt = parseInt(limit, 10) || 20;
+    const offset = (pageInt - 1) * limitInt;
+
+    query += ` LIMIT ? OFFSET ?`;
+    values.push(limitInt, offset);
+
     const [rows] = await db.query(query, values);
 
-    // Function to remove duplicates from JSON arrays
     const removeDuplicates = (array) => {
+      if (!array) return [];
       const seen = new Set();
       return array.filter(item => {
-        const identifier = JSON.stringify(item); // Use JSON string as unique identifier
+        const identifier = JSON.stringify(item);
         return seen.has(identifier) ? false : seen.add(identifier);
       });
     };
 
-    // Remove duplicates from the JSON arrays in the rows
-    const uniqueRows = rows.map(row => {
-      return {
-        ...row,
-        promotion_array: removeDuplicates(row.promotion_array),
-        voucher_array: removeDuplicates(row.voucher_array),
-        option_array: removeDuplicates(row.option_array),
-        attribute_array: removeDuplicates(row.attribute_array)
-      };
-    });
+    const uniqueRows = rows.map(row => ({
+      ...row,
+      promotion_array: removeDuplicates(row.promotion_array),
+      voucher_array: removeDuplicates(row.voucher_array),
+      option_array: removeDuplicates(row.option_array),
+      attribute_array: removeDuplicates(row.attribute_array)
+    }));
 
-    // Send the response
     res.json(uniqueRows);
   } catch (err) {
     console.error('Error fetching products:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 // Helper function to remove duplicates from JSON array
@@ -1966,12 +1967,15 @@ app.get('/api/shop/get-category-brands', async (req, res) => {
 	  COUNT(p.id) AS total_rows
 	FROM product p
 	LEFT JOIN brand b ON p.brand_id = b.id
+	LEFT JOIN category_brand cb ON cb.brand_id=b.id
 	WHERE p.category_id = ?
+	AND b.name IS NOT NULL
+	AND cb.category_id= ?
 	GROUP BY b.id, b.name
 	ORDER BY b.name;
     `;
 
-    const [rows] = await db.query(query, [categoryId]);
+    const [rows] = await db.query(query, [categoryId, categoryId]);
     res.json(rows);
   } catch (err) {
     console.error('Error fetching brands:', err);

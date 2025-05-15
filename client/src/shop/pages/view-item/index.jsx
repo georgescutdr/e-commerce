@@ -15,7 +15,7 @@ const ViewItem = ({props}) => {
 	
 
 	useEffect(() => {
-        Axios.get(shopConfig.api.getProductsUrl, {params: {productId: params.id}})
+        Axios.get(shopConfig.api.getProductsUrl, {params: {productCode: params.productCode}})
             .then((res) => {
             	console.log(res.data)
             	setItem(res.data[0])
