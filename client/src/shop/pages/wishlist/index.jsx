@@ -48,7 +48,7 @@ const Wishlist = ({ props }) => {
             }
 
             toast.current?.show({
-                severity: 'success',
+                severity: 'warn',
                 summary: 'Removed',
                 detail: 'Item removed from wishlist',
                 life: 3000,

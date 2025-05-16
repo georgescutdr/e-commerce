@@ -1,8 +1,20 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 #root {
+  display: flex;
+  flex-direction: column;
   margin: 0 auto;
   padding: 2rem;
   text-align: left;
   vertical-align: top;
+}
+
+main {
+  flex: 1;
 }
 
 .logo {
@@ -43,6 +55,14 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh; 
+}
+
+.p-toast {
+  position: fixed !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  z-index: 9999999999999999 !important;
+  pointer-events: none;
 }
 
 .p-toast .p-toast-message-content {

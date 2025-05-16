@@ -1,5 +1,5 @@
 .stack-card {
-    position: relative; /* Make it the reference for absolutely positioned children */
+    position: relative; 
     display: flex;
     flex-direction: row;
     justify-content: space-between;

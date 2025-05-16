@@ -63,11 +63,11 @@
 }
 
 .product-carousel-wrapper .p-carousel-prev {
-  left: -1rem;
+  left: 1.5rem;
 }
 
 .product-carousel-wrapper .p-carousel-next {
-  right: -1rem;
+  right: 1.5rem;
 }
 
 /* Hide navigation buttons on small screens */

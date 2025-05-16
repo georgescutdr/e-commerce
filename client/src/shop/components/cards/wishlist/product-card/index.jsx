@@ -33,7 +33,7 @@ export const ProductCard = ({ item, table, onRemove }) => {
                 )}
                 <div className="product-title">
                     <Link to={`/${item.name}/pd/${item.product_code}`}>
-                        <span className="product-title-link">{`${item.brand_name} ${item.name}`}</span>
+                        <span className="product-title-link">{`${item.brand_name || ''} ${item.name}`}</span>
                     </Link>
                 </div>
                 <div className="wishlist-rating">

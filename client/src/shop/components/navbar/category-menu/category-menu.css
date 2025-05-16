@@ -4,7 +4,7 @@
   z-index: 999;
   position: relative;
 }
-
+ 
 .menu-bar {
   display: flex;
   align-items: center;
@@ -75,5 +75,16 @@
 
 .p-tieredmenu ul {
   padding-left: 0!important;
+}
+
+/* Align submenu arrow (chevron) to the right in TieredMenu */
+.p-tieredmenu .p-menuitem-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.p-tieredmenu .p-submenu-icon {
+  margin-left: auto;
 }
 

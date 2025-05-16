@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Axios from 'axios';
 import { shopConfig } from '../../../../config.js';
 import './category-menu.css';
-
+ 
 export const CategoryMenu = () => {
     const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
     const [categories, setCategories] = useState([]);

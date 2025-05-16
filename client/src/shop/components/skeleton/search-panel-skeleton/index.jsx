@@ -6,13 +6,8 @@ export const SearchPanelSkeleton = () => {
     <div className="search-panel">
       {[1, 2, 3, 4].map((_, index) => (
         <div key={index} className="attribute-card skeleton-card">
-          <div className="attribute-card-header">
-            <div className="skeleton skeleton-title" />
-          </div>
-          <div className="attribute-group">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="skeleton skeleton-checkbox" />
-            ))}
+          <div className="attribute-card-header skeleton">
+            <div className="skeleton-title" />
           </div>
         </div>
       ))}

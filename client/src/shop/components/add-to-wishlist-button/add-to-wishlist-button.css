@@ -76,7 +76,7 @@
   color: #000 !important;
   display: flex;
   align-items: center;
-  justify-content: center; /* 💡 center content horizontally */
+  justify-content: center; /* center content horizontally */
   font-size: 1.25rem;
   position: relative;
 }

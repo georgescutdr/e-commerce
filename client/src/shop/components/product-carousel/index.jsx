@@ -46,6 +46,8 @@ export const ProductCarousel = ({ title = 'Featured Products', categoryId }) => 
         );
     };
 
+    const visibleCount = Math.min(5, items.length);
+ 
     return (
         <div className="product-carousel-wrapper">
             {loading ? (
@@ -60,7 +62,6 @@ export const ProductCarousel = ({ title = 'Featured Products', categoryId }) => 
                         responsiveOptions={responsiveOptions}
                         itemTemplate={itemTemplate}
                         circular
-                        autoplayInterval={3000}
                     />
                 </>
             )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import './register-form.css';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
@@ -82,7 +82,7 @@ const RegisterForm = () => {
 							name="firstName"
 							value={formData.firstName}
 							onChange={handleChange}
-							placeholder="John"
+							placeholder=""
 							required
 						/>
 					</div>
@@ -93,7 +93,7 @@ const RegisterForm = () => {
 							name="lastName"
 							value={formData.lastName}
 							onChange={handleChange}
-							placeholder="Doe"
+							placeholder=""
 							required
 						/>
 					</div>
@@ -105,7 +105,7 @@ const RegisterForm = () => {
 							type="email"
 							value={formData.email}
 							onChange={handleChange}
-							placeholder="you@example.com"
+							placeholder=""
 							required
 						/>
 					</div>
@@ -118,7 +118,7 @@ const RegisterForm = () => {
 							onChange={handleChange}
 							toggleMask
 							feedback={false}
-							placeholder="Enter password"
+							placeholder=""
 							required
 						/>
 					</div>
@@ -131,7 +131,7 @@ const RegisterForm = () => {
 							onChange={handleChange}
 							toggleMask
 							feedback={false}
-							placeholder="Confirm password"
+							placeholder=""
 							required
 						/>
 					</div>

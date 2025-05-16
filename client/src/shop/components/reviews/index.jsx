@@ -73,6 +73,10 @@ export const Reviews = ({ itemId }) => {
     };
   }, [loaderRef]);
 
+  if(reviews.length == 0) {
+    return null;
+  }
+
   return (
     <div className="product-reviews">
       <h2>Customer Reviews</h2>

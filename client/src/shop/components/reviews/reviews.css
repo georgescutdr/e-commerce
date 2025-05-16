@@ -2,6 +2,11 @@
   margin-top: 40px;
 }
 
+.product-reviews h2 {
+  margin-bottom: 71px;
+  font-weight: bold;
+}
+
 .reviews-list {
   max-height: 400px;
   overflow-y: auto;

@@ -9,8 +9,7 @@ import { shopConfig } from '../../../config.js';
 import { useWishlist } from '../../context/wishlist-context';
 import { getUser } from '../../../utils/auth-helpers';
 
-export const AddToWishlistButton = ({ item, iconOnly = false }) => {
-  const toast = useRef(null);
+export const AddToWishlistButton = ({ item, iconOnly = false, toast }) => {
   const [loading, setLoading] = useState(false);
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -54,7 +53,6 @@ export const AddToWishlistButton = ({ item, iconOnly = false }) => {
 
   return (
     <>
-      <Toast ref={toast} />
       {iconOnly ? (
         <Button
           icon="pi"

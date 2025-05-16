@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { Toast } from 'primereact/toast'
 import './view-items.css'
 import Axios from 'axios'
 import Cookies from 'js-cookie'
@@ -23,6 +24,9 @@ const ViewItems = ({ props }) => {
   const [hasMore, setHasMore] = useState(true)
   const [category, setCategory] = useState(null)
   const [viewLoading, setViewLoading] = useState(false)
+
+  const toast = useRef(null);
+  const bottomRef = useRef(null);
 
   const [viewMode, setViewModeState] = useState(() => Cookies.get('viewMode') || 'grid')
 
@@ -72,7 +76,7 @@ const ViewItems = ({ props }) => {
   }, [params.id, fetchItems])
 
   // Load more items when called
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return
 
     setLoadingMore(true)
@@ -80,36 +84,38 @@ const ViewItems = ({ props }) => {
 
     fetchItems(nextPage)
       .then(res => {
-        setItems(prevItems => [...prevItems, ...res.data])
+        setItems(prevItems => {
+          const newItems = res.data.filter(
+            newItem => !prevItems.some(prevItem => prevItem.id === newItem.id)
+          )
+          return [...prevItems, ...newItems]
+        })
         setPage(nextPage)
-        setLoadingMore(false)
-        if (res.data.length < ITEMS_PER_PAGE) setHasMore(false)
+        setHasMore(res.data.length === ITEMS_PER_PAGE)
       })
-      .catch(err => {
-        console.error('Error loading more items:', err)
-        setLoadingMore(false)
-      })
-  }
+      .finally(() => setLoadingMore(false))
+  }, [loadingMore, hasMore, page, fetchItems])
 
   // Infinite scroll handler
   useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
-        hasMore && !loadingMore && !loading
-      ) {
+    if (!bottomRef.current || loading || loadingMore || !hasMore) return
+
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
         loadMore()
       }
+    }, {
+      rootMargin: '100px',
+    })
+
+    observer.observe(bottomRef.current)
+
+    return () => {
+      if (bottomRef.current) observer.unobserve(bottomRef.current)
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [hasMore, loadingMore, loading])
+  }, [bottomRef, loading, loadingMore, hasMore])
 
-  // Determine title for header
-  const paramValues = Object.values(params)
-  const title = props.label ? props.label : (paramValues.length > 0 ? capitalize(paramValues[paramValues.length - 2]) : 'Shop')
-
-  // View mode toggle handler
+// View mode toggle handler
   const setViewMode = (mode) => {
     setViewLoading(true)
     Cookies.set('viewMode', mode, { expires: 7 })
@@ -122,10 +128,11 @@ const ViewItems = ({ props }) => {
   return (
     <>
       <Header categoryId={params.id} />
+      <Toast ref={toast} position="top-right" />
       <div className="items-page">
         <div className="items-header">
           <div className="items-header-text">
-            <h1>{title}</h1>
+            <h1>{category?.name}</h1>
             <p>{category?.description}</p>
           </div>
           <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
@@ -145,12 +152,13 @@ const ViewItems = ({ props }) => {
             ) : (
               <>
                 {viewMode === 'grid'
-                  ? <ItemGrid items={items} props={props} />
-                  : <ItemStack items={items} props={props} />
+                  ? <ItemGrid items={items} props={{ ...props, toast }} />
+                  : <ItemStack items={items} props={{ ...props, toast }} />
                 }
                 {loadingMore && (
                   viewMode === 'grid' ? <ItemGridSkeleton count={4} /> : <ItemStackSkeleton count={2} />
                 )}
+                <div ref={bottomRef}></div>
                 {!loading && (
                   <button
                     className="back-to-top"

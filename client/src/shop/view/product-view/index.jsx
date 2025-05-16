@@ -30,8 +30,6 @@ export const ProductView = ({ item, props }) => {
 
     return (
         <div className="product-page">
-            
-
             <div className="product-columns">
                 {/* Left: Image Gallery */}
                 <div className="product-gallery">
@@ -52,7 +50,6 @@ export const ProductView = ({ item, props }) => {
                             price={item.price}
                         />
                     </div>
-
                     <StockStatus quantity={item.quantity} />
                     <Options items={item.option} />
                     <PromotionsList promotions={item.promotion_array} />

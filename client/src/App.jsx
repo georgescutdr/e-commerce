@@ -112,6 +112,7 @@ function App() {
         <WishlistProvider>
         <ShopContextProvider>
         <PrimeReactProvider>
+        <main>
             <Routes>
             <>
             {shopConfig.items.map((item, index) => {
@@ -153,9 +154,9 @@ function App() {
                 )
             })}
             </Routes>
-        
-        </PrimeReactProvider>
+        </main>
         <Footer />
+        </PrimeReactProvider>
         </ShopContextProvider>
         </WishlistProvider>
         </AuthProvider>

@@ -1,7 +1,7 @@
 /* Review Item */
 .review-header {
   display: flex;
-  align-items: center;
+  align-items: left;
   margin-bottom: 1rem;
 }
 
@@ -43,8 +43,11 @@
 
 .review-title h2 {
   color: #333;
+  font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 10px;
+  text-align: left;
+  margin-bottom: 23px;
 }
 
 .review-item .text-gray-500 {
@@ -94,7 +97,7 @@
 /* Review Author and Date */
 .review-item .review-header {
   display: flex;
-  align-items: center;
+  align-items: left;
   margin-bottom: 15px;
 }
 

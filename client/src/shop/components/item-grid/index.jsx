@@ -23,7 +23,7 @@ export const ItemGrid = ({ items, props }) => {
             {Array.isArray(items) && items.length > 0 && (
                 <div className="grid-container">
                     {items.map((item) => (
-                        <ProductCard key={item.product_code} item={item} table={table} />
+                        <ProductCard key={item.product_code} item={item} table={table} toast={props.toast} />
                     ))}
                 </div>
             )}

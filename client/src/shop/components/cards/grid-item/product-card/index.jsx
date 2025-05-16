@@ -11,13 +11,13 @@ import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, make
 import { getUser, isLoggedIn } from '../../../../../utils/auth-helpers';
 import './product-card.css';
 
-export const ProductCard = ({ item, table }) => {
+export const ProductCard = ({ item, table, toast }) => {
  
   const user = getUser();
  
     return (
         <div className="grid-item">
-            {isLoggedIn() && (<AddToWishlistButton item={item} iconOnly={true} />)}
+            {isLoggedIn() && (<AddToWishlistButton item={item} iconOnly={true} toast={toast} />)}
             <Link
                 to={`/${makeItemUrl(item)}/pd/${item.product_code}`}
                 className="grid-item-link"

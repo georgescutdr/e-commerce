@@ -6,7 +6,11 @@
   align-items: center;
   padding: 30px 15px;
   box-sizing: border-box;
-  background: linear-gradient(135deg, #3f6c9978, #ffffff63);
+  background: #f9f9f9;
+}
+
+.register-page .form {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, -0.9)!important;
 }
 
 /* Register Card */
