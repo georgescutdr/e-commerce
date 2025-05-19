@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext, useRef } from "react";
 import Cookies from "js-cookie";
 
 export const ShopContext = createContext();
@@ -12,6 +12,9 @@ export const ShopContextProvider = ({ children }) => {
   const [total, setTotal] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [addedProduct, setAddedProduct] = useState(null);
+
   useEffect(() => {
       try {
         const stored = Cookies.get('cartItems');
@@ -24,7 +27,6 @@ export const ShopContextProvider = ({ children }) => {
       }
       setIsInitialized(true);
     }, []);
-
 
   const parsePromotions = (promoArray) => {
       if (!Array.isArray(promoArray) || promoArray[0] === null) return [];
@@ -47,28 +49,38 @@ export const ShopContextProvider = ({ children }) => {
 
 
   const addToCart = (product) => {
-      setCartItems(prev => {
-        const prevQuantity = prev[product.id]?.quantity || 0;
+    setCartItems(prev => {
+      const prevQuantity = prev[product.id]?.quantity || 0;
 
-        // Initialize with empty or existing vouchers
-        const existing = prev[product.id] || {};
-        const newItem = {
-          ...product,
-          product_id: product.id,
-          category_id: product.category_id,
-          brand_name: product.brand_name,
-          quantity: prevQuantity + 1,
-          vouchers: existing.vouchers || [],
-          promotions: parsePromotions(product.promotion_array),
-        };
+      const existing = prev[product.id] || {};
+      const newItem = {
+        ...product,
+        product_id: product.id,
+        category_id: product.category_id,
+        brand_name: product.brand_name,
+        quantity: prevQuantity + 1,
+        vouchers: existing.vouchers || [],
+        promotions: parsePromotions(product.promotion_array),
+      };
 
-        return {
-          ...prev,
-          [product.id]: newItem,
-        };
+      return {
+        ...prev,
+        [product.id]: newItem,
+      };
+    });
+
+    // Delay modal appearance by 2 seconds (2000 ms)
+    setTimeout(() => {
+      setAddedProduct(prev => {
+        if (prev?.id !== product.id) {
+          setModalVisible(true);  // Open modal only if it's a different product
+          return product;
+        }
+        return prev;
       });
-    };
-
+    }, 1000);
+    
+  };
 
   const removeFromCart = (productId) => {
     setCartItems(prev => {
@@ -165,6 +177,10 @@ export const ShopContextProvider = ({ children }) => {
       applyVoucherToProduct,
       applyVoucherGlobally,
       total,
+      modalVisible,
+      setModalVisible,
+      addedProduct,
+      setAddedProduct,
     }}>
       {children}
     </ShopContext.Provider>

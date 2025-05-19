@@ -59,7 +59,7 @@ Order History: A log of all order activities, such as status changes, refunds, o
 function App() {
     const [componentMap, setComponentMap] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
-
+    
     const loadComponentMap = async () => {
         const map = {};
         for (const item of shopConfig.items) {
@@ -101,9 +101,14 @@ function App() {
         );
     }
 
-
-  //const { user } = useAuth();
-  //{user?.isAdmin ? <AdminNavbar /> : <ShopNavbar />}
+  const mockProduct = {
+      id: 1,
+      name: 'Test Product',
+      price: 29.99,
+      image: '/uploads/product/default/25/default-image.jpg',
+      category_id: 25,
+      description: 'This is a test product for modal preview.',
+    };
 
     return (
         <>
@@ -112,7 +117,9 @@ function App() {
         <WishlistProvider>
         <ShopContextProvider>
         <PrimeReactProvider>
+        
         <main>
+        
             <Routes>
             <>
             {shopConfig.items.map((item, index) => {

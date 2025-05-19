@@ -28,7 +28,7 @@ export const SearchBar = ({categoryId = 0, searchWords = ''}) => {
 
     try {
       const res = await Axios.get(shopConfig.api.searchAutocompleteUrl, {
-        params: { query: searchQuery }
+        params: { query: searchQuery, categoryId: categoryId }
       });
       setSuggestions(res.data?.suggestions || []);
     } catch (err) {

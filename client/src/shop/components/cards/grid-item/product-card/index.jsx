@@ -10,7 +10,7 @@ import { Price } from '../../../price';
 import { applyPromotions, getAverageRating, getPromotionLabel, makeItemUrl, makeItemTitle } from '../../../../../utils';
 import { getUser, isLoggedIn } from '../../../../../utils/auth-helpers';
 import './product-card.css';
-
+ 
 export const ProductCard = ({ item, table, toast }) => {
  
   const user = getUser();

@@ -21,6 +21,7 @@
 .wishlist-dropdown-panel {
   width: 300px;
   padding: 10px;
+  z-index: 99999!important;
 }
  
 .empty-wishlist {

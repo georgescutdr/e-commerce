@@ -31,7 +31,7 @@ export const AddToWishlistButton = ({ item, iconOnly = false, toast }) => {
       .then((res) => {
         toggleWishlist(item);
         const message = res.data.message || '';
-        toast.current.show({
+        toast?.current?.show({
           severity: message.includes('added') ? 'success' : 'warn',
           summary: 'Wishlist Updated',
           detail: message.includes('added') ? 'Item added to wishlist' : 'Item removed from wishlist',
@@ -39,7 +39,7 @@ export const AddToWishlistButton = ({ item, iconOnly = false, toast }) => {
         });
       })
       .catch(() => {
-        toast.current.show({
+        toast?.current?.show({
           severity: 'error',
           summary: 'Wishlist Error',
           detail: 'Failed to update wishlist',

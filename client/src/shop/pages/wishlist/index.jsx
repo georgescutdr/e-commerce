@@ -69,17 +69,12 @@ const Wishlist = ({ props }) => {
         <Header />
         <div className="wishlist-container">
             <Toast ref={toast} />
-            <h2>Your Wishlist</h2>
-            <Card className="wishlist-info-card">
-                {wishlistArray.length > 0 ? (
-                    <p className="wishlist-info-text">
-                        {wishlistArray.length} product{wishlistArray.length > 1 ? 's' : ''} in your wishlist
-                    </p>
-                ) : (
-                    <p className="wishlist-info-text">Your wishlist is empty.</p>
-                )}
-            </Card>
-
+            <h2>
+              Your Wishlist{' '}
+              <span className="wishlist-count">
+                {wishlistArray.length} product{wishlistArray.length !== 1 ? 's' : ''}
+              </span>
+            </h2>
             {loading ? (
                 <div className="wishlist-loader">
                     <ProgressSpinner />

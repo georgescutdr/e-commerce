@@ -1,0 +1,86 @@
+.add-to-cart-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(40, 40, 40, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
+  transition: opacity 0.3s ease;
+}
+
+.add-to-cart-modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 60%;
+  padding: 0;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+  max-height: 90vh;
+  overflow: hidden; /* keep corners rounded */
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.spinner-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px; /* Ensures the modal looks tall even when loading */
+}
+
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  flex-shrink: 0;
+}
+
+.add-to-cart-scroll-wrapper {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(90vh - 72px); /* 72px = approx modal-header height */
+  flex-grow: 1;
+}
+
+.added-product-section {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.no-scroll {
+  overflow: hidden !important;
+}
+
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}

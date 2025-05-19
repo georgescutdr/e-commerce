@@ -112,6 +112,18 @@
     color: #ff6f61; /* Heart color */
 }
 
+.wishlist-count {
+    margin-left: 10px;
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.wishlist-container h2 {
+    text-align: left;
+    margin-bottom: 60px;
+}
+
+
 /* Responsive Layout for Smaller Devices */
 @media (max-width: 768px) {
     .wishlist-card {

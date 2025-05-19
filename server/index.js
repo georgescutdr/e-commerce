@@ -1254,12 +1254,17 @@ app.post('/contact', async (req, res) => {
 // SEARCH AUTOCOMPLETE
 app.get('/api/search-autocomplete', async (req, res) => {
   const { query } = req.query;
+  const categoryId = req.query.categoryId
 
   if (!query || query.trim() === '') {
     return res.status(400).json({ error: 'Search query is required' });
   }
 
   const searchTerm = query.trim().toLowerCase();
+
+  if(categoryId) {
+  	const where = ` WHERE category_id=?`;
+  }
 
   try {
     const [categoryRows] = await db.query(`SELECT name FROM category`);
@@ -1504,7 +1509,7 @@ app.get('/api/shop/get-categories', async (req, res) => {
 // PRODUCTS
 
 app.get('/api/shop/get-products', async (req, res) => {
-  const { categoryId, productId, productCode, page = 1, limit = 20 } = req.query;
+  const { categoryId, productId, productCode, page = 1, limit = 20, excludeId } = req.query;
 
   try {
     let query = `

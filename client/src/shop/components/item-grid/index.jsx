@@ -17,7 +17,7 @@ export const ItemGrid = ({ items, props }) => {
         default:
             table = props.table;
     }
-
+ 
     return (
         <>
             {Array.isArray(items) && items.length > 0 && (

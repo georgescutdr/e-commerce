@@ -78,13 +78,13 @@
 }
 
 /* Align submenu arrow (chevron) to the right in TieredMenu */
-.p-tieredmenu .p-menuitem-link {
+.category-menu-wrapper .p-tieredmenu .p-menuitem-link {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.p-tieredmenu .p-submenu-icon {
+.category-menu-wrapper .p-tieredmenu .p-submenu-icon {
   margin-left: auto;
 }
 
