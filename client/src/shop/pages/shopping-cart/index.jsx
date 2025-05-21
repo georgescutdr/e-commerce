@@ -101,8 +101,8 @@ const ShoppingCart = () => {
                     </td>
                     <td>
                       <div className="product-title">
-                          <Link to={`/${slugify(item.brand_name +' '+ item.name)}/pd/${item.id}/view_product`}>
-                              <span className="product-title-link">{`${item.brand_name} ${item.name}`}</span>
+                          <Link to={`/${slugify(item.brand_name || '' +' '+ item.name)}/pd/${item.id}/view_product`}>
+                              <span className="product-title-link">{`${item.brand_name || ''} ${item.name}`}</span>
                            </Link>
                       </div>
                       {item.promotions?.length > 0 && (

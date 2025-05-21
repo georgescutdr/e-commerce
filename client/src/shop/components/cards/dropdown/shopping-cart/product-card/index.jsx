@@ -18,8 +18,8 @@ export const ProductCard = ({ item, onRemove }) => {
         <div className="dropdown-product-card">
             <img className="product-image" src={image} alt={item.name} />
             <div className="product-info">
-                <Link to={`/${slugify(item.brand_name + ' ' + item.name)}/pd/${item.product_code}`} className="product-title-link">
-                    <span className="product-title">{`${item.brand_name} ${item.name}`}</span>
+                <Link to={`/${slugify(item.brand_name || '' + ' ' + item.name)}/pd/${item.product_code}`} className="product-title-link">
+                    <span className="product-title">{`${item.brand_name || ''} ${item.name}`}</span>
                 </Link>
                 <span className="product-price">${Number(item.price).toFixed(2)}</span>
             </div>

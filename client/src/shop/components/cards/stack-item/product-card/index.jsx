@@ -51,11 +51,9 @@ export const ProductCard = ({ item, table, onRemove }) => {
                 )}
             </div>
             <div className="stack-card-actions">
-                {isLoggedIn() && (
                     <div className="add-to-wishlish-btn">
-                        <AddToWishlistButton item={item} iconOnly={true} userId={user.id} />
+                        <AddToWishlistButton item={item} iconOnly={true} userId={user?.id} />
                     </div>
-                )}
                 <div className="stock-status">
                       <StockStatus quantity={item.quantity} />
                 </div>

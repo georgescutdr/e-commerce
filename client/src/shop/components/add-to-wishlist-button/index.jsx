@@ -18,38 +18,50 @@ export const AddToWishlistButton = ({ item, iconOnly = false, toast }) => {
   const inWishlist = isInWishlist(itemId);
 
   const handleWishListToggle = () => {
-    if (loading || !user?.id) return;
+    if (loading) return;
 
     setLoading(true);
 
-    console.log('[toggleWishlist] Triggered for:', itemId); 
-
-    Axios.post(shopConfig.api.wishlistToggleUrl, {
-      userId: user.id,
-      productId: itemId,
-    })
-      .then((res) => {
-        toggleWishlist(item);
-        const message = res.data.message || '';
-        toast?.current?.show({
-          severity: message.includes('added') ? 'success' : 'warn',
-          summary: 'Wishlist Updated',
-          detail: message.includes('added') ? 'Item added to wishlist' : 'Item removed from wishlist',
-          life: 3000,
-        });
+    if (user?.id) {
+      // Logged-in: call backend
+      Axios.post(shopConfig.api.wishlistToggleUrl, {
+        userId: user.id,
+        productId: itemId,
       })
-      .catch(() => {
-        toast?.current?.show({
-          severity: 'error',
-          summary: 'Wishlist Error',
-          detail: 'Failed to update wishlist',
-          life: 3000,
+        .then((res) => {
+          toggleWishlist(item);
+          const message = res.data.message || '';
+          toast?.current?.show({
+            severity: message.includes('added') ? 'success' : 'warn',
+            summary: 'Wishlist Updated',
+            detail: message.includes('added') ? 'Item added to wishlist' : 'Item removed from wishlist',
+            life: 3000,
+          });
+        })
+        .catch(() => {
+          toast?.current?.show({
+            severity: 'error',
+            summary: 'Wishlist Error',
+            detail: 'Failed to update wishlist',
+            life: 3000,
+          });
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      })
-      .finally(() => {
-        setLoading(false);
+    } else {
+      // Guest: only update local wishlist
+      toggleWishlist(item);
+      toast?.current?.show?.({
+        severity: inWishlist ? 'warn' : 'success',
+        summary: 'Wishlist Updated',
+        detail: inWishlist ? 'Item removed from wishlist' : 'Item added to wishlist',
+        life: 3000,
       });
+      setLoading(false);
+    }
   };
+
 
   return (
     <>

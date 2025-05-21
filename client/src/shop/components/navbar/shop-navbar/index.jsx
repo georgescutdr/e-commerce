@@ -29,13 +29,12 @@ export const ShopNavbar = ({categoryId = 0, searchWords = ''}) => {
   }, [cartItems, wishlistItems]);
 
   // Wishlist and Cart Dropdown Menu Items
-  const wishlistMenuItems = isLoggedIn()
-    ? Object.values(wishlistItems).slice(0, 5).map((item) => ({
+  const wishlistMenuItems =
+     Object.values(wishlistItems).slice(0, 5).map((item) => ({
         label: item.name, // Assuming `item.name` exists
         icon: 'pi pi-heart',
         command: () => navigate(`/wishlist/${item.id}`, { replace: true }),
-      }))
-    : [];
+      }));
 
   const cartMenuItems = Object.values(cartItems).slice(0, 5).map((item) => ({
     label: item.name, // Assuming `item.name` exists
@@ -59,12 +58,11 @@ export const ShopNavbar = ({categoryId = 0, searchWords = ''}) => {
 
         {/* Right: Buttons */}
         <div className="shop-navbar-actions">
-          {isLoggedIn() && ( <WishlistButton wishlistItems={wishlistItems} loading={loadingWishlist} /> )}
+          <WishlistButton wishlistItems={wishlistItems} loading={loadingWishlist} />
           <CartButton cartItems={cartItems} loading={loadingCart} />
 
           {/* User Menu */}
-          {isLoggedIn() && <UserMenu />}
-          <AuthButtons />
+          <UserMenu />
         </div>
       </nav>
       <CategoryMenu />

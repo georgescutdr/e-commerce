@@ -21,35 +21,47 @@ export const ProductCard = ({ item }) => {
         : `/public/uploads/product/default/${item.category_id}/default-image.jpg`;
 
     const handleRemove = () => {
-        // Update context
+        // Always update context
         toggleWishlist(item);
 
-        // Call API to update DB
-        Axios.post(shopConfig.api.wishlistToggleUrl, {
-            userId: user?.id, 
-            productId: item.id,
-        })
-        .then((res) => {
-            const msg = res.data.message;
+        // Only make API call if logged in
+        if (user?.id) {
+            Axios.post(shopConfig.api.wishlistToggleUrl, {
+                userId: user.id,
+                productId: item.id,
+            })
+            .then((res) => {
+                const msg = res.data.message;
+                if (toast.current) {
+                    toast.current.show({
+                        severity: msg.includes('removed') ? 'warn' : 'success',
+                        summary: 'Wishlist Updated',
+                        detail: msg,
+                        life: 3000,
+                    });
+                }
+            })
+            .catch(() => {
+                if (toast.current) {
+                    toast.current.show({
+                        severity: 'error',
+                        summary: 'Wishlist Error',
+                        detail: 'Failed to update wishlist',
+                        life: 3000,
+                    });
+                }
+            });
+        } else {
+            // Show simple toast for guest action
             if (toast.current) {
                 toast.current.show({
-                    severity: msg.includes('removed') ? 'warn' : 'success',
+                    severity: 'warn',
                     summary: 'Wishlist Updated',
-                    detail: msg,
-                    life: 3000,
+                    detail: 'Removed from guest wishlist',
+                    life: 2000,
                 });
             }
-        })
-        .catch(() => {
-            if (toast.current) {
-                toast.current.show({
-                    severity: 'error',
-                    summary: 'Wishlist Error',
-                    detail: 'Failed to update wishlist',
-                    life: 3000,
-                });
-            }
-        });
+        }
     };
 
     return (
@@ -58,7 +70,7 @@ export const ProductCard = ({ item }) => {
             <img className="product-image" src={image} alt={item.name} />
             <div className="product-info">
                 <Link
-                    to={`/${slugify(item.brand_name || '' + ' ' + item.name)}/pd/${item.product_code}`}
+                    to={`/${slugify((item.brand_name || '') + ' ' + item.name)}/pd/${item.product_code}`}
                     className="product-title-link"
                 >
                     <span className="product-title">{`${item.brand_name || ''} ${item.name}`}</span>

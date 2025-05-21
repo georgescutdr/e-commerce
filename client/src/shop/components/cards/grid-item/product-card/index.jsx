@@ -17,7 +17,7 @@ export const ProductCard = ({ item, table, toast }) => {
  
     return (
         <div className="grid-item">
-            {isLoggedIn() && (<AddToWishlistButton item={item} iconOnly={true} toast={toast} />)}
+            <AddToWishlistButton item={item} iconOnly={true} toast={toast} />
             <Link
                 to={`/${makeItemUrl(item)}/pd/${item.product_code}`}
                 className="grid-item-link"

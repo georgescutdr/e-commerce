@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import Axios from 'axios';
 import { OverlayPanel } from 'primereact/overlaypanel';
@@ -11,27 +11,26 @@ import './wishlist-button.css';
 
 export const WishlistButton = ({ loading = false }) => {
   const user = getUser();
-
   const op = useRef(null);
   const navigate = useNavigate();
-
   const { loadWishlist, wishlistArray } = useWishlist();
 
-  // On page load, fetch from DB and sync context
   useEffect(() => {
     const fetchItems = async () => {
-      try {
-        const response = await Axios.get(shopConfig.api.getWishlistUrl, { params: { userId: user?.id } });
-        loadWishlist(response.data); // will update context (and indirectly update our items below)
-      } catch (error) {
-        console.error('Failed to fetch items:', error);
+      if (user?.id) {
+        try {
+          const response = await Axios.get(shopConfig.api.getWishlistUrl, { params: { userId: user.id } });
+          loadWishlist(response.data);
+        } catch (error) {
+          console.error('Failed to fetch wishlist from server:', error);
+        }
       }
+      // else: guests already load from localStorage via context by default
     };
 
     fetchItems();
   }, [user, loadWishlist]);
 
-  // No need for separate local items state, use context's array
   const items = wishlistArray;
 
   const handleMouseEnter = (e) => {

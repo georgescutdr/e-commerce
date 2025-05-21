@@ -44,7 +44,7 @@ export const CategoryMenu = () => {
             .filter(sub => sub.parent_id === cat.id)
             .map(sub => ({
                 label: sub.name,
-                command: () => navigate(`/s/${encodeURIComponent(sub.name)}/pd/${sub.id}`, { replace: true }),
+                command: () => navigate(`/s/${encodeURIComponent(sub.slug)}/pd/${sub.id}`, { replace: true }),
             })),
         }));
 
@@ -73,7 +73,7 @@ export const CategoryMenu = () => {
                         key={page.id}
                         label={page.name}
                         className="p-button-text"
-                        onClick={() => navigate(`/${page.slug || page.id}`, { replace: true })}
+                        onClick={() => {return null;}}
                     />
                 ))}
 

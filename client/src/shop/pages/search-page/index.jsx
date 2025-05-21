@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import Axios from 'axios';
 import { ViewToggleButtons } from '../../components/view-toggle-buttons'
 import { ItemGridSkeleton } from '../../components/skeleton/item-grid-skeleton'
 import { ItemStackSkeleton } from '../../components/skeleton/item-stack-skeleton'
 import { shopConfig } from '../../../config';
+import { Toast } from 'primereact/toast'
 import { ItemGrid } from '../../components/item-grid';
 import { SearchPanel } from '../../components/search-panel';
 import { ChipsBar } from '../../components/search/chips-bar';
@@ -22,6 +23,8 @@ const SearchPage = ({props}) => {
   const [selected, setSelected] = useState({});
   const [viewLoading, setViewLoading] = useState(false)
   const navigate = useNavigate();
+
+  const toast = useRef(null);
 
   const [viewMode, setViewModeState] = useState(() => Cookies.get('viewMode') || 'grid')
 
@@ -134,6 +137,7 @@ const SearchPage = ({props}) => {
   return (
     <>
     <Header categoryId={categoryId} searchWords={search} />
+    <Toast ref={toast} position="top-right" />
     <div className="items-page">
     <div className="items-header">
         <div className="items-header-text">
@@ -160,8 +164,8 @@ const SearchPage = ({props}) => {
                         
                     ) : (
                         viewMode === 'grid'
-                            ? <ItemGrid items={results} props={props} />
-                            : <ItemStack items={results} props={props} />
+                            ? <ItemGrid items={results} props={{ ...props, toast }} />
+                            : <ItemStack items={results} props={{ ...props, toast }} />
         )}
 
         {error && (

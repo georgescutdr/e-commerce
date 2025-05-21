@@ -69,7 +69,7 @@ export const ShopContextProvider = ({ children }) => {
       };
     });
 
-    // Delay modal appearance by 2 seconds (2000 ms)
+    // Delay modal appearance 
     setTimeout(() => {
       setAddedProduct(prev => {
         if (prev?.id !== product.id) {

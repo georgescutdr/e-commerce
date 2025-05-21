@@ -37,10 +37,11 @@ export const SearchBar = ({categoryId = 0, searchWords = ''}) => {
     }
   };
 
-  const handleSelect = (word) => {
-    setQuery(word);
+  const handleSelect = (item) => {
+    setQuery(item.word);
     setSuggestions([]);
-    navigate(`/search/pd/${categoryId}/${encodeURIComponent(word)}`);
+    const catId = item.category_id || categoryId;
+    navigate(`/search/pd/${catId}/${encodeURIComponent(item.word)}`);
   };
 
   const handleSearch = () => {
@@ -97,14 +98,14 @@ export const SearchBar = ({categoryId = 0, searchWords = ''}) => {
 
       {suggestions.length > 0 && (
         <ul className="autocomplete-dropdown">
-          {suggestions.map((word, index) => {
+          {suggestions.map((item, index) => {
             const regex = new RegExp(`(${query})`, 'gi');
-            const highlighted = word.replace(regex, match => `<strong>${match}</strong>`);
+            const highlighted = item.word.replace(regex, match => `<strong>${match}</strong>`);
 
             return (
               <li
                 key={index}
-                onClick={() => handleSelect(word)}
+                onClick={() => handleSelect(item)}
                 dangerouslySetInnerHTML={{ __html: highlighted }}
               />
             );

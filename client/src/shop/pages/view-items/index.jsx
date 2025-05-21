@@ -15,7 +15,7 @@ import { shopConfig } from '../../../config'
 import { capitalize } from '../../../utils'
 
 const ITEMS_PER_PAGE = 20
- 
+  
 const ViewItems = ({ props }) => {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)

@@ -101,15 +101,6 @@ function App() {
         );
     }
 
-  const mockProduct = {
-      id: 1,
-      name: 'Test Product',
-      price: 29.99,
-      image: '/uploads/product/default/25/default-image.jpg',
-      category_id: 25,
-      description: 'This is a test product for modal preview.',
-    };
-
     return (
         <>
         <Router>

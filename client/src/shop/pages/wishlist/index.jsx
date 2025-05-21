@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import Axios from 'axios';
 import { shopConfig } from '../../../config';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { Card } from 'primereact/card';
 import { Toast } from 'primereact/toast';
 import { ProductCard } from '../../components/cards/wishlist/product-card';
 import { useWishlist } from '../../context/wishlist-context';
@@ -12,6 +11,7 @@ import './wishlist.css';
 
 const Wishlist = ({ props }) => {
     const user = getUser();
+    const isUserLoggedIn = isLoggedIn();
     const [loading, setLoading] = useState(true);
     const toast = useRef(null);
 
@@ -22,43 +22,59 @@ const Wishlist = ({ props }) => {
     } = useWishlist();
 
     useEffect(() => {
-        Axios.get(shopConfig.api.getWishlistUrl, {
-            params: { userId: user?.id }
-        })
-            .then((res) => {
-                const wishlist = res.data || [];
-                loadWishlist(wishlist); // sync with context
-            })
-            .catch((err) => {
-                console.error('Error fetching wishlist from DB:', err);
-            })
-            .finally(() => setLoading(false));
+        const fetchWishlist = async () => {
+            if (isUserLoggedIn && user?.id) {
+                try {
+                    const res = await Axios.get(shopConfig.api.getWishlistUrl, {
+                        params: { userId: user.id }
+                    });
+                    loadWishlist(res.data || []);
+                } catch (err) {
+                    console.error('Error fetching wishlist from DB:', err);
+                }
+            }
+            // Guest case: just rely on localStorage/context data (already loaded)
+            setLoading(false);
+        };
+
+        fetchWishlist();
     }, []);
 
     const handleRemove = async (productId) => {
-        try {
-            await Axios.post(shopConfig.api.wishlistToggleUrl, {
-                userId: user?.id,
-                productId,
-            });
+        const productToRemove = wishlistArray.find(item => item.id === productId);
+        if (!productToRemove) return;
 
-            const productToRemove = wishlistArray.find(item => item.id === productId);
-            if (productToRemove) {
-                toggleWishlist(productToRemove); // remove from context
+        // Always remove from context
+        toggleWishlist(productToRemove);
+
+        if (isUserLoggedIn && user?.id) {
+            try {
+                await Axios.post(shopConfig.api.wishlistToggleUrl, {
+                    userId: user.id,
+                    productId
+                });
+
+                toast.current?.show({
+                    severity: 'warn',
+                    summary: 'Removed',
+                    detail: 'Item removed from wishlist',
+                    life: 3000,
+                });
+            } catch (error) {
+                console.error('Error removing from DB:', error);
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to update wishlist on server',
+                    life: 3000,
+                });
             }
-
+        } else {
+            // Guest: Just show local confirmation
             toast.current?.show({
                 severity: 'warn',
                 summary: 'Removed',
-                detail: 'Item removed from wishlist',
-                life: 3000,
-            });
-        } catch (error) {
-            console.error('Error removing from wishlist:', error);
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to remove item',
+                detail: 'Item removed from guest wishlist',
                 life: 3000,
             });
         }
@@ -81,14 +97,17 @@ const Wishlist = ({ props }) => {
                 </div>
             ) : (
                 <div className="wishlist-cards-container">
-                    {wishlistArray.map((item) => (
-                        <ProductCard
-                            key={item.id}
-                            item={item}
-                            table={props.table}
-                            onRemove={handleRemove}
-                        />
-                    ))}
+                    {wishlistArray.length === 0 ? (
+                        <p className="empty-message">Your wishlist is empty.</p>
+                    ) : (
+                        wishlistArray.map((item) => (
+                            <ProductCard
+                                key={item.id}
+                                item={item}
+                                onRemove={() => handleRemove(item.id)}
+                            />
+                        ))
+                    )}
                 </div>
             )}
         </div>

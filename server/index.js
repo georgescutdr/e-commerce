@@ -338,8 +338,6 @@ app.get('/api/shop/wishlist/', async (req, res) => {
   }
 });
 
-
-
 app.post('/api/shop/wishlist/toggle', async (req, res) => {
 	const { userId, productId } = req.body;
 	console.log(req.body)
@@ -1253,8 +1251,7 @@ app.post('/contact', async (req, res) => {
 
 // SEARCH AUTOCOMPLETE
 app.get('/api/search-autocomplete', async (req, res) => {
-  const { query } = req.query;
-  const categoryId = req.query.categoryId
+  const { query, categoryId } = req.query;
 
   if (!query || query.trim() === '') {
     return res.status(400).json({ error: 'Search query is required' });
@@ -1262,34 +1259,54 @@ app.get('/api/search-autocomplete', async (req, res) => {
 
   const searchTerm = query.trim().toLowerCase();
 
-  if(categoryId) {
-  	const where = ` WHERE category_id=?`;
-  }
-
   try {
-    const [categoryRows] = await db.query(`SELECT name FROM category`);
-    const [productRows] = await db.query(`SELECT name FROM product`);
-    const [brandRows] = await db.query(`SELECT name FROM brand`);
+    const [categoryRows] = await db.query(`
+      SELECT name, id as category_id 
+      FROM category
+    `);
 
-    const categoryWords = categoryRows.flatMap(row =>
-      row.name.split(/\s+/)
-    );
-    const productWords = productRows.flatMap(row =>
-      row.name.split(/\s+/)
-    );
-    const brandWords = brandRows.flatMap(row =>
-      row.name.split(/\s+/)
-    );
+    const [productRows] = await db.query(`
+      SELECT p.name, p.category_id 
+      FROM product p
+    `);
 
-    const allWords = [...categoryWords, ...productWords, ...brandWords];
+    const [brandRows] = await db.query(`
+      SELECT b.name, cb.category_id as category_id 
+      FROM brand b
+      LEFT JOIN category_brand cb ON cb.brand_id = b.id
+    `);
 
-    const uniqueMatches = [...new Set(
-      allWords.filter(word =>
-        word.toLowerCase().includes(searchTerm)
-      )
-    )];
+    const extractWords = (rows) =>
+      rows.flatMap(row =>
+        row.name
+          .split(/\s+/)
+          .map(word => ({ word, category_id: row.category_id }))
+      );
 
-    res.json({ suggestions: uniqueMatches });
+    let combined = [
+      ...extractWords(categoryRows),
+      ...extractWords(productRows),
+      ...extractWords(brandRows)
+    ];
+
+    // Optional: filter by categoryId if provided
+  //  if (categoryId) {
+ //     combined = combined.filter(item => item.category_id == categoryId);
+ //   }
+
+    // Filter and deduplicate matched words
+    const seen = new Set();
+	const matched = combined.filter(({ word }) => {
+	  const lc = word.toLowerCase();
+	  if (lc.includes(searchTerm) && !seen.has(lc)) {
+	    seen.add(lc);
+	    return true;
+	  }
+	  return false;
+	});
+
+
+    res.json({ suggestions: matched });
 
   } catch (err) {
     console.error('Autocomplete search error:', err);
@@ -1776,19 +1793,21 @@ app.get('/api/shop/get-product-attributes', async (req, res) => {
 		    av.numeric_value,
 		    av.text_value,
 		    u.symbol AS unit_symbol,
-		    COUNT(pav.product_id) AS total_rows
+		    COUNT(DISTINCT pav.product_id) AS total_rows
 		FROM attribute_category ac
 		JOIN attribute a ON ac.attribute_id = a.id
 		LEFT JOIN attribute_value av ON av.attribute_id = a.id
 		LEFT JOIN attribute_unit au ON a.id = au.attribute_id
 		LEFT JOIN unit u ON au.unit_id = u.id
 		LEFT JOIN product_attribute_value pav ON pav.attribute_value_id = av.id
+		LEFT JOIN product p ON pav.product_id = p.id
 		WHERE ac.category_id = ?
-		AND a.search_panel = 1
+		  AND a.search_panel = 1
+		  AND p.category_id = ?
 		GROUP BY a.id, av.id, av.numeric_value, av.text_value, u.symbol
-		HAVING COUNT(pav.product_id) > 0
+		HAVING COUNT(DISTINCT pav.product_id) > 0
 		ORDER BY a.name, av.numeric_value, av.text_value;
-      `, [categoryId]);
+      `, [categoryId, categoryId]);
     }
 
     const grouped = {};
